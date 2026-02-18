@@ -16,3 +16,7 @@ Thumbs.db
 .vscode/
 .idea/
 
+
+*.xlsx
+
+test_core_logic.py

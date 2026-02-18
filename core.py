@@ -69,14 +69,15 @@ def build_title_size_key(title: str, size: str) -> str:
     return title_norm.casefold()
 
 
-def identify_columns(df: pd.DataFrame) -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    """Auto-identify relevant columns based on headers."""
+def identify_columns(df: pd.DataFrame) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
+    """Auto-identify relevant columns based on headers (size, qty, title/item name, sku)."""
     cols = [str(c) for c in df.columns]
     cols_map = {c.lower().strip(): c for c in cols}
 
     size_col = None
     qty_col = None
     title_col = None
+    sku_col = None
 
     for c_lower, c_orig in cols_map.items():
         if "size" in c_lower and size_col is None:
@@ -88,11 +89,35 @@ def identify_columns(df: pd.DataFrame) -> Tuple[Optional[str], Optional[str], Op
             title_col = c_orig
         elif "title" in c_lower and title_col is None:
             title_col = c_orig
+        if "sku" in c_lower and sku_col is None:
+            sku_col = c_orig
 
     if not qty_col and "Quantity" in df.columns:
         qty_col = "Quantity"
 
-    return size_col, qty_col, title_col
+    return size_col, qty_col, title_col, sku_col
+
+
+def get_group_by_column(df: pd.DataFrame) -> Optional[str]:
+    """
+    Find a column suitable for grouping rows (e.g. same order or same phone together).
+    Prefers exact 'Order Number', then other order-like names, then Phone.
+    """
+    cols = [str(c) for c in df.columns]
+    cols_lower = {c: c.lower().strip() for c in cols}
+    # Exact match first: "Order Number"
+    for c_orig, c_lower in cols_lower.items():
+        if c_lower == "order number":
+            return c_orig
+    for name in ("order number", "order no", "order no.", "order #", "order id", "order"):
+        for c_lower, c_orig in cols_lower.items():
+            if name in c_lower:
+                return c_orig
+    for name in ("phone", "phone number", "mobile", "contact"):
+        for c_lower, c_orig in cols_lower.items():
+            if name in c_lower:
+                return c_orig
+    return None
 
 
 def add_title_size_column(df: pd.DataFrame, title_col: str, size_col: Optional[str]) -> pd.DataFrame:
@@ -125,6 +150,7 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
     Matching is based only on 'Title - Size' (computed from Title + Size).
     """
     inventory: Dict[str, Dict[str, int]] = {}
+    sku_to_title_size: Dict[str, str] = {}  # sku_key -> Title-Size key (for SKU match validation)
     all_locations = list(uploaded_files.keys())
     warnings = []
     enriched_dfs: Dict[str, pd.DataFrame] = {}
@@ -134,7 +160,7 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
             continue
         try:
             df = _read_uploaded(file_obj)
-            size_col, qty_col, title_col = identify_columns(df)
+            size_col, qty_col, title_col, sku_col = identify_columns(df)
 
             if not title_col:
                 warnings.append(f"⚠️ {loc_name}: Missing 'Title/Item Name' column. Skipped.")
@@ -167,11 +193,20 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
                 if key not in inventory:
                     inventory[key] = {loc: 0 for loc in all_locations}
                 inventory[key][loc_name] += qty
+                # Also index by SKU; record which Title-Size this SKU has (require item name == Title-Size when matching by SKU)
+                if sku_col and sku_col in df.columns:
+                    sku_val = normalize_key(row.get(sku_col, ""))
+                    sku_key = sku_val.casefold() if sku_val else ""
+                    if sku_key:
+                        if sku_key not in inventory:
+                            inventory[sku_key] = {loc: 0 for loc in all_locations}
+                        inventory[sku_key][loc_name] += qty
+                        sku_to_title_size[sku_key] = key  # SKU -> Title-Size key for this row
 
         except Exception as e:
             warnings.append(f"❌ Error in {loc_name}: {e}")
 
-    return inventory, warnings, enriched_dfs
+    return inventory, warnings, enriched_dfs, sku_to_title_size
 
 
 def add_stock_columns_from_inventory(
@@ -179,37 +214,87 @@ def add_stock_columns_from_inventory(
     item_name_col: str,
     inventory: Dict[str, Dict[str, int]],
     locations: list[str],
+    sku_col: Optional[str] = None,
+    sku_to_title_size: Optional[Dict[str, str]] = None,
 ) -> Tuple[pd.DataFrame, int]:
     """
-    Add one column per location to product_df by matching Item Name -> Title - Size.
+    Add one column per location to product_df by matching Item Name -> Title - Size,
+    or by SKU when available. When matching by SKU, item name must equal that SKU's Title-Size.
     Returns (output_df, matched_row_count).
     """
     df = product_df.copy()
     matched = set()
+    sku_to_inv_key = sku_to_title_size or {}
+    
+    # Pre-calculate match status and stock keys for each row
+    match_statuses = []
+    stock_sources = [] # list of inventory keys to pull stock from
+    
+    # Helper to safe-get SKU from row
+    def get_sku(r):
+        if sku_col and sku_col in df.columns:
+            val = normalize_key(r.get(sku_col, ""))
+            if val:
+                return val.casefold()
+        return ""
 
-    def row_key(r) -> Tuple[str, str, str, str]:
-        title, size = item_name_to_title_size(r.get(item_name_col, ""))
-        key = build_title_size_key(title, size)
-        title_only = build_title_size_key(title, "NO_SIZE") if title else ""
-        return title, size, key, title_only
+    for i, row in df.iterrows():
+        # 1. Construct Product List Key
+        title, size = item_name_to_title_size(row.get(item_name_col, ""))
+        pl_key = build_title_size_key(title, size)
+        
+        # 2. Get Product List SKU
+        pl_sku = get_sku(row)
+        
+        # Logic Determinations
+        inv_key = None
+        status = "No Match"
+        
+        # Check Primary Match: Item Name -> Inventory Key
+        if pl_key and pl_key in inventory:
+            inv_key = pl_key
+            # Secondary Confirmation: SKU
+            if pl_sku:
+                if pl_sku in sku_to_inv_key:
+                    mapped_key = sku_to_inv_key[pl_sku]
+                    if mapped_key == pl_key:
+                        status = "Perfect Match (Key + SKU)"
+                    else:
+                        status = f"Key Match (SKU mismatch -> {mapped_key})"
+                else:
+                    status = "Key Match (SKU not in Inv)"
+            else:
+                status = "Key Match (No SKU in Product)"
+                
+        # Fallback / Check: SKU Match Only?
+        elif pl_sku and pl_sku in sku_to_inv_key:
+            mapped_key = sku_to_inv_key[pl_sku]
+            # SKU matches, but PL Key didn't match Inventory Key
+            inv_key = mapped_key
+            status = f"SKU Match Only (Name mismatch -> {mapped_key})"
+            
+        else:
+            # Last resort: Try matching Title-only if Size was NO_SIZE? 
+            # (Optional, but user stressed 'Title - Size' format. Let's stick to rigid rules for now or minimal fuzzy)
+            # User instructions were specific about the "Optimal Strategy".
+            status = "No Match"
+        
+        match_statuses.append(status)
+        stock_sources.append(inv_key)
+        if inv_key:
+            matched.add(i)
 
-    keys = [row_key(r) for _, r in df.iterrows()]
+    # Assign Status Column
+    df["Match Status"] = match_statuses
 
+    # Assign Stock Columns
     for loc in locations:
         vals = []
-        for i, (_, r) in enumerate(df.iterrows()):
-            _, _, key, title_only = keys[i]
-            found = False
-            v = 0
-            if key and key in inventory:
-                v = inventory[key].get(loc, 0)
-                found = True
-            elif title_only and title_only in inventory:
-                v = inventory[title_only].get(loc, 0)
-                found = True
-            if found:
-                matched.add(i)
-            vals.append(v)
+        for i, source_key in enumerate(stock_sources):
+            qty = 0
+            if source_key and source_key in inventory:
+                qty = inventory[source_key].get(loc, 0)
+            vals.append(qty)
         df[loc] = vals
 
     return df, len(matched)

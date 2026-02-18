@@ -170,8 +170,9 @@ st.set_page_config(page_title="Inventory Manager", layout="wide")
 
 st.title("Inventory Distribution Manager")
 st.markdown(
-    "Matches **only** on Product `Item Name` → Inventory `Title + Size` (no SKU matching). "
-    "The report will add location columns (Ecom/Mirpur/Wari/etc.) with stock."
+    "**Matching Logic:** Match by `Item Name` → `Title - Size`. "
+    "Uses SKU as a secondary confirmation. "
+    "Flags mismatches (e.g. SKU matches but Name doesn't)."
 )
 
 col1, col2 = st.columns([2, 2], gap="large")
@@ -209,12 +210,12 @@ if product_file:
                 else:
                     main_df = pd.read_excel(product_file)
 
-                _size_col, _qty_col, title_col = core.identify_columns(main_df)
+                _size_col, _qty_col, title_col, sku_col = core.identify_columns(main_df)
                 if not title_col:
                     st.error("No 'Item Name'/'Title' column found in product list.")
                     st.stop()
 
-                inventory, load_warnings, enriched_dfs = core.load_inventory_from_uploads(loc_files)
+                inventory, load_warnings, enriched_dfs, sku_to_title_size = core.load_inventory_from_uploads(loc_files)
                 if load_warnings:
                     with st.expander("Loading warnings"):
                         for w in load_warnings:
@@ -234,6 +235,8 @@ if product_file:
                     item_name_col=title_col,
                     inventory=inventory,
                     locations=active_locations,
+                    sku_col=sku_col,
+                    sku_to_title_size=sku_to_title_size,
                 )
                 total = len(main_df)
                 perc = (match_count / total) * 100 if total else 0
@@ -254,21 +257,88 @@ if product_file:
                 if not inserted:
                     final_cols.extend(active_locations)
 
-                out_df = main_df[final_cols]
+                out_df = main_df[final_cols].copy()
+
+                # Group by order number or phone: sort and optionally add blank row / colored rows
+                group_col = core.get_group_by_column(out_df)
+                separator = st.sidebar.radio(
+                    "Separator between orders",
+                    ["Colored rows (alternating)", "Blank row between orders"],
+                    index=0,
+                ) if group_col else None
+
+                if group_col:
+                    out_df = out_df.sort_values(group_col, na_position="last").reset_index(drop=True)
+                    # Assign group index (0,1,2,...) by first appearance for alternating colors
+                    seen = {}
+                    group_ids = []
+                    for val in out_df[group_col]:
+                        if pd.isna(val) or str(val).strip() == "":
+                            group_ids.append(-1)
+                        else:
+                            key = str(val).strip()
+                            if key not in seen:
+                                seen[key] = len(seen)
+                            group_ids.append(seen[key])
+                    out_df["_group_id_"] = group_ids
+
+                    if separator == "Blank row between orders":
+                        parts = []
+                        for _, grp in out_df.groupby("_group_id_", sort=False):
+                            parts.append(grp)
+                            if grp["_group_id_"].iloc[0] != -1:
+                                blank = pd.DataFrame([{c: "" if c != "_group_id_" else -1 for c in out_df.columns}])
+                                parts.append(blank)
+                        # Drop the trailing blank row (added after last group)
+                        out_display = pd.concat(parts[:-1], ignore_index=True) if len(parts) > 1 else out_df
+                    else:
+                        out_display = out_df
+                else:
+                    out_display = out_df
+
+                # Drop helper for display/export
+                export_df = out_display.drop(columns=["_group_id_"], errors="ignore")
+                preview_df = export_df.head(50)
+
                 st.subheader("Result preview")
-                st.dataframe(out_df.head(50), use_container_width=True)
+                if group_col and "_group_id_" in out_display.columns:
+                    # Color rows by order group in preview
+                    group_ids_preview = out_display["_group_id_"].head(50)
+                    colors = ["#e3f2fd", "#fff8e1", "#f3e5f5", "#e8f5e9", "#fce4ec"]
+
+                    def row_style(row):
+                        g = group_ids_preview.loc[row.name] if row.name in group_ids_preview.index else -1
+                        if g == -1 or (isinstance(g, float) and pd.isna(g)):
+                            return [""] * len(row)
+                        c = colors[int(g) % len(colors)]
+                        return [f"background-color: {c}"] * len(row)
+
+                    st.dataframe(preview_df.style.apply(row_style, axis=1), use_container_width=True)
+                else:
+                    st.dataframe(preview_df, use_container_width=True)
 
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-                    out_df.to_excel(writer, index=False, sheet_name="Stock")
+                    export_df.to_excel(writer, index=False, sheet_name="Stock")
                     ws = writer.sheets["Stock"]
-                    for i, c in enumerate(out_df.columns):
+                    for i, c in enumerate(export_df.columns):
                         width = 10
                         try:
-                            width = max(out_df[c].astype(str).map(len).max(), len(str(c))) + 2
+                            width = max(export_df[c].astype(str).map(len).max(), len(str(c))) + 2
                         except Exception:
                             pass
                         ws.set_column(i, i, min(width, 50))
+
+                    if group_col and "_group_id_" in out_display.columns:
+                        # Alternating row fill by order group
+                        light_fills = [
+                            "#dae8fc", "#fff2cc", "#e2efda", "#f8cecc", "#e4dfec",
+                        ]
+                        formats = [writer.book.add_format({"bg_color": f}) for f in light_fills]
+                        for row_idx in range(len(out_display)):
+                            g = out_display["_group_id_"].iloc[row_idx]
+                            if g >= 0:
+                                ws.set_row(row_idx + 1, None, formats[g % len(formats)])
 
                 buffer.seek(0)
                 st.download_button(
