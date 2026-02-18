@@ -4,6 +4,11 @@ import io
 import xlsxwriter
 import math
 import core
+import importlib
+try:
+    importlib.reload(core)
+except Exception:
+    pass
 
 
 def normalize_key(val):
