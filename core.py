@@ -289,7 +289,37 @@ def add_stock_columns_from_inventory(
     # Assign Status Column
     df["Match Status"] = match_statuses
 
-    # Assign Stock Columns
+    # 3. Assign Stock Columns & Calculate Fulfillment Summary
+    stock_summary = []
+    
+    # Try to find a quantity column in the product list (how many did the user order?)
+    _, qty_to_buy_col, _, _ = identify_columns(df)
+
+    for i, source_key in enumerate(stock_sources):
+        total_avail = 0
+        if source_key and source_key in inventory:
+            total_avail = sum(inventory[source_key].values())
+        
+        # Determine Status
+        requested_qty = 1 # Default
+        if qty_to_buy_col and qty_to_buy_col in df.columns:
+            try:
+                val = df.iloc[i][qty_to_buy_col]
+                requested_qty = int(float(val)) if pd.notna(val) else 1
+            except: requested_qty = 1
+
+        if not source_key:
+            stock_summary.append("❌ No Match")
+        elif total_avail == 0:
+            stock_summary.append("❌ OOS")
+        elif total_avail >= requested_qty:
+            stock_summary.append("✅ Available")
+        else:
+            stock_summary.append(f"⚠️ Partial ({total_avail}/{requested_qty})")
+
+    df["Fulfillment"] = stock_summary
+
+    # 4. Assign individual location columns
     for loc in locations:
         vals = []
         for i, source_key in enumerate(stock_sources):
@@ -298,6 +328,76 @@ def add_stock_columns_from_inventory(
                 qty = inventory[source_key].get(loc, 0)
             vals.append(qty)
         df[loc] = vals
+
+    # 5. Intelligent Dispatch Suggestion
+    dispatch_suggestions = ["N/A"] * len(df)
+    group_col = get_group_by_column(df)
+    
+    if group_col:
+        # Create a helper for quantities
+        qty_needed = [1] * len(df)
+        if qty_to_buy_col and qty_to_buy_col in df.columns:
+            qty_needed = [int(float(x)) if pd.notna(x) else 1 for x in df[qty_to_buy_col]]
+
+        # Group data to optimize per order
+        for _, group_indices in df.groupby(group_col).groups.items():
+            # For this order, find the best location(s)
+            remaining_indices = list(group_indices)
+            
+            # 1. Try to find a SINGLE location that can fulfill ALL items in the order
+            best_single_loc = None
+            for loc in locations:
+                all_match = True
+                for idx in group_indices:
+                    source_key = stock_sources[idx]
+                    needed = qty_needed[idx]
+                    avail = inventory.get(source_key, {}).get(loc, 0) if source_key else 0
+                    if avail < needed:
+                        all_match = False
+                        break
+                if all_match:
+                    best_single_loc = loc
+                    break # Prioritize Ecom -> Mirpur -> ... as defined in 'locations'
+            
+            if best_single_loc:
+                for idx in group_indices:
+                    dispatch_suggestions[idx] = best_single_loc
+            else:
+                # 2. Multi-parcel minimization: Find loc with MOST fulfillment, then repeat
+                while remaining_indices:
+                    best_loc = None
+                    max_covered = -1
+                    covered_indices = []
+
+                    for loc in locations:
+                        current_covered = []
+                        for idx in remaining_indices:
+                            source_key = stock_sources[idx]
+                            needed = qty_needed[idx]
+                            avail = inventory.get(source_key, {}).get(loc, 0) if source_key else 0
+                            if avail >= needed:
+                                current_covered.append(idx)
+                        
+                        if len(current_covered) > max_covered:
+                            max_covered = len(current_covered)
+                            best_loc = loc
+                            covered_indices = current_covered
+                    
+                    if best_loc and covered_indices:
+                        for idx in covered_indices:
+                            dispatch_suggestions[idx] = best_loc
+                        remaining_indices = [i for i in remaining_indices if i not in covered_indices]
+                    else:
+                        # OOS items remaining
+                        for idx in remaining_indices:
+                            dispatch_suggestions[idx] = "OOS / No Match"
+                        break
+
+    df["Dispatch Suggestion"] = dispatch_suggestions
+    
+    # Reorder Match Status to the end
+    cols = [c for c in df.columns if c != "Match Status"] + ["Match Status"]
+    df = df[cols]
 
     return df, len(matched)
 

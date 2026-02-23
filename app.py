@@ -56,6 +56,21 @@ st.markdown("""
         .stMetric {
             margin-bottom: 0.5rem;
         }
+        /* Mobile File Uploader Fix */
+        [data-testid="stFileUploader"] section {
+            padding: 0.5rem 1rem !important;
+            min-height: 70px !important;
+        }
+        [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] p {
+            font-size: 0.7rem !important;
+            line-height: 1.1 !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+        /* Hide the 'Drag and drop' part on tiny screens, keep just 'Browse' */
+        [data-testid="stFileUploader"] section > div > div > span:first-child {
+            font-size: 0.75rem !important;
+        }
     }
     
     /* Clean Professional Styling */
@@ -153,7 +168,16 @@ with col_main:
 
 # --- SIDEBAR & SETTINGS ---
 with col_sidebar:
-    st.markdown("### Settings")
+    st.markdown("### 🔍 Filters")
+    search_query = st.text_input("Search Product/SKU", placeholder="Type to search...", help="Search by name or SKU")
+    
+    status_options = ["✅ Available", "⚠️ Partial", "❌ OOS", "❌ No Match"]
+    selected_statuses = st.multiselect("Fulfillment Status", options=status_options, default=status_options)
+    
+    stock_threshold = st.number_input("Total Stock Less Than", min_value=0, value=None, help="Filter items where total stock across all locations is below this number.")
+
+    st.divider()
+    st.markdown("### ⚙️ Settings")
     
     separator = st.radio(
         "Report Grouping Style",
@@ -171,7 +195,13 @@ with col_sidebar:
         st.info("Upload files to start processing")
         process_btn = False
 
-# --- PROCESSING ---
+# --- PERSISTENCE & FILTERING ---
+# We store the processed results to allow instant filtering without re-running the heavy logic
+if 'processed_data' not in st.session_state:
+    st.session_state.processed_data = None
+if 'active_locs' not in st.session_state:
+    st.session_state.active_locs = []
+
 if process_btn and product_file:
     with st.spinner("Processing data..."):
         try:
@@ -188,77 +218,190 @@ if process_btn and product_file:
                 st.error("Could not find a Title/Item Name column.")
                 st.stop()
 
-            active_locs = list(loc_files.keys())
+            st.session_state.active_locs = list(loc_files.keys())
             main_df, match_count = core.add_stock_columns_from_inventory(
                 product_df=main_df,
                 item_name_col=title_col,
                 inventory=inventory,
-                locations=active_locs,
+                locations=st.session_state.active_locs,
                 sku_col=sku_col,
                 sku_to_title_size=sku_to_title_size,
             )
-
-            # 4. Results Dashboard
-            st.divider()
-            m1, m2 = st.columns(2)
-            m1.metric("Items Processed", len(main_df))
-            m2.metric("Successful Matches", match_count)
-
-            # 5. Export Preparation
-            cols = list(main_df.columns)
-            reordered = []
-            inserted = False
-            for c in cols:
-                if c in active_locs: continue
-                reordered.append(c)
-                if c == title_col and not inserted:
-                    reordered.extend(active_locs)
-                    inserted = True
-            if not inserted: reordered.extend(active_locs)
             
-            final_df = main_df[reordered].copy()
-
-            # Grouping
-            group_col = core.get_group_by_column(final_df)
-            if group_col:
-                final_df = final_df.sort_values(group_col, na_position="last").reset_index(drop=True)
-                seen = {}
-                gids = []
-                for val in final_df[group_col]:
-                    if pd.isna(val) or str(val).strip() == "": gids.append(-1)
-                    else:
-                        v = str(val).strip()
-                        if v not in seen: seen[v] = len(seen)
-                        gids.append(seen[v])
-                final_df["_gid"] = gids
-
-            # 6. Display & Download
-            st.subheader("Results Preview")
-            export_df = final_df.drop(columns=["_gid"], errors="ignore")
-            
-            if group_col and separator == "Colored groups" and "_gid" in final_df.columns:
-                clrs = ["#eff6ff", "#f0fdf4", "#fffbeb", "#fef2f2", "#faf5ff"]
-                def color_rows(row):
-                    gid = final_df["_gid"].get(row.name, -1)
-                    if gid == -1: return [""] * len(row)
-                    return [f"background-color: {clrs[int(gid) % len(clrs)]}"] * len(row)
-                st.dataframe(export_df.head(100).style.apply(color_rows, axis=1), use_container_width=True)
-            else:
-                st.dataframe(export_df.head(100), use_container_width=True)
-
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-                export_df.to_excel(writer, index=False, sheet_name="Stock Report")
-            
-            st.download_button(
-                "Download Excel Report",
-                buffer.getvalue(),
-                "Stock_Report.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                type="primary",
-                use_container_width=True
-            )
+            st.session_state.processed_data = main_df
+            st.session_state.title_col = title_col
+            st.session_state.sku_col = sku_col
+            st.success("Analysis complete!")
 
         except Exception as e:
-            st.error(f"Error: {str(e)}")
+            st.error(f"Error during processing: {str(e)}")
+
+# --- DISPLAY LOGIC (Apply Sidebar Filters) ---
+if st.session_state.processed_data is not None:
+    df_to_show = st.session_state.processed_data.copy()
+    active_locs = st.session_state.active_locs
+    title_col = st.session_state.title_col
+    sku_col = st.session_state.sku_col
+
+    # 1. Search Filter
+    if search_query:
+        q = search_query.lower()
+        search_mask = df_to_show[title_col].astype(str).str.lower().str.contains(q)
+        if sku_col and sku_col in df_to_show.columns:
+            search_mask |= df_to_show[sku_col].astype(str).str.lower().str.contains(q)
+        df_to_show = df_to_show[search_mask]
+
+    # 2. Status Filter
+    if selected_statuses:
+        def status_match(val):
+            val_str = str(val)
+            for s in selected_statuses:
+                clean_s = s.replace("✅ ", "").replace("⚠️ ", "").replace("❌ ", "")
+                if clean_s in val_str: return True
+            return False
+        df_to_show = df_to_show[df_to_show['Fulfillment'].apply(status_match)]
+
+    # 3. Threshold Filter
+    if stock_threshold is not None:
+        total_stock = df_to_show[active_locs].sum(axis=1)
+        df_to_show = df_to_show[total_stock < stock_threshold]
+
+    # 4. Results Dashboard
+    st.divider()
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Items Processed", len(st.session_state.processed_data))
+    m2.metric("Filtered View", len(df_to_show))
+    has_match = ~df_to_show['Match Status'].str.contains("No Match", na=False)
+    m3.metric("Matches in View", has_match.sum())
+
+    # 5. Export Preparation
+    cols = list(df_to_show.columns)
+    reordered = []
+    inserted = False
+    # Move priority columns near the item name
+    priority_cols = ["Fulfillment", "Dispatch Suggestion"]
+    status_col = "Match Status"
+    
+    other_cols = [c for c in cols if c not in priority_cols and c not in active_locs and c != status_col]
+    
+    for c in other_cols:
+        reordered.append(c)
+        if c == title_col and not inserted:
+            reordered.extend(priority_cols)
+            reordered.extend(active_locs)
+            inserted = True
+    
+    if not inserted:
+        reordered = priority_cols + reordered + active_locs
+    
+    # Always append status at the absolute end
+    if status_col in cols:
+        reordered.append(status_col)
+    
+    final_df = df_to_show[reordered].copy()
+
+    group_col = core.get_group_by_column(final_df)
+    if group_col:
+        final_df = final_df.sort_values(group_col, na_position="last").reset_index(drop=True)
+        seen = {}
+        gids = []
+        for val in final_df[group_col]:
+            if pd.isna(val) or str(val).strip() == "": gids.append(-1)
+            else:
+                v = str(val).strip()
+                if v not in seen: seen[v] = len(seen)
+                gids.append(seen[v])
+        final_df["_gid"] = gids
+    else:
+        final_df["_gid"] = -1
+
+    # 6. Display & Download
+    st.subheader("Results Preview")
+    export_df = final_df.drop(columns=["_gid"], errors="ignore")
+    
+    def color_stock_cells(row):
+        styles = [""] * len(row)
+        for loc in active_locs:
+            if loc in row:
+                idx = row.index.get_loc(loc)
+                val = row[loc]
+                try:
+                    num = float(val)
+                    if num == 0: styles[idx] = "color: #dc2626; font-weight: bold;"
+                    elif num > 0: styles[idx] = "color: #16a34a;"
+                except: pass
+        if "Fulfillment" in row:
+            f_idx = row.index.get_loc("Fulfillment")
+            f_val = str(row["Fulfillment"])
+            if "Available" in f_val: styles[f_idx] = "background-color: #dcfce7; color: #166534; font-weight: bold;"
+            elif "OOS" in f_val or "No Match" in f_val: styles[f_idx] = "background-color: #fee2e2; color: #991b1b;"
+            elif "Partial" in f_val: styles[f_idx] = "background-color: #fef9c3; color: #854d0e;"
+        if group_col and separator == "Colored groups" and "_gid" in final_df.columns:
+            gid = final_df["_gid"].get(row.name, -1)
+            if gid != -1:
+                g_clrs = ["#eff6ff55", "#f0fdf455", "#fffbeb55", "#fef2f255", "#faf5ff55"]
+                base_bg = g_clrs[int(gid) % len(g_clrs)]
+                styles = [s + f"background-color: {base_bg};" if "background-color" not in s else s for s in styles]
+        return styles
+
+    st.dataframe(export_df.head(100).style.apply(color_stock_cells, axis=1), use_container_width=True)
+
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+        export_df.to_excel(writer, index=False, sheet_name="Stock Report")
+        workbook = writer.book
+        worksheet = writer.sheets["Stock Report"]
+        fmt_red = workbook.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
+        fmt_green = workbook.add_format({'bg_color': '#C6EFCE', 'font_color': '#006100'})
+        fmt_yellow = workbook.add_format({'bg_color': '#FFEB9C', 'font_color': '#9C6500'})
+
+        for i, col_name in enumerate(export_df.columns):
+            if col_name in active_locs:
+                worksheet.conditional_format(1, i, len(export_df), i, {
+                    'type': 'cell', 'criteria': 'equal to', 'value': 0, 'format': fmt_red
+                })
+                worksheet.conditional_format(1, i, len(export_df), i, {
+                    'type': 'cell', 'criteria': 'greater than', 'value': 0, 'format': fmt_green
+                })
+            if col_name == "Fulfillment":
+                worksheet.conditional_format(1, i, len(export_df), i, {
+                    'type': 'text', 'criteria': 'containing', 'value': 'Available', 'format': fmt_green
+                })
+                worksheet.conditional_format(1, i, len(export_df), i, {
+                    'type': 'text', 'criteria': 'containing', 'value': 'OOS', 'format': fmt_red
+                })
+                worksheet.conditional_format(1, i, len(export_df), i, {
+                    'type': 'text', 'criteria': 'containing', 'value': 'Partial', 'format': fmt_yellow
+                })
+        for i, col in enumerate(export_df.columns):
+            worksheet.set_column(i, i, 15)
+
+        # --- GROUP COLORING IN EXCEL ---
+        if group_col and separator == "Colored groups" and "_gid" in final_df.columns:
+            # Subtle pastel colors for groups
+            excel_g_clrs = [
+                '#F0F7FF', # Blue-ish
+                '#F0FFF4', # Green-ish
+                '#FFFBEB', # Yellow-ish
+                '#FFF5F5', # Red-ish
+                '#F5F3FF'  # Purple-ish
+            ]
+            group_formats = [workbook.add_format({'bg_color': c}) for c in excel_g_clrs]
+            
+            for row_idx, gid in enumerate(final_df["_gid"]):
+                if gid != -1:
+                    fmt = group_formats[int(gid) % len(group_formats)]
+                    # Apply format to the entire data row (row_idx + 1 because of header)
+                    worksheet.set_row(row_idx + 1, None, fmt)
+
+
+    st.download_button(
+        "Download Filtered Excel Report",
+        buffer.getvalue(),
+        "Stock_Report_Filtered.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type="primary",
+        use_container_width=True
+    )
+
 
