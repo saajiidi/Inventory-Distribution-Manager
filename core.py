@@ -239,45 +239,47 @@ def add_stock_columns_from_inventory(
         return ""
 
     for i, row in df.iterrows():
-        # 1. Construct Product List Key
+        # 1. Get Product List SKU and Item Name Key
+        pl_sku = get_sku(row)
         title, size = item_name_to_title_size(row.get(item_name_col, ""))
         pl_key = build_title_size_key(title, size)
         
-        # 2. Get Product List SKU
-        pl_sku = get_sku(row)
-        
-        # Logic Determinations
         inv_key = None
         status = "No Match"
         
-        # Check Primary Match: Item Name -> Inventory Key
-        if pl_key and pl_key in inventory:
-            inv_key = pl_key
-            # Secondary Confirmation: SKU
-            if pl_sku:
-                if pl_sku in sku_to_inv_key:
-                    mapped_key = sku_to_inv_key[pl_sku]
-                    if mapped_key == pl_key:
-                        status = "Perfect Match (Key + SKU)"
-                    else:
-                        status = f"Key Match (SKU mismatch -> {mapped_key})"
+        is_panjabi = "panjabi" in title.casefold()
+
+        if is_panjabi:
+            # STRICT LOGIC FOR PANJABI: SKU First, then Name check
+            if pl_sku and pl_sku in sku_to_inv_key:
+                mapped_name_key = sku_to_inv_key[pl_sku]
+                if pl_key == mapped_name_key:
+                    inv_key = pl_sku
+                    status = "Perfect Match (SKU + Name) [Panjabi]"
                 else:
-                    status = "Key Match (SKU not in Inv)"
+                    status = f"Panjabi SKU Match, Name Mismatch (PL: {pl_key} vs INV: {mapped_name_key})"
+            elif pl_sku:
+                status = "Panjabi SKU not in Inventory"
             else:
-                status = "Key Match (No SKU in Product)"
-                
-        # Fallback / Check: SKU Match Only?
-        elif pl_sku and pl_sku in sku_to_inv_key:
-            mapped_key = sku_to_inv_key[pl_sku]
-            # SKU matches, but PL Key didn't match Inventory Key
-            inv_key = mapped_key
-            status = f"SKU Match Only (Name mismatch -> {mapped_key})"
-            
+                status = "Panjabi No SKU in Product"
         else:
-            # Last resort: Try matching Title-only if Size was NO_SIZE? 
-            # (Optional, but user stressed 'Title - Size' format. Let's stick to rigid rules for now or minimal fuzzy)
-            # User instructions were specific about the "Optimal Strategy".
-            status = "No Match"
+            # ORIGINAL LOGIC FOR EVERYTHING ELSE: Name first, then SKU fallback
+            if pl_key and pl_key in inventory:
+                inv_key = pl_key
+                if pl_sku:
+                    if pl_sku in sku_to_inv_key:
+                        mapped_key = sku_to_inv_key[pl_sku]
+                        status = "Perfect Match (Key + SKU)" if mapped_key == pl_key else f"Key Match (SKU mismatch -> {mapped_key})"
+                    else:
+                        status = "Key Match (SKU not in Inv)"
+                else:
+                    status = "Key Match (No SKU in Product)"
+            elif pl_sku and pl_sku in sku_to_inv_key:
+                mapped_key = sku_to_inv_key[pl_sku]
+                inv_key = mapped_key
+                status = f"SKU Match Only (Name mismatch -> {mapped_key})"
+            else:
+                status = "No Match"
         
         match_statuses.append(status)
         stock_sources.append(inv_key)
