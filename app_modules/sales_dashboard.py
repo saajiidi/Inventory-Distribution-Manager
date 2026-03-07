@@ -449,18 +449,6 @@ def render_dashboard_output(drill, summ, top, timeframe, basket, source_name):
     st.divider()
     
     st.markdown("### 📋 Deep Dive Data")
-    with v2:
-        st.plotly_chart(
-            px.bar(
-                summ.sort_values('Total Qty', ascending=False),
-                x='Category',
-                y='Total Qty',
-                color='Category',
-                title='Volume by Category',
-                color_discrete_sequence=px.colors.qualitative.Bold
-            ),
-            use_container_width=True
-        )
 
     tabs = st.tabs(["Summary", "Rankings", "Drilldown"])
     with tabs[0]:
