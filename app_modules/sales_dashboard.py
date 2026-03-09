@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
@@ -6,97 +6,124 @@ import json
 import streamlit.components.v1 as components
 from datetime import datetime
 from io import BytesIO
+from email.utils import parsedate_to_datetime
+from urllib.request import Request, urlopen
 from urllib.parse import parse_qs, urlparse
+from app_modules.ui_components import section_card, render_action_bar
+
+
+def _hex_to_rgb(hex_color):
+    if not hex_color:
+        return None
+    h = hex_color.strip().lstrip("#")
+    if len(h) == 3:
+        h = "".join(ch * 2 for ch in h)
+    if len(h) != 6:
+        return None
+    try:
+        return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return None
+
+
+def _is_dark_theme():
+    base = st.get_option("theme.base")
+    if base == "dark":
+        return True
+    if base == "light":
+        return False
+
+    # Prefer text color when available because it reflects actual theme contrast.
+    text_rgb = _hex_to_rgb(st.get_option("theme.textColor"))
+    if text_rgb:
+        luminance = (0.2126 * text_rgb[0] + 0.7152 * text_rgb[1] + 0.0722 * text_rgb[2]) / 255
+        return luminance > 0.6
+
+    bg = _hex_to_rgb(st.get_option("theme.backgroundColor"))
+    if bg:
+        luminance = (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2]) / 255
+        return luminance < 0.45
+
+    return False
+
+
+def _chart_theme():
+    dark = _is_dark_theme()
+    return {
+        "template": "plotly_dark" if dark else "plotly_white",
+        "legend_bg": "rgba(2,6,23,0.88)" if dark else "rgba(255,255,255,0.88)",
+        "legend_border": "#334155" if dark else "#cbd5e1",
+        "font_color": "#e5e7eb" if dark else "#0f172a",
+    }
+
 
 def render_snapshot_button(marker_id="snapshot-target"):
+    """Capture and download dashboard area snapshot as PNG."""
     html_code = """
-    <div style="text-align: right; margin-top: 0px; margin-bottom: 0px;">
-        <button onclick="takeScreenshot()" style="
-            background-color: transparent;
-            color: #4e73df;
-            border: 1px solid #4e73df;
-            padding: 4px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: sans-serif;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.2s;
-        " onmouseover="this.style.backgroundColor='#4e73df'; this.style.color='white';" 
-           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4e73df';">
-           📸 Save Visual Snapshot
-        </button>
+    <div style="text-align:right; margin:6px 0 2px 0;">
+      <button onclick="captureDashboard()" style="
+          background:#1d4ed8; color:#fff; border:none; border-radius:8px;
+          padding:7px 12px; font-size:13px; font-weight:600; cursor:pointer;">
+          Save Snapshot
+      </button>
     </div>
     <script>
-    function takeScreenshot() {
-        const btn = document.querySelector('button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = "⏳ Processing...";
-        
-        let targetElement = null;
-        const marker = window.parent.document.getElementById('__MARKER__');
-        if (marker) {
-            targetElement = marker.closest('[data-testid="stVerticalBlock"]');
-        }
-        
-        if (!targetElement) {
-            const modal = window.parent.document.querySelector('[role="dialog"]');
-            const main = window.parent.document.querySelector('[data-testid="stAppViewContainer"]') || window.parent.document.querySelector('.stApp') || window.parent.document.querySelector('.main') || window.parent.document.body;
-            targetElement = modal || main;
-        }
-        
-        if (targetElement) {
-            if (!window.parent.html2canvas) {
-                var script = window.parent.document.createElement('script');
-                script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-                script.onload = function() { capture(targetElement, btn, originalText); };
-                window.parent.document.head.appendChild(script);
-            } else {
-                capture(targetElement, btn, originalText);
-            }
-        } else {
-            btn.innerHTML = "❌ Failed to find target";
-            setTimeout(() => { btn.innerHTML = originalText; }, 3000);
-        }
-    }
-    
-    function capture(element, btn, originalText) {
-        const originalPadding = element.style.padding;
-        const originalBackground = element.style.backgroundColor;
-        
-        element.style.padding = "25px 35px";
-        element.style.backgroundColor = "#ffffff";
+    function captureDashboard() {
+      const marker = window.parent.document.getElementById('__MARKER__');
+      let target = null;
+      if (marker) {
+        target = marker.closest('[data-testid="stVerticalBlock"]');
+      }
+      if (!target) {
+        target = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+      }
+      if (!target) return;
 
-        window.parent.html2canvas(element, {
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            scale: 2
-        }).then(canvas => {
-            element.style.padding = originalPadding;
-            element.style.backgroundColor = originalBackground;
-            
-            let link = window.parent.document.createElement('a');
-            link.download = 'Dashboard_Visual_Snapshot.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            btn.innerHTML = "✅ Downloaded Snapshot!";
-            setTimeout(() => { btn.innerHTML = originalText; }, 3000);
-        }).catch(err => {
-            element.style.padding = originalPadding;
-            element.style.backgroundColor = originalBackground;
-            
-            btn.innerHTML = "❌ Error Occurred";
-            setTimeout(() => { btn.innerHTML = originalText; }, 3000);
-        });
+      const doCapture = () => {
+        const originalPadding = target.style.padding;
+        const originalBackground = target.style.backgroundColor;
+        const originalBorderRadius = target.style.borderRadius;
+        const appBg = window.parent.getComputedStyle(window.parent.document.body).backgroundColor || '#0f172a';
+
+        // Add breathing room so left edge does not feel cramped in snapshot.
+        target.style.padding = '18px 22px 18px 30px';
+        target.style.backgroundColor = appBg;
+        target.style.borderRadius = '12px';
+
+        window.parent.html2canvas(target, {useCORS: true, scale: 2, backgroundColor: appBg})
+          .then((canvas) => {
+            target.style.padding = originalPadding;
+            target.style.backgroundColor = originalBackground;
+            target.style.borderRadius = originalBorderRadius;
+            const a = window.parent.document.createElement('a');
+            a.download = 'dashboard_snapshot.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+          })
+          .catch(() => {
+            target.style.padding = originalPadding;
+            target.style.backgroundColor = originalBackground;
+            target.style.borderRadius = originalBorderRadius;
+          });
+      };
+
+      if (!window.parent.html2canvas) {
+        const script = window.parent.document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = doCapture;
+        window.parent.document.head.appendChild(script);
+      } else {
+        doCapture();
+      }
     }
     </script>
     """.replace("__MARKER__", marker_id)
-    components.html(html_code, height=40)
+    components.html(html_code, height=44)
 
 # Configuration
-FEEDBACK_DIR = "feedback"
-INCOMING_DIR = "incoming"
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+FEEDBACK_DIR = os.path.join(DATA_DIR, "feedback")
+INCOMING_DIR = os.path.join(DATA_DIR, "incoming")
 DEFAULT_GSHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTBDukmkRJGgHjCRIAAwGmlWaiPwESXSp9UBXm3_sbs37bk2HxavPc62aobmL1cGWUfAKE4Zd6yJySO/pubhtml"
 os.makedirs(FEEDBACK_DIR, exist_ok=True)
 os.makedirs(INCOMING_DIR, exist_ok=True)
@@ -225,6 +252,7 @@ def get_category(name):
     return 'Others'
 
 
+@st.cache_data(show_spinner=False)
 def find_columns(df):
     """Detects primary columns using exact and then partial matching."""
     mapping = {
@@ -257,6 +285,7 @@ def find_columns(df):
     return found
 
 
+@st.cache_data(show_spinner=False)
 def process_data(df, selected_cols):
     """Processed data using validated user-selected or auto-detected columns."""
     try:
@@ -348,6 +377,7 @@ def get_latest_incoming_file(folder_path):
     return max(files, key=os.path.getmtime)
 
 
+@st.cache_data(show_spinner=False)
 def read_sales_file(file_obj, file_name):
     """Reads CSV/XLSX from uploader, file path, or bytes buffer."""
     if str(file_name).lower().endswith('.csv'):
@@ -385,24 +415,53 @@ def normalize_gsheet_url_to_csv(sheet_url):
     return url
 
 
+def _read_csv_with_last_modified(csv_url):
+    """Read CSV and capture server-provided Last-Modified time when available."""
+    req = Request(csv_url, headers={"User-Agent": "Mozilla/5.0"})
+    with urlopen(req) as resp:
+        raw = resp.read()
+        last_modified = resp.headers.get("Last-Modified")
+
+    df = pd.read_csv(BytesIO(raw))
+    if last_modified:
+        try:
+            dt = parsedate_to_datetime(last_modified)
+            if dt.tzinfo:
+                dt = dt.astimezone()
+            last_modified = dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            pass
+    else:
+        last_modified = "Google Sheet snapshot"
+    return df, last_modified
+
+
+@st.cache_data(show_spinner=False)
+def _read_local_sales_file(file_path, modified_ts):
+    # modified_ts participates in cache key; when file updates cache invalidates.
+    return read_sales_file(file_path, file_path)
+
+
 def load_latest_from_incoming():
     """Loads latest file from local incoming folder."""
     latest_file = get_latest_incoming_file(INCOMING_DIR)
     if latest_file is None:
         raise FileNotFoundError("No XLSX/CSV found in incoming folder.")
 
-    df_live = read_sales_file(latest_file, latest_file)
-    modified_at = datetime.fromtimestamp(os.path.getmtime(latest_file)).strftime("%Y-%m-%d %H:%M:%S")
+    modified_ts = os.path.getmtime(latest_file)
+    df_live = _read_local_sales_file(latest_file, modified_ts)
+    modified_at = datetime.fromtimestamp(modified_ts).strftime("%Y-%m-%d %H:%M:%S")
     return df_live, os.path.basename(latest_file), modified_at
 
 
+@st.cache_data(ttl=45, show_spinner=False)
 def load_from_google_sheet():
     """Loads live data from a Google Sheet worksheet (CSV export)."""
     sheet_url = get_setting("GSHEET_URL", DEFAULT_GSHEET_URL)
     if sheet_url:
         csv_url = normalize_gsheet_url_to_csv(sheet_url)
-        df_live = pd.read_csv(csv_url)
-        return df_live, "google_sheet_live.csv", "Google Sheet snapshot"
+        df_live, modified_at = _read_csv_with_last_modified(csv_url)
+        return df_live, "google_sheet_live.csv", modified_at
 
     sheet_id = get_setting("GSHEET_ID")
     gid = str(get_setting("GSHEET_GID", "0"))
@@ -410,11 +469,12 @@ def load_from_google_sheet():
         raise ValueError("Missing GSHEET_URL (or GSHEET_ID) in secrets or environment.")
 
     csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-    df_live = pd.read_csv(csv_url)
+    df_live, modified_at = _read_csv_with_last_modified(csv_url)
     source_name = f"gsheet_{sheet_id}_{gid}.csv"
-    return df_live, source_name, "Google Sheet snapshot"
+    return df_live, source_name, modified_at
 
 
+@st.cache_data(ttl=45, show_spinner=False)
 def load_latest_from_gdrive_folder():
     """Loads the latest CSV/XLSX file from a Google Drive folder."""
     folder_id = get_setting("GDRIVE_FOLDER_ID")
@@ -482,88 +542,171 @@ def load_live_source(source_mode):
     raise ValueError(f"Unsupported source mode: {source_mode}")
 
 
-today_date = datetime.now().strftime("%B %d, %Y")
-@st.dialog(f"🚀 Welcome! Today's Actionable Insights ({today_date})", width="large")
-def show_welcome_popup(summ, basket):
+popup_datetime = datetime.now().strftime("%B %d, %Y %I:%M %p")
+@st.dialog(f"Welcome! Today's Actionable Insights ({popup_datetime})", width="large")
+def show_welcome_popup(summ, basket, last_updated="N/A", focus="all"):
     st.session_state.has_seen_dashboard_popup = True
     t_qty = summ['Total Qty'].sum()
     t_rev = summ['Total Amount'].sum()
+    chart_style = _chart_theme()
 
     with st.container():
         st.markdown('<div id="snapshot-target-popup"></div>', unsafe_allow_html=True)
-        st.markdown("### 🏆 Core Metrics")
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric("📦 Items Sold", f"{t_qty:,.0f}")
-        total_orders = basket.get("total_orders", 0)
-        m2.metric("🛍️ Total Orders", f"{total_orders:,.0f}" if total_orders else "-")
-        m3.metric("💸 Revenue", f"TK {t_rev:,.2f}")
-        m4.metric("🏷️ Avg Price", f"TK {(t_rev / t_qty if t_qty > 0 else 0):,.2f}")
+        st.caption(f"Last update: {last_updated}")
+        if focus != "all":
+            st.info(f"Focused view: {focus.replace('_', ' ').title()}")
 
-        st.markdown("### 📈 Visual Analytics")
-        v1, v2 = st.columns(2)
-        with v1:
-            fig_pie = px.pie(
-                summ,
-                values='Total Amount',
-                names='Category',
-                hole=0.6,
-                title='Revenue Share',
-                color_discrete_sequence=px.colors.qualitative.Pastel
-            )
-            fig_pie.update_layout(margin=dict(l=20, r=20, t=50, b=20))
-            st.plotly_chart(fig_pie, use_container_width=True)
-            
-        with v2:
-            fig_bar = px.bar(
-                summ.sort_values('Total Qty', ascending=False),
-                x='Category',
-                y='Total Qty',
-                color='Category',
-                title='Volume by Category',
-                text_auto='.0f',
-                color_discrete_sequence=px.colors.qualitative.Bold
-            )
-            fig_bar.update_layout(margin=dict(l=20, r=20, t=50, b=20), xaxis_title="", yaxis_title="Quantity Sold")
-            st.plotly_chart(fig_bar, use_container_width=True)
+        if focus in ("all", "core_metrics"):
+            st.subheader("Core Metrics")
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Items Sold", f"{t_qty:,.0f}")
+            total_orders = basket.get("total_orders", 0)
+            m2.metric("Total Orders", f"{total_orders:,.0f}" if total_orders else "-")
+            m3.metric("Revenue", f"TK {t_rev:,.2f}")
+            m4.metric("Avg Price", f"TK {(t_rev / t_qty if t_qty > 0 else 0):,.2f}")
+
+        if focus in ("all", "basket_analysis"):
+            st.subheader("Basket Analysis")
+            m5, m6 = st.columns(2)
+            if basket.get("avg_basket_qty", 0) > 0:
+                m5.metric("Avg Basket (Qty)", f"{basket['avg_basket_qty']:.2f} items")
+                m6.metric("Avg Basket (TK)", f"TK {basket['avg_basket_value']:,.2f}")
+            else:
+                m5.metric("Avg Basket (Qty)", "-")
+                m6.metric("Avg Basket (TK)", "-")
+
+        if focus in ("all", "visual_analytics"):
+            st.subheader("Visual Analytics")
+            v1, v2 = st.columns(2)
+            with v1:
+                fig_pie = px.pie(
+                    summ,
+                    values='Total Amount',
+                    names='Category',
+                    hole=0.6,
+                    title='Revenue Share',
+                    color_discrete_sequence=px.colors.qualitative.Pastel
+                )
+                fig_pie.update_layout(
+                    template=chart_style["template"],
+                    margin=dict(l=12, r=170, t=50, b=12),
+                    uniformtext_minsize=10,
+                    uniformtext_mode="hide",
+                    font=dict(color=chart_style["font_color"]),
+                    title_font=dict(color=chart_style["font_color"]),
+                    legend=dict(
+                        orientation="v",
+                        yanchor="top",
+                        y=1,
+                        xanchor="left",
+                        x=1.02,
+                        bgcolor=chart_style["legend_bg"],
+                        bordercolor=chart_style["legend_border"],
+                        borderwidth=1,
+                        font=dict(size=11),
+                    ),
+                )
+                fig_pie.update_traces(
+                    textposition="outside",
+                    textinfo="label+percent",
+                    textfont=dict(size=12, color=chart_style["font_color"]),
+                    pull=0.01,
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+                
+            with v2:
+                fig_bar = px.bar(
+                    summ.sort_values('Total Qty', ascending=False),
+                    x='Category',
+                    y='Total Qty',
+                    color='Category',
+                    title='Volume by Category',
+                    text_auto='.0f',
+                    color_discrete_sequence=px.colors.qualitative.Bold
+                )
+                fig_bar.update_layout(
+                    template=chart_style["template"],
+                    margin=dict(l=12, r=12, t=50, b=12),
+                    xaxis_title="",
+                    yaxis_title="Quantity Sold",
+                    showlegend=True,
+                    font=dict(color=chart_style["font_color"]),
+                    title_font=dict(color=chart_style["font_color"]),
+                    xaxis=dict(tickfont=dict(color=chart_style["font_color"])),
+                    yaxis=dict(
+                        tickfont=dict(color=chart_style["font_color"]),
+                        title=dict(font=dict(color=chart_style["font_color"])),
+                    ),
+                legend=dict(
+                        orientation="v",
+                        yanchor="top",
+                        y=1,
+                        xanchor="left",
+                        x=1.02,
+                        bgcolor=chart_style["legend_bg"],
+                        bordercolor=chart_style["legend_border"],
+                        borderwidth=1,
+                        font=dict(color=chart_style["font_color"]),
+                    ),
+                )
+                fig_bar.update_traces(textfont=dict(color=chart_style["font_color"]))
+                st.plotly_chart(fig_bar, use_container_width=True)
 
     render_snapshot_button("snapshot-target-popup")
-
-
-
 
     if st.button("Close & Continue to Dashboard", use_container_width=True):
         st.rerun()
 
-def render_dashboard_output(drill, summ, top, timeframe, basket, source_name):
+def render_dashboard_output(drill, summ, top, timeframe, basket, source_name, last_updated="N/A"):
     """Renders common dashboard widgets/charts/tables/export."""
-    if not st.session_state.get("has_seen_dashboard_popup", False):
-        show_welcome_popup(summ, basket)
+    chart_style = _chart_theme()
+    today_key = datetime.now().strftime("%Y-%m-%d")
+    source_key = os.path.basename(str(source_name))
+    popup_key = f"popup_seen::{today_key}::{source_key}"
+    if not st.session_state.get(popup_key, False):
+        show_welcome_popup(summ, basket, last_updated)
+        st.session_state[popup_key] = True
+
+    reopen_popup, _ = render_action_bar("Open quick summary popup", "open_summary_popup")
+    if reopen_popup:
+        show_welcome_popup(summ, basket, last_updated, "all")
+
+    st.caption("Focused task popups")
+    p1, p2, p3, p4 = st.columns(4)
+    if p1.button("Core Metrics", key=f"focus_core_{source_key}", use_container_width=True):
+        show_welcome_popup(summ, basket, last_updated, "core_metrics")
+    if p2.button("Basket Analysis", key=f"focus_basket_{source_key}", use_container_width=True):
+        show_welcome_popup(summ, basket, last_updated, "basket_analysis")
+    if p3.button("Visual Analytics", key=f"focus_visual_{source_key}", use_container_width=True):
+        show_welcome_popup(summ, basket, last_updated, "visual_analytics")
+    if p4.button("Full Summary", key=f"focus_all_{source_key}", use_container_width=True):
+        show_welcome_popup(summ, basket, last_updated, "all")
 
     t_qty = summ['Total Qty'].sum()
     t_rev = summ['Total Amount'].sum()
 
     with st.container():
         st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
-        st.markdown("### 🏆 Core Metrics")
+        st.subheader("Core Metrics")
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("📦 Items Sold", f"{t_qty:,.0f}")
+        m1.metric("Items Sold", f"{t_qty:,.0f}")
         total_orders = basket.get("total_orders", 0)
-        m2.metric("🛍️ Total Orders", f"{total_orders:,.0f}" if total_orders else "-")
-        m3.metric("💸 Revenue", f"TK {t_rev:,.2f}")
-        m4.metric("🏷️ Avg Price", f"TK {(t_rev / t_qty if t_qty > 0 else 0):,.2f}")
+        m2.metric("Total Orders", f"{total_orders:,.0f}" if total_orders else "-")
+        m3.metric("Revenue", f"TK {t_rev:,.2f}")
+        m4.metric("Avg Price", f"TK {(t_rev / t_qty if t_qty > 0 else 0):,.2f}")
 
-        st.markdown("### 🛒 Basket Analysis")
+        st.subheader("Basket Analysis")
         m5, m6 = st.columns(2)
         if basket.get("avg_basket_qty", 0) > 0:
-            m5.metric("⚖️ Avg Basket (Qty)", f"{basket['avg_basket_qty']:.2f} items")
-            m6.metric("💰 Avg Basket (TK)", f"TK {basket['avg_basket_value']:,.2f}")
+            m5.metric("Avg Basket (Qty)", f"{basket['avg_basket_qty']:.2f} items")
+            m6.metric("Avg Basket (TK)", f"TK {basket['avg_basket_value']:,.2f}")
         else:
-            m5.metric("⚖️ Avg Basket (Qty)", "-")
-            m6.metric("💰 Avg Basket (TK)", "-")
+            m5.metric("Avg Basket (Qty)", "-")
+            m6.metric("Avg Basket (TK)", "-")
 
         st.divider()
 
-        st.markdown("### 📈 Visual Analytics")
+        st.subheader("Visual Analytics")
         v1, v2 = st.columns(2)
         with v1:
             fig_pie = px.pie(
@@ -574,7 +717,31 @@ def render_dashboard_output(drill, summ, top, timeframe, basket, source_name):
                 title='Revenue Share',
                 color_discrete_sequence=px.colors.qualitative.Pastel
             )
-            fig_pie.update_layout(margin=dict(l=20, r=20, t=50, b=20))
+            fig_pie.update_layout(
+                template=chart_style["template"],
+                margin=dict(l=12, r=170, t=50, b=12),
+                uniformtext_minsize=10,
+                uniformtext_mode="hide",
+                font=dict(color=chart_style["font_color"]),
+                title_font=dict(color=chart_style["font_color"]),
+                legend=dict(
+                    orientation="v",
+                    yanchor="top",
+                    y=1,
+                    xanchor="left",
+                    x=1.02,
+                    bgcolor=chart_style["legend_bg"],
+                    bordercolor=chart_style["legend_border"],
+                    borderwidth=1,
+                    font=dict(size=11),
+                ),
+            )
+            fig_pie.update_traces(
+                textposition="outside",
+                textinfo="label+percent",
+                textfont=dict(size=12, color=chart_style["font_color"]),
+                pull=0.01,
+            )
             st.plotly_chart(fig_pie, use_container_width=True)
             
         with v2:
@@ -587,17 +754,66 @@ def render_dashboard_output(drill, summ, top, timeframe, basket, source_name):
                 text_auto='.0f',
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
-            fig_bar.update_layout(margin=dict(l=20, r=20, t=50, b=20), xaxis_title="", yaxis_title="Quantity Sold")
+            fig_bar.update_layout(
+                template=chart_style["template"],
+                margin=dict(l=12, r=12, t=50, b=12),
+                xaxis_title="",
+                yaxis_title="Quantity Sold",
+                showlegend=True,
+                font=dict(color=chart_style["font_color"]),
+                title_font=dict(color=chart_style["font_color"]),
+                xaxis=dict(tickfont=dict(color=chart_style["font_color"])),
+                yaxis=dict(
+                    tickfont=dict(color=chart_style["font_color"]),
+                    title=dict(font=dict(color=chart_style["font_color"])),
+                ),
+                legend=dict(
+                    orientation="v",
+                    yanchor="top",
+                    y=1,
+                    xanchor="left",
+                    x=1.02,
+                    bgcolor=chart_style["legend_bg"],
+                    bordercolor=chart_style["legend_border"],
+                    borderwidth=1,
+                    font=dict(color=chart_style["font_color"]),
+                ),
+            )
+            fig_bar.update_traces(textfont=dict(color=chart_style["font_color"]))
             st.plotly_chart(fig_bar, use_container_width=True)
 
     render_snapshot_button("snapshot-target-main")
-
-
-
-
     st.divider()
+
+    st.subheader("Top Products Spotlight")
+    spotlight = top.head(10).sort_values("Total Amount", ascending=True)
+    fig_top = px.bar(
+        spotlight,
+        x="Total Amount",
+        y="Product Name",
+        orientation="h",
+        color="Category",
+        title="Top 10 products by revenue",
+        text_auto=".2s",
+    )
+    fig_top.update_layout(
+        template=chart_style["template"],
+        margin=dict(l=12, r=12, t=50, b=12),
+        yaxis_title="",
+        xaxis_title="Revenue (TK)",
+        legend_title="Category",
+        font=dict(color=chart_style["font_color"]),
+        title_font=dict(color=chart_style["font_color"]),
+        xaxis=dict(
+            tickfont=dict(color=chart_style["font_color"]),
+            title=dict(font=dict(color=chart_style["font_color"])),
+        ),
+        yaxis=dict(tickfont=dict(color=chart_style["font_color"])),
+    )
+    fig_top.update_traces(textfont=dict(color=chart_style["font_color"]))
+    st.plotly_chart(fig_top, use_container_width=True)
     
-    st.markdown("### 📋 Deep Dive Data")
+    st.subheader("Deep Dive Data")
 
     tabs = st.tabs(["Summary", "Rankings", "Drilldown"])
     with tabs[0]:
@@ -621,6 +837,7 @@ def render_dashboard_output(drill, summ, top, timeframe, basket, source_name):
 
 def render_manual_tab():
     """Existing manual upload flow."""
+    section_card("Manual Upload Dashboard", "Upload sales data, confirm column mapping, then generate charts and exports.")
     uploaded_file = st.file_uploader("Upload Sales Data (Excel or CSV)", type=['xlsx', 'csv'])
 
     if uploaded_file is None:
@@ -628,13 +845,12 @@ def render_manual_tab():
 
     try:
         df = read_sales_file(uploaded_file, uploaded_file.name)
-        st.success(f"File uploaded: {uploaded_file.name}")
+        st.caption(f"File uploaded: {uploaded_file.name}")
 
         auto_cols = find_columns(df)
         all_cols = list(df.columns)
 
-        st.subheader("Column Mapping")
-        st.info("We've detected your columns. Please verify or correct them before generating the report.")
+        section_card("Column Mapping", "Detected columns are prefilled. Verify before generating dashboard output.")
 
         def get_col_idx(key):
             if key in auto_cols and auto_cols[key] in all_cols:
@@ -664,10 +880,12 @@ def render_manual_tab():
             else:
                 st.dataframe(df.head(10), use_container_width=True)
 
-        if st.button("Generate Dashboard", key="manual_generate"):
+        generate_clicked, _ = render_action_bar("Generate dashboard", "manual_generate")
+        if generate_clicked:
             drill, summ, top, timeframe, basket = process_data(df, final_mapping)
             if drill is not None:
-                render_dashboard_output(drill, summ, top, timeframe, basket, uploaded_file.name)
+                manual_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                render_dashboard_output(drill, summ, top, timeframe, basket, uploaded_file.name, manual_updated)
 
     except Exception as e:
         log_system_event("FILE_ERROR", str(e))
@@ -676,11 +894,12 @@ def render_manual_tab():
 
 def render_live_tab():
     """Always running dashboard from selected source."""
+    section_card("Live Dashboard", "Reads from configured live source and auto-maps required columns.")
     
     # -----------------------------------------
-    # ⚙️ CONFIGURATION EXPANDER (Hidden by default)
+    # âš™ï¸ CONFIGURATION EXPANDER (Hidden by default)
     # -----------------------------------------
-    with st.expander("⚙️ Live Data Configuration", expanded=False):
+    with st.expander("Live Data Configuration", expanded=False):
         source_options = ["Incoming Folder", "Google Sheet", "Google Drive Folder"]
         default_idx = 0
         if get_setting("GSHEET_URL", DEFAULT_GSHEET_URL):
@@ -714,7 +933,7 @@ def render_live_tab():
     try:
         df_live, source_name, modified_at = load_live_source(source_mode)
         if modified_at:
-            st.markdown(f"<p style='text-align: right; color: gray; font-size: 0.85rem;'>🔄 Last updated: {modified_at}</p>", unsafe_allow_html=True)
+            st.caption(f"Last updated: {modified_at}")
 
         auto_cols = find_columns(df_live)
         missing_required = [k for k in ['name', 'cost', 'qty'] if k not in auto_cols]
@@ -734,11 +953,12 @@ def render_live_tab():
 
         drill, summ, top, timeframe, basket = process_data(df_live, live_mapping)
         if drill is not None:
-            render_dashboard_output(drill, summ, top, timeframe, basket, source_name)
+            render_dashboard_output(drill, summ, top, timeframe, basket, source_name, modified_at)
 
     except Exception as e:
         log_system_event("LIVE_FILE_ERROR", str(e))
         st.error(f"Live source error: {e}")
+
 
 
 
