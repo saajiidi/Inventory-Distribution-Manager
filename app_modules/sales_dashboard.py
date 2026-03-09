@@ -542,14 +542,10 @@ def load_live_source(source_mode):
     raise ValueError(f"Unsupported source mode: {source_mode}")
 
 
-popup_datetime = datetime.now().strftime("%B %d, %Y %I:%M %p")
-@st.dialog(f"Welcome! Today's Actionable Insights ({popup_datetime})", width="large")
-def show_welcome_popup(summ, basket, last_updated="N/A", focus="all"):
-    st.session_state.has_seen_dashboard_popup = True
-    t_qty = summ['Total Qty'].sum()
-    t_rev = summ['Total Amount'].sum()
+def _render_welcome_popup_content(summ, basket, last_updated="N/A", focus="all"):
+    t_qty = summ["Total Qty"].sum()
+    t_rev = summ["Total Amount"].sum()
     chart_style = _chart_theme()
-
     with st.container():
         st.markdown('<div id="snapshot-target-popup"></div>', unsafe_allow_html=True)
         st.caption(f"Last update: {last_updated}")
@@ -654,8 +650,21 @@ def show_welcome_popup(summ, basket, last_updated="N/A", focus="all"):
 
     render_snapshot_button("snapshot-target-popup")
 
-    if st.button("Close & Continue to Dashboard", use_container_width=True):
+    if st.button("Close & Continue to Dashboard", use_container_width=True, key=f"close_popup_{focus}"):
         st.rerun()
+
+
+popup_datetime = datetime.now().strftime("%B %d, %Y %I:%M %p")
+if hasattr(st, "dialog"):
+    @st.dialog(f"Welcome! Today's Actionable Insights ({popup_datetime})", width="large")
+    def show_welcome_popup(summ, basket, last_updated="N/A", focus="all"):
+        st.session_state.has_seen_dashboard_popup = True
+        _render_welcome_popup_content(summ, basket, last_updated, focus)
+else:
+    def show_welcome_popup(summ, basket, last_updated="N/A", focus="all"):
+        st.session_state.has_seen_dashboard_popup = True
+        st.info("Quick summary view (dialog not supported by this Streamlit version).")
+        _render_welcome_popup_content(summ, basket, last_updated, focus)
 
 def render_dashboard_output(drill, summ, top, timeframe, basket, source_name, last_updated="N/A"):
     """Renders common dashboard widgets/charts/tables/export."""
