@@ -631,7 +631,7 @@ def render_dashboard_output(drill, summ, top, timeframe, basket, source_name, la
         show_welcome_popup(summ, basket, last_updated)
         st.session_state[popup_key] = True
 
-    reopen_popup, _ = render_action_bar("Open quick summary popup", "open_summary_popup")
+    reopen_popup, _ = render_action_bar("Open quick summary popup", f"open_summary_{source_key}")
     if reopen_popup:
         show_welcome_popup(summ, basket, last_updated, "all")
 
