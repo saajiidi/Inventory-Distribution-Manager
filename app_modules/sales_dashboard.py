@@ -4,7 +4,7 @@ import plotly.express as px
 import os
 import json
 import streamlit.components.v1 as components
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from email.utils import parsedate_to_datetime
 from urllib.request import Request, urlopen
@@ -500,16 +500,18 @@ def load_live_source(source_mode):
 
 
 def get_items_sold_label(last_updated):
-    from datetime import datetime
+    from datetime import datetime, timedelta, timezone
+    tz_bd = timezone(timedelta(hours=6))
     try:
         if isinstance(last_updated, str) and last_updated != "N/A" and "snapshot" not in last_updated.lower():
             dt = datetime.strptime(last_updated, "%Y-%m-%d %H:%M:%S")
+            # Assume last updated time string is already in local tz
             if dt.hour < 11:
                 return "Item to be sold"
     except Exception:
         pass
     
-    if datetime.now().hour < 11:
+    if datetime.now(tz_bd).hour < 11:
         return "Item to be sold"
     return "Item sold"
 
@@ -519,7 +521,8 @@ def _render_welcome_popup_content(summ, basket, last_updated="N/A", focus="all")
     t_rev = summ["Total Amount"].sum()
     with st.container():
         st.markdown('<div id="snapshot-target-popup"></div>', unsafe_allow_html=True)
-        st.caption(f"Current time: {datetime.now().strftime('%B %d, %Y %I:%M %p')}")
+        tz_bd = timezone(timedelta(hours=6))
+        st.caption(f"Current time: {datetime.now(tz_bd).strftime('%B %d, %Y %I:%M %p')}")
         if focus != "all":
             st.info(f"Focused view: {focus.replace('_', ' ').title()}")
 
@@ -622,7 +625,8 @@ else:
 
 def render_dashboard_output(drill, summ, top, timeframe, basket, source_name, last_updated="N/A"):
     """Renders common dashboard widgets/charts/tables/export."""
-    today_key = datetime.now().strftime("%Y-%m-%d")
+    tz_bd = timezone(timedelta(hours=6))
+    today_key = datetime.now(tz_bd).strftime("%Y-%m-%d")
     source_key = os.path.basename(str(source_name))
     popup_key = f"popup_seen::{today_key}::{source_key}"
     if not st.session_state.get(popup_key, False):
