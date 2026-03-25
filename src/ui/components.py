@@ -220,8 +220,8 @@ def inject_base_styles():
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-    /* HIDE STREAMLIT BRANDING */
-    #MainMenu, footer, header {visibility: hidden;}
+    /* HIDE STREAMLIT BRANDING (DISABLED TO ENABLE SCREEN RECORDING & THEMES) */
+    /* #MainMenu, footer, header {visibility: hidden;} */
 </style>"""
     st.markdown(styles, unsafe_allow_html=True)
 
