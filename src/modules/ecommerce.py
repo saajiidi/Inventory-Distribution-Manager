@@ -26,9 +26,11 @@ def _reset_wp_state():
 def _has_fuzzy_column(columns: list[str], aliases: list[str]) -> bool:
     cols_lower = [str(col).strip().lower() for col in columns]
     for alias in aliases:
-        if alias.lower() in cols_lower: return True
+        if alias.lower() in cols_lower:
+            return True
     for alias in aliases:
-        if any(alias.lower() in col for col in cols_lower): return True
+        if any(alias.lower() in col for col in cols_lower):
+            return True
     return False
 
 def _validate_wp_columns(df: pd.DataFrame):

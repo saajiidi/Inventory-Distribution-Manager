@@ -73,10 +73,12 @@ def run_app():
     tabs = st.tabs(primary_nav)
 
     # 0. 📡 LIVE STREAM DASHBOARD
-    with tabs[0]: render_live_tab()
+    with tabs[0]:
+        render_live_tab()
 
     # 1. 📂 TOTAL SALES (HISTORICAL)
-    with tabs[1]: render_custom_period_tab()
+    with tabs[1]:
+        render_custom_period_tab()
 
     # 2. 👥 CUSTOMER PULSE
     with tabs[2]:
@@ -86,8 +88,10 @@ def run_app():
     # 3. 🚛 LOGISTICS & ORDERS
     with tabs[3]:
         o_p, o_f = st.tabs(["🚚 Pathao Processor", "🔍 Delivery Text Parser"])
-        with o_p: render_pathao_tab(guided=False)
-        with o_f: render_fuzzy_parser_tab(guided=False)
+        with o_p:
+            render_pathao_tab(guided=False)
+        with o_f:
+            render_fuzzy_parser_tab(guided=False)
 
     # 4. 📦 INVENTORY HUB
     with tabs[4]:
@@ -97,10 +101,12 @@ def run_app():
         )
 
     # 5. ☎️ WHATSAPP CHANNEL
-    with tabs[5]: render_wp_tab(guided=False)
+    with tabs[5]:
+        render_wp_tab(guided=False)
 
     # 6. 🌐 WOOCOMMERCE SYNC
-    with tabs[6]: render_wp_api_orders_tab()
+    with tabs[6]:
+        render_wp_api_orders_tab()
 
     # ➕ UTILITY DRAWER
     with st.expander("🛠️ ADVANCED UTILITIES", expanded=False):

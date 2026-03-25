@@ -31,18 +31,24 @@ def log_system_event(event_type, details):
     try:
         logs = []
         if os.path.exists(log_file):
-            with open(log_file, "r", encoding="utf-8") as f: logs = json.load(f)
+            with open(log_file, "r", encoding="utf-8") as f:
+                logs = json.load(f)
         logs.append(log_entry)
-        with open(log_file, "w", encoding="utf-8") as f: json.dump(logs, f, indent=4)
-    except: pass
+        with open(log_file, "w", encoding="utf-8") as f:
+            json.dump(logs, f, indent=4)
+    except Exception:
+        pass
 
 def get_setting(key, default=None):
     try:
-        if key in st.secrets: return st.secrets[key]
-    except: pass
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
     return os.getenv(key, default)
 
-def get_custom_report_tab_label(): return "📂 Total Sales Report"
+def get_custom_report_tab_label():
+    return "📂 Total Sales Report"
 
 # --- ANALYTICS ENGINE ---
 
@@ -159,14 +165,17 @@ def render_live_tab():
         mc = find_columns(df)
         dr, sm, tp, tf, bk = process_data(df, mc)
         render_dashboard_output(dr, sm, tp, tf, bk, src, upd)
-    except Exception as e: st.error(f"Live sync error: {e}")
+    except Exception as e:
+        st.error(f"Live sync error: {e}")
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_all_statements_master(full_history: bool = False):
     """Fetches statement tabs. If full_history is False, only fetches recent statements."""
     url = get_setting("GSHEET_URL", DEFAULT_GSHEET_URL)
-    try: tabs = load_published_sheet_tabs(url)
-    except: return None, "Failed to load tabs"
+    try:
+        tabs = load_published_sheet_tabs(url)
+    except Exception:
+        return None, "Failed to load tabs"
     
     # Priority sorting: Current year/statements first
     relevant_tabs = []
@@ -200,7 +209,8 @@ def get_all_statements_master(full_history: bool = False):
                 if 'phone' in m: df['_p_phone'] = df[m['phone']].astype(str)
                 if 'email' in m: df['_p_email'] = df[m['email']].astype(str)
                 all_dfs.append(df)
-        except: pass
+        except Exception:
+            pass
     
     if not all_dfs: return None, "No valid data found"
     master = pd.concat(all_dfs, ignore_index=True)
@@ -213,7 +223,9 @@ def render_custom_period_tab():
     full_requested = st.toggle("Enable Full Deep-History (Fetches all years)", value=False, key="full_hist_toggle")
     
     master, msg = get_all_statements_master(full_history=full_requested)
-    if master is None: st.error(msg); return
+    if master is None:
+        st.error(msg)
+        return
     
     if '_p_date' in master.columns:
         valid_dates = master[master['_p_date'].notna()]

@@ -228,16 +228,18 @@ def inject_base_styles():
 
 def render_header():
     header_html = f'''
-    <div style="text-align: center; padding: 2.5rem 0 0.5rem; margin-bottom: 2rem; display: inline-flex; flex-direction: column; align-items: center; width: 100%;">
-        <div style="display: inline-block; text-align: justify;">
-            <h1 class="hub-title" style="margin: 0 !important; padding: 0 !important; line-height: 0.8 !important; display: block;">{APP_TITLE}</h1>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -2px; padding: 0; opacity: 1; width: 100%;">
-                <img src="https://cdn.brandfetch.io/deencommerce.com" style="height: 14px; border-radius: 2px; margin-right: 4px;">
-                <a href="https://deencommerce.com/" target="_blank" style="color: var(--neon-blue); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.46em; font-weight: 900; text-transform: uppercase; margin-right: -0.46em; line-height: 1;">DEEN COMMERCE</a>
+    <div style="text-align: center; padding: 3rem 0 1rem; margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+        <div style="display: inline-block; position: relative; padding: 0 1rem;">
+            <h1 class="hub-title" style="margin: 0 !important; padding: 0 !important; line-height: 1 !important; text-transform: none; letter-spacing: -0.04em !important; font-size: 3.8rem !important;">{APP_TITLE}</h1>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: -6px; opacity: 1; padding: 0;">
+                 <div style="height: 1.5px; background: linear-gradient(to right, transparent, var(--neon-blue)); flex-grow: 1; min-width: 20px;"></div>
+                 <img src="https://cdn.brandfetch.io/deencommerce.com" style="height: 16px; border-radius: 4px; filter: drop-shadow(0 0 8px var(--neon-blue));">
+                 <a href="https://deencommerce.com/" target="_blank" style="color: var(--text-primary); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.2em; font-weight: 800; text-transform: uppercase; line-height: 1;">DEEN COMMERCE</a>
+                 <div style="height: 1.5px; background: linear-gradient(to left, transparent, var(--neon-blue)); flex-grow: 1; min-width: 20px;"></div>
             </div>
         </div>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 12px; opacity: 0.5;">
-            ● NEXT-GEN OPS COMMAND • {APP_VERSION}
+        <p style="color: var(--text-secondary); font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 20px; opacity: 0.4; font-weight: 500;">
+            🛰️ NEXT-GEN OPS COMMAND • {APP_VERSION}
         </p>
     </div>'''
     st.markdown(header_html, unsafe_allow_html=True)

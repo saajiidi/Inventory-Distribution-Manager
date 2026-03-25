@@ -37,7 +37,8 @@ def render_pathao_tab(guided: bool = True):
                 st.session_state.pathao_preview_df = df_sync
                 st.session_state.pathao_uploaded_name = source_name
                 st.rerun()
-            except Exception as e: st.error(f"Sync failed: {e}")
+            except Exception as e:
+                st.error(f"Sync failed: {e}")
     with c2:
         up_pathao = st.file_uploader("Manual Upload", type=["xlsx", "csv"], key="pathao_up", label_visibility="collapsed")
 
@@ -49,7 +50,8 @@ def render_pathao_tab(guided: bool = True):
             preview_df = read_uploaded_file(up_pathao)
             st.session_state.pathao_preview_df = preview_df
             st.session_state.pathao_uploaded_name = up_pathao.name
-        except Exception as exc: st.error("Failed to read file.")
+        except Exception as exc:
+            st.error(f"Failed to read file: {exc}")
 
     if preview_df is not None:
         # Check if we can auto-map required Phone column if it's not exact match
@@ -76,7 +78,8 @@ def render_pathao_tab(guided: bool = True):
                 save_state()
                 status.update(label="Complete", state="complete")
             st.success(f"Processed {len(result_df)} orders.")
-        except Exception as exc: st.error(f"Processing failed: {exc}")
+        except Exception as exc:
+            st.error(f"Processing failed: {exc}")
 
     res_df = st.session_state.get("pathao_res_df")
     if res_df is not None:

@@ -41,7 +41,8 @@ def render_distribution_tab(search_q, guided: bool = True):
                     st.session_state.inv_master_df = df_sync
                     st.session_state.inv_master_name = source_name
                     st.rerun()
-                except Exception as e: st.error(f"Sync failed: {e}")
+                except Exception as e:
+                    st.error(f"Sync failed: {e}")
         with c_sync2:
             master_file = st.file_uploader("Master Stock List", type=["xlsx", "csv"], key="inv_up", label_visibility="collapsed")
 
@@ -62,7 +63,8 @@ def render_distribution_tab(search_q, guided: bool = True):
                 master_df = read_uploaded_file(master_file)
                 st.session_state.inv_master_df = master_df
                 st.session_state.inv_master_name = master_file.name
-            except Exception: st.error("Failed to read master file.")
+            except Exception:
+                st.error("Failed to read master file.")
 
         if master_df is not None:
              # Auto-detect columns using shared utils
@@ -91,7 +93,8 @@ def render_distribution_tab(search_q, guided: bool = True):
                     res, _ = inv_core.add_stock_columns_from_inventory(master_df, title_col, inv_map, INVENTORY_LOCATIONS, sku_col, smap)
                     st.session_state.inv_res_data, st.session_state.inv_active_l, st.session_state.inv_t_col = res, INVENTORY_LOCATIONS, title_col
                     save_state(); st.success("Analysis complete.")
-                except Exception as e: st.error(f"Analysis failed: {e}")
+                except Exception as e:
+                    st.error(f"Analysis failed: {e}")
 
         res_df = st.session_state.get("inv_res_data")
         if res_df is not None:
