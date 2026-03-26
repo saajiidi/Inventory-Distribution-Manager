@@ -290,7 +290,7 @@ def render_metric_hud(label: str, value: str, icon: str = "📈"):
         <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px;">
             <span>{icon}</span> {label}
         </div>
-        <div style="font-family: 'JetBrains Mono', monospace; color: var(--neon-blue); font-size: 1.5rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{value}">
+        <div style="font-family: 'JetBrains Mono', monospace; color: var(--neon-blue); font-size: 1.5rem; font-weight: 700; white-space: nowrap;" title="{value}">
             {value}
         </div>
     </div>
