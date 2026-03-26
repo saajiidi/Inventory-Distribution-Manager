@@ -91,6 +91,16 @@ def process_data(df, selected_cols):
             .reset_index()
         )
         summ.columns = ["Category", "Total Qty", "Total Amount"]
+        total_rev = summ["Total Amount"].sum()
+        total_qty = summ["Total Qty"].sum()
+        if total_rev > 0:
+            summ["Revenue Share (%)"] = (
+                (summ["Total Amount"] / total_rev) * 100
+            ).round(2)
+        if total_qty > 0:
+            summ["Quantity Share (%)"] = (
+                (summ["Total Qty"] / total_qty) * 100
+            ).round(2)
 
         drill = (
             df.groupby(["Category", "Internal_Cost"])
@@ -235,8 +245,29 @@ def render_dashboard_output(drill, summ, top, timeframe, basket, source, updated
             fig_bar, use_container_width=True, key=f"sales_bar_{source or 'default'}"
         )
 
-    with st.expander("Detailed Product Breakdown"):
-        st.dataframe(top, use_container_width=True, hide_index=True)
+    # Analytics Tabs (Replaces "Detailed Product Breakdown" expander)
+    analysis_tabs = st.tabs(["📑 Summary", "🏆 Rankings", "🔍 Drilldown"])
+
+    with analysis_tabs[0]:
+        st.dataframe(
+            summ.sort_values("Total Amount", ascending=False),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    with analysis_tabs[1]:
+        st.dataframe(
+            top.head(20),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    with analysis_tabs[2]:
+        st.dataframe(
+            drill.sort_values(["Category", "Price (TK)"]),
+            use_container_width=True,
+            hide_index=True,
+        )
 
 
 # --- TABS ---
