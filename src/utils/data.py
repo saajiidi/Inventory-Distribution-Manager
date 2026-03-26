@@ -7,7 +7,7 @@ def find_columns(df):
     """Detects primary columns using exact and then partial matching with expanded aliases."""
     mapping = {
         'name': ['item name', 'product name', 'product', 'item', 'title', 'description', 'name', 'internal_name'],
-        'customer_name': ['customer name', 'billing name', 'full name', 'client name', 'customer', 'recipient'],
+        'customer_name': ['first name (shipping)', 'first name', 'customer name', 'billing name', 'full name', 'client name', 'customer', 'recipient'],
         'cost': ['item cost', 'price', 'unit price', 'cost', 'rate', 'mrp', 'selling price', 'total', 'internal_cost', 'line_total'],
         'qty': ['quantity', 'qty', 'units', 'sold', 'count', 'total quantity', 'internal_qty'],
         'date': ['date', 'order date', 'month', 'time', 'created at', 'date_created', 'date_paid'],
@@ -31,7 +31,16 @@ def find_columns(df):
     for key, aliases in mapping.items():
         if key not in found:
             for col, l_col in zip(actual_cols, lower_cols):
-                if any(alias in l_col for alias in aliases):
+                # 🛡️ PROTECT: Identity fields must not match metadata/instructional columns
+                if key in ["customer_name", "name", "phone", "email"]:
+                    if any(bad in l_col for bad in ["note", "status", "detail", "review", "comment", "flag", "msg", "message", "instruction", "memo", "info", "desc"]):
+                        continue
+                
+                # Special Case: 'customer' alias for customer_name should be EXACT ONLY (already handled in Priority 1)
+                # We skip it here to avoid matching 'customer notes', 'customer info', etc.
+                fuzzy_aliases = [a for a in aliases if not (key == "customer_name" and a == "customer")]
+                
+                if any(alias in l_col for alias in fuzzy_aliases):
                     found[key] = col
                     break
     return found
