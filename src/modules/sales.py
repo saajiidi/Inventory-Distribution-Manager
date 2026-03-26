@@ -227,14 +227,22 @@ def get_all_statements_master(full_history: bool = False):
             if not df.empty:
                 m = find_columns(df)
                 df = df.copy()
-                df['_src_tab'] = tab["name"]
+                df["_src_tab"] = tab["name"]
+
+                # 🛡️ Initialize full internal schema to avoid KeyError downstream
+                df["_p_name"] = df.get("_p_name", "Unknown Product")
+                df["_p_cust_name"] = df.get("_p_cust_name", "N/A")
+                df["_p_cost"] = df.get("_p_cost", 0)
+                df["_p_qty"] = df.get("_p_qty", 0)
+                df["_p_date"] = df.get("_p_date", pd.NaT)
+                df["_p_order"] = df.get("_p_order", "N/A")
+                df["_p_phone"] = df.get("_p_phone", "N/A")
+                df["_p_email"] = df.get("_p_email", "N/A")
+
                 if "name" in m:
                     df["_p_name"] = df[m["name"]].astype(str)
                 if "customer_name" in m:
                     df["_p_cust_name"] = df[m["customer_name"]].astype(str)
-                else:
-                    df["_p_cust_name"] = "N/A"
-
                 if "cost" in m:
                     df["_p_cost"] = pd.to_numeric(df[m["cost"]], errors="coerce").fillna(0)
                 if "qty" in m:
