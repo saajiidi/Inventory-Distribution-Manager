@@ -13,7 +13,7 @@ def run_app():
     from src.modules.ai import render_ai_chat_tab
     from src.ui.animations import render_bike_animation
     from src.modules.inventory import render_distribution_tab
-    from src.core.errors import get_logs, log_error
+    from src.core.errors import get_logs
     from src.modules.parser import render_fuzzy_parser_tab
     from src.modules.tools import (
         render_daily_summary_export_tab,
@@ -22,19 +22,15 @@ def run_app():
     from src.modules.logistics import render_pathao_tab
     from src.core.persistence import init_state, save_state
     from src.modules.sales import (
-        get_custom_report_tab_label,
         render_custom_period_tab,
         render_live_tab,
     )
     from src.modules.woo_report import (
-        get_wp_api_orders_tab_label,
         render_wp_api_orders_tab,
     )
     from src.ui.components import (
         inject_base_styles,
         render_header,
-        sample_file_download,
-        section_card,
     )
     from src.modules.whatsapp import render_whatsapp_api_tab
     from src.modules.ecommerce import render_wp_tab
@@ -131,7 +127,9 @@ def run_app():
             logs = get_logs()
             if logs:
                 for entry in reversed(logs):
-                    st.error(f"[{entry['timestamp']}] {entry['context']}: {entry['error']}")
+                    st.error(
+                        f"[{entry['timestamp']}] {entry['context']}: {entry['error']}"
+                    )
             else:
                 st.success("System core stable. 0 anomalies detected.")
 

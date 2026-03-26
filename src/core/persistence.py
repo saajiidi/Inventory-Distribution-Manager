@@ -9,6 +9,7 @@ from src.core.paths import DATA_DIR, STATE_FILE, prepare_data_dirs
 
 prepare_data_dirs()
 
+
 def save_state():
     """Saves relevant session state keys to a local file."""
     state_to_save = {}
@@ -17,20 +18,20 @@ def save_state():
         "inv_active_l",
         "inv_t_col",
         "pathao_res_df",
-        "low_stock_threshold"
+        "low_stock_threshold",
     ]
-    
+
     for key in keys_to_persist:
         if key in st.session_state and st.session_state[key] is not None:
             val = st.session_state[key]
             if isinstance(val, pd.DataFrame):
-                state_to_save[f"{key}_serial"] = val.to_dict('records')
+                state_to_save[f"{key}_serial"] = val.to_dict("records")
             else:
                 state_to_save[key] = val
-            
+
     try:
         fd, temp_path = tempfile.mkstemp(dir=str(DATA_DIR))
-        with os.fdopen(fd, 'w', encoding="utf-8") as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(state_to_save, f, indent=4)
         os.replace(temp_path, STATE_FILE)
     except Exception as e:
@@ -40,6 +41,7 @@ def save_state():
             os.unlink(temp_path)
         except OSError:
             pass
+
 
 def load_state():
     """Loads session state from local file."""
@@ -62,9 +64,10 @@ def load_state():
             default_logger = logging.getLogger(__name__)
             default_logger.error(f"Unexpected error loading state: {e}")
 
+
 def init_state():
     """Initialize defaults if not present."""
-    if 'low_stock_threshold' not in st.session_state:
+    if "low_stock_threshold" not in st.session_state:
         st.session_state.low_stock_threshold = 5
     load_state()
 

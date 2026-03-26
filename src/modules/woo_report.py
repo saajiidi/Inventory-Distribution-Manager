@@ -1,5 +1,4 @@
 import json
-import json
 from datetime import date, datetime, time
 from io import BytesIO
 
@@ -10,7 +9,6 @@ import streamlit as st
 
 from src.core.errors import log_error
 from src.ui.components import section_card
-
 
 DEFAULT_WP_ORDERS_SITE_URL = "https://deencommerce.com/"
 DEFAULT_WP_ORDERS_ENDPOINT_PATH = "/wp-json/wc/v3/orders"
@@ -58,7 +56,9 @@ def build_wp_api_orders_endpoint(site_url: str, endpoint_path: str) -> str:
     return f"{site_url.rstrip('/')}/{endpoint_path.lstrip('/')}"
 
 
-def build_wp_api_orders_params(start_date: date, end_date: date, per_page: int = 100, page: int = 1) -> dict:
+def build_wp_api_orders_params(
+    start_date: date, end_date: date, per_page: int = 100, page: int = 1
+) -> dict:
     """Build the date-range query params expected by WooCommerce order endpoints."""
     safe_per_page = max(1, min(int(per_page), 100))
     safe_page = max(1, int(page))
@@ -103,10 +103,14 @@ def extract_wp_api_records(payload) -> list[dict]:
             value = payload.get(key)
             if isinstance(value, list):
                 return value
-        if any(key in payload for key in ("id", "date", "date_created", "link", "title")):
+        if any(
+            key in payload for key in ("id", "date", "date_created", "link", "title")
+        ):
             return [payload]
 
-    raise ValueError("Unsupported API response format. Expected a list of order objects.")
+    raise ValueError(
+        "Unsupported API response format. Expected a list of order objects."
+    )
 
 
 def _coerce_title(value):
@@ -126,9 +130,11 @@ def make_wp_orders_export_safe(df: pd.DataFrame) -> pd.DataFrame:
     for col in safe_df.columns:
         if safe_df[col].dtype == "object":
             safe_df[col] = safe_df[col].apply(
-                lambda value: json.dumps(value, ensure_ascii=False)
-                if isinstance(value, (dict, list))
-                else value
+                lambda value: (
+                    json.dumps(value, ensure_ascii=False)
+                    if isinstance(value, (dict, list))
+                    else value
+                )
             )
     return safe_df
 
@@ -238,7 +244,9 @@ def _extract_wp_api_error_details(response: requests.Response) -> dict:
     }
 
 
-def _build_wp_orders_hint(status_code: int, code: str, auth_mode: str, endpoint_path: str) -> str:
+def _build_wp_orders_hint(
+    status_code: int, code: str, auth_mode: str, endpoint_path: str
+) -> str:
     if status_code == 404:
         return (
             "This route does not exist on the site. On March 24, 2026, "
@@ -319,7 +327,11 @@ def discover_wp_orders_endpoints(site_url: str, timeout_seconds: int = 20) -> di
         )
 
     suggested_endpoint_path = ""
-    for preferred in ("/wp-json/wc/v3/orders", "/wp-json/wc/v2/orders", "/wp-json/wp/v2/orders"):
+    for preferred in (
+        "/wp-json/wc/v3/orders",
+        "/wp-json/wc/v2/orders",
+        "/wp-json/wp/v2/orders",
+    ):
         if preferred in {row["endpoint_path"] for row in discovered_routes}:
             suggested_endpoint_path = preferred
             break
@@ -362,7 +374,9 @@ def verify_wp_orders_endpoint_access(
     params.update(auth_params)
     response = requests.get(endpoint, params=params, auth=auth, timeout=timeout_seconds)
     detail = _extract_wp_api_error_details(response)
-    hint = _build_wp_orders_hint(response.status_code, detail["code"], auth_mode, endpoint_path)
+    hint = _build_wp_orders_hint(
+        response.status_code, detail["code"], auth_mode, endpoint_path
+    )
     return {
         "endpoint": endpoint,
         "endpoint_path": endpoint_path,
@@ -393,7 +407,9 @@ def verify_wp_application_user_access(
         raise ValueError("Username and application password are required.")
 
     user_endpoint = build_wp_api_orders_endpoint(site_url, "/wp-json/wp/v2/users/me")
-    orders_endpoint = build_wp_api_orders_endpoint(site_url, endpoint_path or DEFAULT_WP_ORDERS_ENDPOINT_PATH)
+    orders_endpoint = build_wp_api_orders_endpoint(
+        site_url, endpoint_path or DEFAULT_WP_ORDERS_ENDPOINT_PATH
+    )
 
     user_response = requests.get(
         user_endpoint,
@@ -500,8 +516,14 @@ def fetch_wp_api_orders(
 
         if response.status_code != 200:
             detail = _extract_wp_api_error_details(response)
-            hint = _build_wp_orders_hint(response.status_code, detail["code"], auth_mode, endpoint_path)
-            message = detail["message"] or detail["detail"] or "No API error message returned."
+            hint = _build_wp_orders_hint(
+                response.status_code, detail["code"], auth_mode, endpoint_path
+            )
+            message = (
+                detail["message"]
+                or detail["detail"]
+                or "No API error message returned."
+            )
             raise RuntimeError(
                 f"API request failed with status {response.status_code}: {message} Hint: {hint}"
             )
@@ -524,7 +546,9 @@ def fetch_wp_api_orders(
         if len(records) < params["per_page"]:
             break
         if params["page"] >= 200:
-            raise RuntimeError("Stopped after 200 pages to avoid an endless pagination loop.")
+            raise RuntimeError(
+                "Stopped after 200 pages to avoid an endless pagination loop."
+            )
 
         params["page"] += 1
 
@@ -598,7 +622,9 @@ def extract_wp_order_line_items_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                 {
                     "order_id": order_row.get("id", ""),
                     "order_date": order_row.get("_order_date"),
-                    "product_name": item.get("name") or item.get("product_name") or "Unknown product",
+                    "product_name": item.get("name")
+                    or item.get("product_name")
+                    or "Unknown product",
                     "sku": item.get("sku") or "",
                     "quantity": pd.to_numeric(item.get("quantity"), errors="coerce"),
                     "line_total": pd.to_numeric(item.get("total"), errors="coerce"),
@@ -624,14 +650,22 @@ def build_wp_orders_dashboard_frames(df: pd.DataFrame) -> dict:
 
     total_col = _pick_first_existing_column(working_df, ["total"])
     if total_col:
-        working_df["_order_total"] = pd.to_numeric(working_df[total_col], errors="coerce").fillna(0.0)
+        working_df["_order_total"] = pd.to_numeric(
+            working_df[total_col], errors="coerce"
+        ).fillna(0.0)
     else:
         working_df["_order_total"] = 0.0
 
     status_col = _pick_first_existing_column(working_df, ["status"])
-    payment_col = _pick_first_existing_column(working_df, ["payment_method_title", "payment_method"])
-    city_col = _pick_first_existing_column(working_df, ["shipping.city", "billing.city"])
-    customer_col = _pick_first_existing_column(working_df, ["billing.phone", "billing.email", "customer_id"])
+    payment_col = _pick_first_existing_column(
+        working_df, ["payment_method_title", "payment_method"]
+    )
+    city_col = _pick_first_existing_column(
+        working_df, ["shipping.city", "billing.city"]
+    )
+    customer_col = _pick_first_existing_column(
+        working_df, ["billing.phone", "billing.email", "customer_id"]
+    )
     currency_col = _pick_first_existing_column(working_df, ["currency"])
 
     currency = ""
@@ -645,7 +679,11 @@ def build_wp_orders_dashboard_frames(df: pd.DataFrame) -> dict:
         daily_sales = (
             valid_dates_df.groupby("_order_date", as_index=False)
             .agg(
-                orders=("id", "count") if "id" in valid_dates_df.columns else ("_order_total", "size"),
+                orders=(
+                    ("id", "count")
+                    if "id" in valid_dates_df.columns
+                    else ("_order_total", "size")
+                ),
                 gross_sales=("_order_total", "sum"),
             )
             .rename(columns={"_order_date": "order_date"})
@@ -658,13 +696,19 @@ def build_wp_orders_dashboard_frames(df: pd.DataFrame) -> dict:
         status_summary = (
             working_df.groupby(status_col, dropna=False, as_index=False)
             .agg(
-                orders=("id", "count") if "id" in working_df.columns else ("_order_total", "size"),
+                orders=(
+                    ("id", "count")
+                    if "id" in working_df.columns
+                    else ("_order_total", "size")
+                ),
                 gross_sales=("_order_total", "sum"),
             )
             .rename(columns={status_col: "status"})
             .sort_values(["orders", "gross_sales"], ascending=False)
         )
-        status_summary["status"] = status_summary["status"].fillna("Unknown").astype(str)
+        status_summary["status"] = (
+            status_summary["status"].fillna("Unknown").astype(str)
+        )
     else:
         status_summary = pd.DataFrame(columns=["status", "orders", "gross_sales"])
 
@@ -672,21 +716,33 @@ def build_wp_orders_dashboard_frames(df: pd.DataFrame) -> dict:
         payment_summary = (
             working_df.groupby(payment_col, dropna=False, as_index=False)
             .agg(
-                orders=("id", "count") if "id" in working_df.columns else ("_order_total", "size"),
+                orders=(
+                    ("id", "count")
+                    if "id" in working_df.columns
+                    else ("_order_total", "size")
+                ),
                 gross_sales=("_order_total", "sum"),
             )
             .rename(columns={payment_col: "payment_method"})
             .sort_values(["gross_sales", "orders"], ascending=False)
         )
-        payment_summary["payment_method"] = payment_summary["payment_method"].fillna("Unknown").astype(str)
+        payment_summary["payment_method"] = (
+            payment_summary["payment_method"].fillna("Unknown").astype(str)
+        )
     else:
-        payment_summary = pd.DataFrame(columns=["payment_method", "orders", "gross_sales"])
+        payment_summary = pd.DataFrame(
+            columns=["payment_method", "orders", "gross_sales"]
+        )
 
     if city_col:
         city_summary = (
             working_df.groupby(city_col, dropna=False, as_index=False)
             .agg(
-                orders=("id", "count") if "id" in working_df.columns else ("_order_total", "size"),
+                orders=(
+                    ("id", "count")
+                    if "id" in working_df.columns
+                    else ("_order_total", "size")
+                ),
                 gross_sales=("_order_total", "sum"),
             )
             .rename(columns={city_col: "city"})
@@ -707,24 +763,26 @@ def build_wp_orders_dashboard_frames(df: pd.DataFrame) -> dict:
             .sort_values(["gross_sales", "quantity"], ascending=False)
         )
     else:
-        product_summary = pd.DataFrame(columns=["product_name", "sku", "quantity", "gross_sales"])
+        product_summary = pd.DataFrame(
+            columns=["product_name", "sku", "quantity", "gross_sales"]
+        )
 
     unique_customers = 0
     if customer_col:
         unique_customers = int(
-            working_df[customer_col]
-            .replace("", pd.NA)
-            .dropna()
-            .astype(str)
-            .nunique()
+            working_df[customer_col].replace("", pd.NA).dropna().astype(str).nunique()
         )
 
     metrics = {
         "orders": int(len(working_df)),
         "gross_sales": float(working_df["_order_total"].sum()),
-        "avg_order_value": float(working_df["_order_total"].mean()) if len(working_df) else 0.0,
+        "avg_order_value": (
+            float(working_df["_order_total"].mean()) if len(working_df) else 0.0
+        ),
         "unique_customers": unique_customers,
-        "items_sold": float(line_items_df["quantity"].sum()) if not line_items_df.empty else 0.0,
+        "items_sold": (
+            float(line_items_df["quantity"].sum()) if not line_items_df.empty else 0.0
+        ),
         "currency": currency,
         "detected_date_column": detected_date_col,
     }
@@ -748,11 +806,21 @@ def build_wp_orders_dashboard_export_bytes(
     buf = BytesIO()
     with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
         raw_df.to_excel(writer, sheet_name="Orders", index=False)
-        dashboard_frames["daily_sales"].to_excel(writer, sheet_name="Daily Sales", index=False)
-        dashboard_frames["status_summary"].to_excel(writer, sheet_name="Status Summary", index=False)
-        dashboard_frames["payment_summary"].to_excel(writer, sheet_name="Payment Summary", index=False)
-        dashboard_frames["city_summary"].to_excel(writer, sheet_name="City Summary", index=False)
-        dashboard_frames["product_summary"].to_excel(writer, sheet_name="Product Summary", index=False)
+        dashboard_frames["daily_sales"].to_excel(
+            writer, sheet_name="Daily Sales", index=False
+        )
+        dashboard_frames["status_summary"].to_excel(
+            writer, sheet_name="Status Summary", index=False
+        )
+        dashboard_frames["payment_summary"].to_excel(
+            writer, sheet_name="Payment Summary", index=False
+        )
+        dashboard_frames["city_summary"].to_excel(
+            writer, sheet_name="City Summary", index=False
+        )
+        dashboard_frames["product_summary"].to_excel(
+            writer, sheet_name="Product Summary", index=False
+        )
     return buf.getvalue()
 
 
@@ -811,7 +879,11 @@ def _render_discovery_results(discovery: dict):
 
 def _render_verification_result(verification: dict):
     status_code = verification.get("status_code", 0)
-    message = verification.get("message") or verification.get("detail") or "No message returned."
+    message = (
+        verification.get("message")
+        or verification.get("detail")
+        or "No message returned."
+    )
     summary = (
         f"Verification result: HTTP {status_code} for {verification.get('endpoint_path', '')}. "
         f"{verification.get('hint', '')}"
@@ -841,9 +913,16 @@ def _render_verification_result(verification: dict):
 
 def _render_user_access_result(access: dict):
     if access.get("authenticated") and access.get("orders_access"):
-        st.success(access.get("hint", "The WordPress user can read WooCommerce orders."))
+        st.success(
+            access.get("hint", "The WordPress user can read WooCommerce orders.")
+        )
     elif access.get("authenticated"):
-        st.warning(access.get("hint", "The WordPress user authenticated, but orders access was denied."))
+        st.warning(
+            access.get(
+                "hint",
+                "The WordPress user authenticated, but orders access was denied.",
+            )
+        )
     else:
         st.error(access.get("hint", "The WordPress user could not be authenticated."))
 
@@ -853,14 +932,28 @@ def _render_user_access_result(access: dict):
             {"Field": "Verified at", "Value": access.get("verified_at", "N/A")},
             {"Field": "User", "Value": access.get("user_name", "N/A")},
             {"Field": "Roles", "Value": roles},
-            {"Field": "Core auth status", "Value": access.get("user_status_code", "N/A")},
-            {"Field": "Orders access status", "Value": access.get("orders_status_code", "N/A")},
-            {"Field": "Core auth message", "Value": access.get("user_message", "") or "-"},
-            {"Field": "Orders access message", "Value": access.get("orders_message", "") or "-"},
+            {
+                "Field": "Core auth status",
+                "Value": access.get("user_status_code", "N/A"),
+            },
+            {
+                "Field": "Orders access status",
+                "Value": access.get("orders_status_code", "N/A"),
+            },
+            {
+                "Field": "Core auth message",
+                "Value": access.get("user_message", "") or "-",
+            },
+            {
+                "Field": "Orders access message",
+                "Value": access.get("orders_message", "") or "-",
+            },
             {"Field": "Hint", "Value": access.get("hint", "")},
         ]
     )
-    with st.expander("WP user access diagnostics", expanded=not access.get("orders_access", False)):
+    with st.expander(
+        "WP user access diagnostics", expanded=not access.get("orders_access", False)
+    ):
         st.dataframe(diagnostics, width="stretch", hide_index=True)
 
 
@@ -871,11 +964,21 @@ def _render_wp_orders_dashboard(result_df: pd.DataFrame, result_meta: dict):
 
     metric_1, metric_2, metric_3, metric_4, metric_5 = st.columns(5)
     from src.ui.components import render_metric_hud
-    with metric_1: render_metric_hud("Orders", f"{metrics['orders']:,}", "🛒")
-    with metric_2: render_metric_hud("Gross Sales", _format_money(metrics["gross_sales"], currency), "💰")
-    with metric_3: render_metric_hud("Avg Order Value", _format_money(metrics["avg_order_value"], currency), "🛍️")
-    with metric_4: render_metric_hud("Unique Customers", f"{metrics['unique_customers']:,}", "👥")
-    with metric_5: render_metric_hud("Items Sold", f"{metrics['items_sold']:,.0f}", "📦")
+
+    with metric_1:
+        render_metric_hud("Orders", f"{metrics['orders']:,}", "🛒")
+    with metric_2:
+        render_metric_hud(
+            "Gross Sales", _format_money(metrics["gross_sales"], currency), "💰"
+        )
+    with metric_3:
+        render_metric_hud(
+            "Avg Order Value", _format_money(metrics["avg_order_value"], currency), "🛍️"
+        )
+    with metric_4:
+        render_metric_hud("Unique Customers", f"{metrics['unique_customers']:,}", "👥")
+    with metric_5:
+        render_metric_hud("Items Sold", f"{metrics['items_sold']:,.0f}", "📦")
 
     st.caption(f"Date range: {result_meta.get('date_range', 'N/A')}")
     st.caption(f"Endpoint: {result_meta.get('endpoint', 'N/A')}")
@@ -975,7 +1078,9 @@ def _render_wp_orders_dashboard(result_df: pd.DataFrame, result_meta: dict):
             st.info("No city information was returned by the API.")
     with detail_right:
         if not product_summary.empty:
-            product_chart = product_summary.head(10).sort_values("gross_sales", ascending=True)
+            product_chart = product_summary.head(10).sort_values(
+                "gross_sales", ascending=True
+            )
             fig_products = px.bar(
                 product_chart,
                 x="gross_sales",
@@ -995,7 +1100,9 @@ def _render_wp_orders_dashboard(result_df: pd.DataFrame, result_meta: dict):
 
     csv_bytes = result_df.to_csv(index=False).encode("utf-8-sig")
     excel_bytes = build_wp_orders_dashboard_export_bytes(result_df, dashboard_frames)
-    date_range_label = result_meta.get("date_range", "").replace(" ", "").replace("to", "_")
+    date_range_label = (
+        result_meta.get("date_range", "").replace(" ", "").replace("to", "_")
+    )
 
     export_1, export_2 = st.columns(2)
     export_1.download_button(
@@ -1019,7 +1126,9 @@ def _render_wp_orders_dashboard(result_df: pd.DataFrame, result_meta: dict):
     preview_cols = get_wp_orders_preview_columns(result_df)
     preview_tabs = st.tabs(["Orders Preview", "Status Summary", "Products", "Raw Data"])
     with preview_tabs[0]:
-        st.dataframe(result_df[preview_cols].head(200), width="stretch", hide_index=True)
+        st.dataframe(
+            result_df[preview_cols].head(200), width="stretch", hide_index=True
+        )
     with preview_tabs[1]:
         st.dataframe(status_summary, width="stretch", hide_index=True)
     with preview_tabs[2]:
@@ -1034,8 +1143,13 @@ def _render_wp_orders_dashboard(result_df: pd.DataFrame, result_meta: dict):
 def render_wp_api_orders_tab():
     if st.session_state.get("wp_api_orders_site_url") == "http://deencommerce.com/":
         st.session_state["wp_api_orders_site_url"] = DEFAULT_WP_ORDERS_SITE_URL
-    if st.session_state.get("wp_api_orders_endpoint_path") in ("", LEGACY_WP_ORDERS_ENDPOINT_PATH):
-        st.session_state["wp_api_orders_endpoint_path"] = DEFAULT_WP_ORDERS_ENDPOINT_PATH
+    if st.session_state.get("wp_api_orders_endpoint_path") in (
+        "",
+        LEGACY_WP_ORDERS_ENDPOINT_PATH,
+    ):
+        st.session_state["wp_api_orders_endpoint_path"] = (
+            DEFAULT_WP_ORDERS_ENDPOINT_PATH
+        )
 
     section_card(
         "WooCommerce Orders Dashboard",
@@ -1050,7 +1164,9 @@ def render_wp_api_orders_tab():
 
     site_url = st.text_input(
         "Site URL",
-        value=st.session_state.get("wp_api_orders_site_url", DEFAULT_WP_ORDERS_SITE_URL),
+        value=st.session_state.get(
+            "wp_api_orders_site_url", DEFAULT_WP_ORDERS_SITE_URL
+        ),
         key="wp_api_orders_site_url",
         help="Use the site root, for example https://deencommerce.com/.",
     )
@@ -1063,13 +1179,17 @@ def render_wp_api_orders_tab():
 
     endpoint_path = st.text_input(
         "API endpoint path",
-        value=st.session_state.get("wp_api_orders_endpoint_path", DEFAULT_WP_ORDERS_ENDPOINT_PATH),
+        value=st.session_state.get(
+            "wp_api_orders_endpoint_path", DEFAULT_WP_ORDERS_ENDPOINT_PATH
+        ),
         key="wp_api_orders_endpoint_path",
         help="The verified default for deencommerce.com is /wp-json/wc/v3/orders.",
     )
     if site_url and endpoint_path:
         try:
-            st.caption(f"Resolved endpoint: {build_wp_api_orders_endpoint(site_url, endpoint_path)}")
+            st.caption(
+                f"Resolved endpoint: {build_wp_api_orders_endpoint(site_url, endpoint_path)}"
+            )
         except ValueError:
             pass
 
@@ -1077,8 +1197,13 @@ def render_wp_api_orders_tab():
         "Authentication mode",
         options=AUTH_MODE_OPTIONS,
         index=AUTH_MODE_OPTIONS.index(
-            st.session_state.get("wp_api_orders_auth_mode", AUTH_MODE_APPLICATION_PASSWORD)
-            if st.session_state.get("wp_api_orders_auth_mode", AUTH_MODE_APPLICATION_PASSWORD) in AUTH_MODE_OPTIONS
+            st.session_state.get(
+                "wp_api_orders_auth_mode", AUTH_MODE_APPLICATION_PASSWORD
+            )
+            if st.session_state.get(
+                "wp_api_orders_auth_mode", AUTH_MODE_APPLICATION_PASSWORD
+            )
+            in AUTH_MODE_OPTIONS
             else AUTH_MODE_APPLICATION_PASSWORD
         ),
         key="wp_api_orders_auth_mode",
@@ -1123,7 +1248,9 @@ def render_wp_api_orders_tab():
             "Use WooCommerce REST API keys with at least read access. This mode sends the keys as query parameters."
         )
     else:
-        st.caption("Use this only for public or custom routes that expose orders without authentication.")
+        st.caption(
+            "Use this only for public or custom routes that expose orders without authentication."
+        )
 
     c3, c4, c5, c6 = st.columns(4)
     start_date = c3.date_input(
@@ -1214,7 +1341,9 @@ def render_wp_api_orders_tab():
     if discover_clicked:
         try:
             with st.spinner("Inspecting the REST index..."):
-                discovery = discover_wp_orders_endpoints(site_url, timeout_seconds=int(timeout_seconds))
+                discovery = discover_wp_orders_endpoints(
+                    site_url, timeout_seconds=int(timeout_seconds)
+                )
             st.session_state[WP_API_ORDERS_DISCOVERY_KEY] = discovery
             st.success("REST routes discovered successfully.")
         except Exception as exc:
@@ -1225,7 +1354,9 @@ def render_wp_api_orders_tab():
         if not site_url.strip():
             st.error("Site URL is required.")
         elif not username.strip() or not app_password.strip():
-            st.error("Username and application password are required to check WP user access.")
+            st.error(
+                "Username and application password are required to check WP user access."
+            )
         else:
             try:
                 with st.spinner("Checking WordPress user access..."):
@@ -1249,11 +1380,15 @@ def render_wp_api_orders_tab():
         elif auth_mode == AUTH_MODE_APPLICATION_PASSWORD and (
             not username.strip() or not app_password.strip()
         ):
-            st.error("Username and application password are required for application-password verification.")
+            st.error(
+                "Username and application password are required for application-password verification."
+            )
         elif auth_mode == AUTH_MODE_WOO_KEYS and (
             not consumer_key.strip() or not consumer_secret.strip()
         ):
-            st.error("Consumer key and consumer secret are required for WooCommerce key verification.")
+            st.error(
+                "Consumer key and consumer secret are required for WooCommerce key verification."
+            )
         else:
             try:
                 with st.spinner("Verifying the selected endpoint..."):
@@ -1299,7 +1434,12 @@ def render_wp_api_orders_tab():
                     )
                     st.session_state[WP_API_ORDERS_USER_ACCESS_KEY] = user_access
                     if not user_access.get("orders_access"):
-                        raise RuntimeError(user_access.get("hint", "The WordPress user cannot read WooCommerce orders."))
+                        raise RuntimeError(
+                            user_access.get(
+                                "hint",
+                                "The WordPress user cannot read WooCommerce orders.",
+                            )
+                        )
                 with st.spinner("Fetching orders from the WooCommerce API..."):
                     df, meta = fetch_wp_api_orders(
                         site_url=site_url,
@@ -1328,7 +1468,9 @@ def render_wp_api_orders_tab():
                     "verified_at": meta["fetched_at"],
                 }
                 if df.empty:
-                    st.warning("The API request succeeded, but no orders matched the selected date range.")
+                    st.warning(
+                        "The API request succeeded, but no orders matched the selected date range."
+                    )
                 else:
                     st.success(f"Fetched {len(df):,} orders from the API.")
             except Exception as exc:
@@ -1357,7 +1499,9 @@ def render_wp_api_orders_tab():
         return
 
     if result_df.empty:
-        st.info("The request completed, but there are no orders to chart for this date range.")
+        st.info(
+            "The request completed, but there are no orders to chart for this date range."
+        )
         return
 
     _render_wp_orders_dashboard(result_df, result_meta)

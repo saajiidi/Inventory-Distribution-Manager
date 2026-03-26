@@ -28,7 +28,7 @@ def normalize_sku(val) -> str:
     """Corrects typos and extra spaces in SKUs for strict but flexible matching."""
     s = normalize_key(val)
     # Remove all spaces and special characters for 'hard' matching, but keep it roughly same
-    s = re.sub(r'[^a-zA-Z0-9]', '', s).upper()
+    s = re.sub(r"[^a-zA-Z0-9]", "", s).upper()
     return s
 
 
@@ -79,7 +79,9 @@ def build_title_size_key(title: str, size: str) -> str:
     return title_norm.casefold()
 
 
-def identify_columns(df: pd.DataFrame) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
+def identify_columns(
+    df: pd.DataFrame,
+) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
     """Auto-identify relevant columns based on headers (size, qty, title/item name, sku)."""
     cols = [str(c) for c in df.columns]
     cols_map = {c.lower().strip(): c for c in cols}
@@ -92,7 +94,9 @@ def identify_columns(df: pd.DataFrame) -> Tuple[Optional[str], Optional[str], Op
     for c_lower, c_orig in cols_map.items():
         if "size" in c_lower and size_col is None:
             size_col = c_orig
-        if (("quantity" in c_lower) or ("qty" in c_lower) or ("stock" in c_lower)) and qty_col is None:
+        if (
+            ("quantity" in c_lower) or ("qty" in c_lower) or ("stock" in c_lower)
+        ) and qty_col is None:
             qty_col = c_orig
         # Prefer explicit "item name" over generic "title"
         if ("item name" in c_lower or "product name" in c_lower) and title_col is None:
@@ -119,7 +123,14 @@ def get_group_by_column(df: pd.DataFrame) -> Optional[str]:
     for c_orig, c_lower in cols_lower.items():
         if c_lower == "order number":
             return c_orig
-    for name in ("order number", "order no", "order no.", "order #", "order id", "order"):
+    for name in (
+        "order number",
+        "order no",
+        "order no.",
+        "order #",
+        "order id",
+        "order",
+    ):
         for c_lower, c_orig in cols_lower.items():
             if name in c_lower:
                 return c_orig
@@ -130,7 +141,9 @@ def get_group_by_column(df: pd.DataFrame) -> Optional[str]:
     return None
 
 
-def add_title_size_column(df: pd.DataFrame, title_col: str, size_col: Optional[str]) -> pd.DataFrame:
+def add_title_size_column(
+    df: pd.DataFrame, title_col: str, size_col: Optional[str]
+) -> pd.DataFrame:
     """Add a 'Title - Size' column to an inventory dataframe."""
 
     def _joined(r):
@@ -153,7 +166,9 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
     Matching is based only on 'Title - Size' (computed from Title + Size).
     """
     inventory: Dict[str, Dict[str, int]] = {}
-    sku_to_title_size: Dict[str, str] = {}  # sku_key -> Title-Size key (for SKU match validation)
+    sku_to_title_size: Dict[str, str] = (
+        {}
+    )  # sku_key -> Title-Size key (for SKU match validation)
     all_locations = list(uploaded_files.keys())
     warnings = []
     enriched_dfs: Dict[str, pd.DataFrame] = {}
@@ -166,11 +181,15 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
             size_col, qty_col, title_col, sku_col = identify_columns(df)
 
             if not title_col:
-                warnings.append(f"⚠️ {loc_name}: Missing 'Title/Item Name' column. Skipped.")
+                warnings.append(
+                    f"⚠️ {loc_name}: Missing 'Title/Item Name' column. Skipped."
+                )
                 continue
 
             if not qty_col:
-                warnings.append(f"⚠️ {loc_name}: Missing 'Quantity' column. Assuming 0 stock.")
+                warnings.append(
+                    f"⚠️ {loc_name}: Missing 'Quantity' column. Assuming 0 stock."
+                )
 
             df = add_title_size_column(df, title_col=title_col, size_col=size_col)
             enriched_dfs[loc_name] = df
@@ -204,7 +223,9 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
                         if sku_key not in inventory:
                             inventory[sku_key] = {loc: 0 for loc in all_locations}
                         inventory[sku_key][loc_name] += qty
-                        sku_to_title_size[sku_key] = key  # SKU -> Title-Size key for this row
+                        sku_to_title_size[sku_key] = (
+                            key  # SKU -> Title-Size key for this row
+                        )
 
         except Exception as e:
             warnings.append(f"❌ Error in {loc_name}: {e}")
@@ -229,11 +250,11 @@ def add_stock_columns_from_inventory(
     matched = set()
     sku_to_inv_key = sku_to_title_size or {}
     name_keys = [k for k in inventory.keys() if k not in sku_to_inv_key]
-    
+
     # Pre-calculate match status and stock keys for each row
     match_statuses = []
-    stock_sources = [] # list of inventory keys to pull stock from
-    
+    stock_sources = []  # list of inventory keys to pull stock from
+
     # Helper to safe-get SKU from row
     def get_sku(r):
         if sku_col and sku_col in df.columns:
@@ -247,13 +268,13 @@ def add_stock_columns_from_inventory(
         pl_sku = get_sku(row)
         title, size = item_name_to_title_size(row.get(item_name_col, ""))
         pl_key = build_title_size_key(title, size)
-        
+
         inv_key = None
         status = "No Match"
-        
+
         # 2. MATCHING LOGIC
         is_embroidered_panjabi = pl_key and "embroidered cotton panjabi" in pl_key
-        
+
         if is_embroidered_panjabi:
             if pl_sku and pl_sku in sku_to_inv_key:
                 inv_key = sku_to_inv_key[pl_sku]
@@ -270,14 +291,19 @@ def add_stock_columns_from_inventory(
                 status = "Exact Name Match"
                 if pl_sku:
                     if pl_sku in sku_to_inv_key:
-                       status = "Perfect Match (Name + SKU)" if sku_to_inv_key[pl_sku] == pl_key else f"Name Match (SKU mismatch)"
-                    else: status = "Name Match (SKU not in Inv)"
-            
+                        status = (
+                            "Perfect Match (Name + SKU)"
+                            if sku_to_inv_key[pl_sku] == pl_key
+                            else "Name Match (SKU mismatch)"
+                        )
+                    else:
+                        status = "Name Match (SKU not in Inv)"
+
             # Priority 2: Strict Normalized SKU Match
             elif pl_sku and pl_sku in sku_to_inv_key:
                 inv_key = sku_to_inv_key[pl_sku]
                 status = f"SKU Match (Name mismatch -> {inv_key})"
-                
+
             # Priority 3: Fuzzy Name Match (Correction for typos)
             elif pl_key:
                 # We only fuzzy match against non-SKU keys (Title-Size keys)
@@ -292,7 +318,7 @@ def add_stock_columns_from_inventory(
                     status = "No Match"
             else:
                 status = "No Match"
-        
+
         match_statuses.append(status)
         stock_sources.append(inv_key)
         if inv_key:
@@ -303,7 +329,7 @@ def add_stock_columns_from_inventory(
 
     # 3. Assign Stock Columns & Calculate Fulfillment Summary
     stock_summary = []
-    
+
     # Try to find a quantity column in the product list (how many did the user order?)
     _, qty_to_buy_col, _, _ = identify_columns(df)
 
@@ -311,14 +337,15 @@ def add_stock_columns_from_inventory(
         total_avail = 0
         if source_key and source_key in inventory:
             total_avail = sum(inventory[source_key].values())
-        
+
         # Determine Status
-        requested_qty = 1 # Default
+        requested_qty = 1  # Default
         if qty_to_buy_col and qty_to_buy_col in df.columns:
             try:
                 val = df.iloc[i][qty_to_buy_col]
                 requested_qty = int(float(val)) if pd.notna(val) else 1
-            except: requested_qty = 1
+            except:
+                requested_qty = 1
 
         if not source_key:
             stock_summary.append("❌ No Match")
@@ -344,18 +371,20 @@ def add_stock_columns_from_inventory(
     # 5. Intelligent Dispatch Suggestion
     dispatch_suggestions = ["N/A"] * len(df)
     group_col = get_group_by_column(df)
-    
+
     if group_col:
         # Create a helper for quantities
         qty_needed = [1] * len(df)
         if qty_to_buy_col and qty_to_buy_col in df.columns:
-            qty_needed = [int(float(x)) if pd.notna(x) else 1 for x in df[qty_to_buy_col]]
+            qty_needed = [
+                int(float(x)) if pd.notna(x) else 1 for x in df[qty_to_buy_col]
+            ]
 
         # Group data to optimize per order
         for _, group_indices in df.groupby(group_col).groups.items():
             # For this order, find the best location(s)
             remaining_indices = list(group_indices)
-            
+
             # 1. Try to find a SINGLE location that can fulfill ALL items in the order
             best_single_loc = None
             for loc in locations:
@@ -363,14 +392,16 @@ def add_stock_columns_from_inventory(
                 for idx in group_indices:
                     source_key = stock_sources[idx]
                     needed = qty_needed[idx]
-                    avail = inventory.get(source_key, {}).get(loc, 0) if source_key else 0
+                    avail = (
+                        inventory.get(source_key, {}).get(loc, 0) if source_key else 0
+                    )
                     if avail < needed:
                         all_match = False
                         break
                 if all_match:
                     best_single_loc = loc
-                    break # Prioritize Ecom -> Mirpur -> ... as defined in 'locations'
-            
+                    break  # Prioritize Ecom -> Mirpur -> ... as defined in 'locations'
+
             if best_single_loc:
                 for idx in group_indices:
                     dispatch_suggestions[idx] = best_single_loc
@@ -386,19 +417,25 @@ def add_stock_columns_from_inventory(
                         for idx in remaining_indices:
                             source_key = stock_sources[idx]
                             needed = qty_needed[idx]
-                            avail = inventory.get(source_key, {}).get(loc, 0) if source_key else 0
+                            avail = (
+                                inventory.get(source_key, {}).get(loc, 0)
+                                if source_key
+                                else 0
+                            )
                             if avail >= needed:
                                 current_covered.append(idx)
-                        
+
                         if len(current_covered) > max_covered:
                             max_covered = len(current_covered)
                             best_loc = loc
                             covered_indices = current_covered
-                    
+
                     if best_loc and covered_indices:
                         for idx in covered_indices:
                             dispatch_suggestions[idx] = best_loc
-                        remaining_indices = [i for i in remaining_indices if i not in covered_indices]
+                        remaining_indices = [
+                            i for i in remaining_indices if i not in covered_indices
+                        ]
                     else:
                         # OOS items remaining
                         for idx in remaining_indices:
@@ -406,10 +443,9 @@ def add_stock_columns_from_inventory(
                         break
 
     df["Dispatch Suggestion"] = dispatch_suggestions
-    
+
     # Reorder Match Status to the end
     cols = [c for c in df.columns if c != "Match Status"] + ["Match Status"]
     df = df[cols]
 
     return df, len(matched)
-

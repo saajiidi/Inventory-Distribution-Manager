@@ -17,7 +17,9 @@ def _digits_only(v):
 
 def _is_valid_phone(v):
     d = _digits_only(v)
-    return (len(d) == 11 and d.startswith("01")) or (len(d) == 13 and d.startswith("8801"))
+    return (len(d) == 11 and d.startswith("01")) or (
+        len(d) == 13 and d.startswith("8801")
+    )
 
 
 def _evaluate_data_quality(df: pd.DataFrame):
@@ -30,7 +32,9 @@ def _evaluate_data_quality(df: pd.DataFrame):
     # Missing critical values
     if not missing_required:
         missing_name = df[auto_cols["name"]].isna().sum()
-        missing_cost = pd.to_numeric(df[auto_cols["cost"]], errors="coerce").isna().sum()
+        missing_cost = (
+            pd.to_numeric(df[auto_cols["cost"]], errors="coerce").isna().sum()
+        )
         missing_qty = pd.to_numeric(df[auto_cols["qty"]], errors="coerce").isna().sum()
         issues.append(("Missing Product Name", int(missing_name)))
         issues.append(("Invalid/Missing Cost", int(missing_cost)))
@@ -88,9 +92,13 @@ def render_data_quality_monitor_tab():
     auto_cols, missing_required, issues_df, quality_score = _evaluate_data_quality(df)
     c1, c2, c3 = st.columns(3)
     from src.ui.components import render_metric_hud
-    with c1: render_metric_hud("Rows", f"{len(df):,}", "📋")
-    with c2: render_metric_hud("Detected Mappings", f"{len(auto_cols):,}", "🔗")
-    with c3: render_metric_hud("Quality Score", f"{quality_score}%", "🧪")
+
+    with c1:
+        render_metric_hud("Rows", f"{len(df):,}", "📋")
+    with c2:
+        render_metric_hud("Detected Mappings", f"{len(auto_cols):,}", "🔗")
+    with c3:
+        render_metric_hud("Quality Score", f"{quality_score}%", "🧪")
 
     if missing_required:
         st.error(f"Missing required logical columns: {', '.join(missing_required)}")
@@ -115,7 +123,7 @@ def render_data_quality_monitor_tab():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         width="stretch",
         type="primary",
-        key="tools_dq_dl"
+        key="tools_dq_dl",
     )
 
 
@@ -141,10 +149,14 @@ def render_daily_summary_export_tab():
     auto_cols = find_columns(df)
     missing_required = [k for k in ["name", "cost", "qty"] if k not in auto_cols]
     if missing_required:
-        st.error(f"Cannot generate summary. Missing logical columns: {', '.join(missing_required)}")
+        st.error(
+            f"Cannot generate summary. Missing logical columns: {', '.join(missing_required)}"
+        )
         return
 
-    generate_clicked, _ = render_action_bar("Generate Executive Summary", "exec_generate")
+    generate_clicked, _ = render_action_bar(
+        "Generate Executive Summary", "exec_generate"
+    )
     if not generate_clicked:
         return
 
@@ -152,21 +164,27 @@ def render_daily_summary_export_tab():
     qty = pd.to_numeric(df[auto_cols["qty"]], errors="coerce").fillna(0)
     df_calc = df.copy()
     df_calc["Total Amount"] = cost * qty
-    df_calc["Category"] = df_calc[auto_cols["name"]].astype(str).apply(get_category_for_sales)
+    df_calc["Category"] = (
+        df_calc[auto_cols["name"]].astype(str).apply(get_category_for_sales)
+    )
 
     total_revenue = float(df_calc["Total Amount"].sum())
     total_items = float(qty.sum())
     total_orders = int(
-        df_calc[auto_cols["order_id"]].nunique() if "order_id" in auto_cols else len(df_calc)
+        df_calc[auto_cols["order_id"]].nunique()
+        if "order_id" in auto_cols
+        else len(df_calc)
     )
     aov = total_revenue / total_orders if total_orders else 0
 
     category_summary = (
-        df_calc.groupby("Category", as_index=False)["Total Amount"].sum()
+        df_calc.groupby("Category", as_index=False)["Total Amount"]
+        .sum()
         .sort_values("Total Amount", ascending=False)
     )
     top_products = (
-        df_calc.groupby(auto_cols["name"], as_index=False)["Total Amount"].sum()
+        df_calc.groupby(auto_cols["name"], as_index=False)["Total Amount"]
+        .sum()
         .sort_values("Total Amount", ascending=False)
         .head(15)
         .rename(columns={auto_cols["name"]: "Product Name"})
@@ -181,7 +199,11 @@ def render_daily_summary_export_tab():
         valid = df_calc[dcol.notna()].copy()
         valid["_d"] = dcol[dcol.notna()].dt.date
         if valid["_d"].nunique() >= 2:
-            daily = valid.groupby("_d", as_index=False)["Total Amount"].sum().sort_values("_d")
+            daily = (
+                valid.groupby("_d", as_index=False)["Total Amount"]
+                .sum()
+                .sort_values("_d")
+            )
             prev_val = float(daily.iloc[-2]["Total Amount"])
             curr_val = float(daily.iloc[-1]["Total Amount"])
             # Corrected: Removed misplaced inventory metrics from sales trend loop
@@ -221,5 +243,5 @@ def render_daily_summary_export_tab():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         width="stretch",
         type="primary",
-        key="tools_exec_dl"
+        key="tools_exec_dl",
     )

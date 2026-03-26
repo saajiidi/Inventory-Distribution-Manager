@@ -1,5 +1,4 @@
 import os
-import textwrap
 from datetime import datetime
 from io import BytesIO
 
@@ -258,7 +257,7 @@ def inject_base_styles():
 
 
 def render_header():
-    header_html = f'''
+    header_html = f"""
     <div style="text-align: center; padding: 3rem 0 1rem; margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
         <div style="display: inline-block; position: relative; padding: 0 1rem;">
             <h1 class="hub-title" style="margin: 0 !important; padding: 0 !important; line-height: 1 !important; text-transform: none; letter-spacing: -0.04em !important; font-size: 3.8rem !important;">{APP_TITLE}</h1>
@@ -272,12 +271,12 @@ def render_header():
         <p style="color: var(--text-secondary); font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 20px; opacity: 0.4; font-weight: 500;">
             🛰️ NEXT-GEN OPS COMMAND • {APP_VERSION}
         </p>
-    </div>'''
+    </div>"""
     st.markdown(header_html, unsafe_allow_html=True)
 
 
 def section_card(title: str, help_text: str = ""):
-    card_html = f'''<div class="hub-card"><div style="font-size:1.4rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">{title}</div><div style="color:var(--text-secondary); font-size:1rem; line-height:1.6;">{help_text}</div></div>'''
+    card_html = f"""<div class="hub-card"><div style="font-size:1.4rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">{title}</div><div style="color:var(--text-secondary); font-size:1rem; line-height:1.6;">{help_text}</div></div>"""
     st.markdown(card_html, unsafe_allow_html=True)
 
 
@@ -286,7 +285,7 @@ def render_metric_hud(label: str, value: str, icon: str = "📈"):
     Renders a premium, non-truncating metric card using HTML.
     Prevents the Streamlit '...' truncation for large revenue figures.
     """
-    html = f'''
+    html = f"""
     <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 16px; margin: 0.5rem 0;">
         <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px;">
             <span>{icon}</span> {label}
@@ -295,7 +294,7 @@ def render_metric_hud(label: str, value: str, icon: str = "📈"):
             {value}
         </div>
     </div>
-    '''
+    """
     st.markdown(html, unsafe_allow_html=True)
 
 
@@ -304,11 +303,13 @@ def render_steps(steps: list[str], current_step: int):
     for idx, step in enumerate(steps):
         is_active = idx == current_step
         cls = "hub-step active" if is_active else "hub-step"
-        step_html = f'''<div class="{cls}"><span style="opacity:0.5; font-size:0.75rem; display:block; margin-bottom:2px;">Step {idx + 1}</span>{step}</div>'''
+        step_html = f"""<div class="{cls}"><span style="opacity:0.5; font-size:0.75rem; display:block; margin-bottom:2px;">Step {idx + 1}</span>{step}</div>"""
         cols[idx].markdown(step_html, unsafe_allow_html=True)
 
 
-def render_file_summary(uploaded_file, df: pd.DataFrame | None, required_columns: list[str]):
+def render_file_summary(
+    uploaded_file, df: pd.DataFrame | None, required_columns: list[str]
+):
     if not uploaded_file:
         st.info("No file uploaded yet.")
         return False
@@ -323,7 +324,7 @@ def render_file_summary(uploaded_file, df: pd.DataFrame | None, required_columns
         c1.metric("Rows", f"{len(df):,}")
         c2.metric("Cols", len(df.columns))
         c3.metric("Steps", len(required_columns))
-        
+
         missing = [col for col in required_columns if col not in df.columns]
         if missing:
             c4.error(f"Missing: {', '.join(missing)}")
@@ -342,10 +343,16 @@ def render_action_bar(
     st.markdown('<div class="hub-action-wrap">', unsafe_allow_html=True)
     if secondary_label and secondary_key:
         c1, c2 = st.columns([2, 1])
-        primary_clicked = c1.button(primary_label, type="primary", width="stretch", key=primary_key)
-        secondary_clicked = c2.button(secondary_label, width="stretch", key=secondary_key)
+        primary_clicked = c1.button(
+            primary_label, type="primary", width="stretch", key=primary_key
+        )
+        secondary_clicked = c2.button(
+            secondary_label, width="stretch", key=secondary_key
+        )
     else:
-        primary_clicked = st.button(primary_label, type="primary", width="stretch", key=primary_key)
+        primary_clicked = st.button(
+            primary_label, type="primary", width="stretch", key=primary_key
+        )
         secondary_clicked = False
     st.markdown("</div>", unsafe_allow_html=True)
     return primary_clicked, secondary_clicked
@@ -353,9 +360,13 @@ def render_action_bar(
 
 def render_mini_uploader(label: str, key: str):
     """Compact file uploader with a bold label and minimal icon interface."""
-    st.markdown(f"<div style='text-align:center;'><b>{label}</b></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='text-align:center;'><b>{label}</b></div>", unsafe_allow_html=True
+    )
     st.markdown("<div class='mini-uploader'>", unsafe_allow_html=True)
-    f = st.file_uploader(label, key=key, type=["xlsx", "csv"], label_visibility="collapsed")
+    f = st.file_uploader(
+        label, key=key, type=["xlsx", "csv"], label_visibility="collapsed"
+    )
     st.markdown("</div>", unsafe_allow_html=True)
     return f
 
@@ -399,5 +410,7 @@ def to_excel_bytes(df: pd.DataFrame, sheet_name: str = "Sheet1") -> bytes:
 def show_last_updated(path: str):
     if not os.path.exists(path):
         return
-    updated = datetime.fromtimestamp(os.path.getmtime(path)).strftime("%Y-%m-%d %H:%M:%S")
+    updated = datetime.fromtimestamp(os.path.getmtime(path)).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
     st.caption(f"Last updated: {updated}")

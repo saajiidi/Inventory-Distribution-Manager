@@ -15,7 +15,9 @@ def _is_full_sleeve_sales(text: str) -> bool:
 
 
 def _tshirt_label(text: str, mode: str) -> str | None:
-    tshirt_keywords = ["t-shirt", "t shirt"] if mode == "orders" else ["t-shirt", "t shirt", "tee"]
+    tshirt_keywords = (
+        ["t-shirt", "t shirt"] if mode == "orders" else ["t-shirt", "t shirt", "tee"]
+    )
     if not _has_any(text, tshirt_keywords):
         return None
 
@@ -62,7 +64,10 @@ _SALES_RULES = [
     ("Flannel", ["flannel"]),
     ("Polo Shirt", ["polo"]),
     ("Panjabi", ["panjabi", "punjabi"]),
-    ("Trousers", ["trousers", "pant", "cargo", "trouser", "joggers", "track pant", "jogger"]),
+    (
+        "Trousers",
+        ["trousers", "pant", "cargo", "trouser", "joggers", "track pant", "jogger"],
+    ),
     ("Twill Chino", ["twill chino"]),
     ("Mask", ["mask"]),
     ("Water Bottle", ["water bottle"]),

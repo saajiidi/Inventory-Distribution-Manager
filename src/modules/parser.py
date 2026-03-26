@@ -5,7 +5,6 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-
 HEADER_TOKENS = {
     "Cons. ID",
     "Order ID",
@@ -134,61 +133,82 @@ def parse_records(raw: str):
 
 
 def extract_fields_fuzzy(cons_id, text_block):
-    order_id_match = re.search(r'\b(\d{6})\b', text_block)
+    order_id_match = re.search(r"\b(\d{6})\b", text_block)
     order_id = order_id_match.group(1) if order_id_match else ""
 
-    store_match = re.search(r'(Deen Commerce|w DEEN WARI OUTLET|c DEEN CUMILLA OUTLET)', text_block)
+    store_match = re.search(
+        r"(Deen Commerce|w DEEN WARI OUTLET|c DEEN CUMILLA OUTLET)", text_block
+    )
     store = store_match.group(1) if store_match else ""
 
-    phone_match = re.search(r'(01\d{9})', text_block)
+    phone_match = re.search(r"(01\d{9})", text_block)
     phone = phone_match.group(1) if phone_match else ""
 
-    cod_match = re.search(r'COD\s*à§³?\s*([\d,]+)', text_block)
-    cod = cod_match.group(1).replace(',', '') if cod_match else "0"
-    
-    charge_match = re.search(r'Charge\s*à§³?\s*([\d,.]+)', text_block)
-    charge = charge_match.group(1).replace(',', '') if charge_match else "0"
-    
-    discount_match = re.search(r'Discount\s*à§³?\s*([\d,]+)', text_block)
-    discount = discount_match.group(1).replace(',', '') if discount_match else "0"
+    cod_match = re.search(r"COD\s*à§³?\s*([\d,]+)", text_block)
+    cod = cod_match.group(1).replace(",", "") if cod_match else "0"
+
+    charge_match = re.search(r"Charge\s*à§³?\s*([\d,.]+)", text_block)
+    charge = charge_match.group(1).replace(",", "") if charge_match else "0"
+
+    discount_match = re.search(r"Discount\s*à§³?\s*([\d,]+)", text_block)
+    discount = discount_match.group(1).replace(",", "") if discount_match else "0"
 
     status = "Unpaid"
     if "Paid" in text_block and "Unpaid" not in text_block:
         status = "Paid"
-    
-    delivery_match = re.search(r'(At Delivery Hub|Paid Return|Urgent Delivery Requested|Returned)', text_block)
+
+    delivery_match = re.search(
+        r"(At Delivery Hub|Paid Return|Urgent Delivery Requested|Returned)", text_block
+    )
     delivery_status = delivery_match.group(1) if delivery_match else ""
-    
-    updated_match = re.search(r'Updated on\s*([\d/]+)', text_block)
+
+    updated_match = re.search(r"Updated on\s*([\d/]+)", text_block)
     status_updated_on = updated_match.group(1) if updated_match else ""
 
-    lines = text_block.split('\n')
+    lines = text_block.split("\n")
     info_lines = []
-    ignore_keywords = ['Type:', 'Parcel', 'COD', 'Charge', 'Discount', 'Paid', 'Unpaid', 
-                       'View POD', 'Action', 'Updated on', 'Paid At:', store, order_id, cons_id]
-    
+    ignore_keywords = [
+        "Type:",
+        "Parcel",
+        "COD",
+        "Charge",
+        "Discount",
+        "Paid",
+        "Unpaid",
+        "View POD",
+        "Action",
+        "Updated on",
+        "Paid At:",
+        store,
+        order_id,
+        cons_id,
+    ]
+
     for line in lines:
         clean_line = line.strip()
-        if not clean_line: continue
-        if re.match(r'01\d{9}', clean_line): continue
-        
+        if not clean_line:
+            continue
+        if re.match(r"01\d{9}", clean_line):
+            continue
+
         should_ignore = False
         for kw in ignore_keywords:
             if kw and kw.lower() in clean_line.lower():
                 should_ignore = True
                 break
-        
+
         if not should_ignore:
             info_lines.append(clean_line)
 
     filtered_info = []
     for line in info_lines:
-        if line.isdigit(): continue
+        if line.isdigit():
+            continue
         filtered_info.append(line)
 
     name = ""
     address = ""
-    
+
     if len(filtered_info) > 0:
         name = filtered_info[0]
     if len(filtered_info) > 1:
@@ -208,17 +228,18 @@ def extract_fields_fuzzy(cons_id, text_block):
         "Charge": float(charge) if charge else 0.0,
         "Discount": float(discount) if discount else 0.0,
         "Payment Status": status,
-        "Action": ""
+        "Action": "",
     }
 
+
 def parse_data_fuzzy(raw_text):
-    record_start_pattern = re.compile(r'(DD\d{6}[A-Z0-9]+)')
+    record_start_pattern = re.compile(r"(DD\d{6}[A-Z0-9]+)")
     parts = record_start_pattern.split(raw_text)
     records = []
     for i in range(1, len(parts), 2):
-        if i+1 < len(parts):
+        if i + 1 < len(parts):
             cons_id = parts[i].strip()
-            body = parts[i+1].strip()
+            body = parts[i + 1].strip()
             record = extract_fields_fuzzy(cons_id, body)
             records.append(record)
     return pd.DataFrame(records)
@@ -259,7 +280,6 @@ def df_to_excel_bytes(df: pd.DataFrame) -> bytes:
     return output.read()
 
 
-
 from src.core.persistence import clear_state_keys
 from src.ui.components import (
     render_action_bar,
@@ -280,7 +300,10 @@ def render_fuzzy_parser_tab(guided: bool = True):
     )
     if guided:
         step = 0
-        if st.session_state.get("standard_parsed_df") is not None or st.session_state.get("fuzzy_parsed_df") is not None:
+        if (
+            st.session_state.get("standard_parsed_df") is not None
+            or st.session_state.get("fuzzy_parsed_df") is not None
+        ):
             step = 2
         render_steps(["Paste", "Parse", "Preview", "Export"], step)
 
@@ -331,7 +354,9 @@ POD"""
                 st.success(f"Parsed {len(parsed_df)} records.")
 
         if st.session_state.get("standard_parsed_df") is not None:
-            st.dataframe(st.session_state.standard_parsed_df, width="stretch", hide_index=True)
+            st.dataframe(
+                st.session_state.standard_parsed_df, width="stretch", hide_index=True
+            )
             st.download_button(
                 "Download standard parser output",
                 df_to_excel_bytes(st.session_state.standard_parsed_df),
@@ -339,7 +364,7 @@ POD"""
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 width="stretch",
                 type="primary",
-                key="parser_std_dl"
+                key="parser_std_dl",
             )
 
     with tab2:
@@ -382,7 +407,9 @@ POD"""
                     st.success(f"Parsed {len(parsed_df)} records using fuzzy fallback.")
 
         if st.session_state.get("fuzzy_parsed_df") is not None:
-            st.dataframe(st.session_state.fuzzy_parsed_df, width="stretch", hide_index=True)
+            st.dataframe(
+                st.session_state.fuzzy_parsed_df, width="stretch", hide_index=True
+            )
             st.download_button(
                 "Download fuzzy parser output",
                 df_to_excel_bytes(st.session_state.fuzzy_parsed_df),
@@ -390,7 +417,7 @@ POD"""
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 width="stretch",
                 type="primary",
-                key="parser_fuz_dl"
+                key="parser_fuz_dl",
             )
 
     render_reset_confirm("parser", _reset_parser_state)
