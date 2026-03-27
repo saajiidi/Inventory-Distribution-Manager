@@ -350,12 +350,22 @@ def render_live_tab():
         from src.core.sync import load_shared_gsheet
         df, src, upd = load_shared_gsheet("LastDaySales", force_refresh=False)
         
+        mc = find_columns(df)
+        
+        # --- NEW: FILTER TO LAST DAY ONLY ---
+        if mc.get("date") in df.columns:
+            df[mc["date"]] = parse_dates(df[mc["date"]])
+            latest_date = df[mc["date"]].max()
+            if pd.notna(latest_date):
+                target_date = latest_date.date()
+                df = df[df[mc["date"]].dt.date == target_date].copy()
+                st.info(f"📅 Showing Live Data for: **{target_date.strftime('%d %b %Y')}** (Most Recent Activity)")
+        
         # Precomputed KPI Snapshot Check
         from src.core.paths import CACHE_DIR
         kpi_cache_file = CACHE_DIR / "live_kpi_snapshot.json"
         
-        mc = find_columns(df)
-        dr, sm, tp, tf, bk, df, tc = process_data(df, mc)
+        dr, sm, tp, tf, bk, df_processed, tc = process_data(df, mc)
 
         # Save KPI snapshot for even faster cold starts
         if sm is not None:
@@ -372,8 +382,8 @@ def render_live_tab():
              except Exception:
                  pass
 
-        if df is not None:
-            render_dashboard_output(df, dr, sm, tp, tf, bk, src, upd, top_cust=tc)
+        if df_processed is not None:
+            render_dashboard_output(df_processed, dr, sm, tp, tf, bk, src, upd, top_cust=tc)
     except Exception as e:
         # Try to show last known KPI if sync fails
         from src.core.paths import CACHE_DIR
