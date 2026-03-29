@@ -164,6 +164,64 @@ def compute_unique_customer_count(df: pd.DataFrame) -> int:
     return 0
 
 
+def render_automated_insights(df, sm, bk, deltas=None, cust_metrics=None):
+    """
+    Generate and render data-driven insights and business suggestions.
+    """
+    if df is None:
+        return
+
+    ins = []
+    
+    # 1. Revenue & Growth (Sales Analysis Context)
+    if sm is not None and not sm.empty:
+        total_rev = sm["Total Amount"].sum()
+        if deltas and deltas.get("rev") is not None:
+            dr = deltas["rev"]
+            if dr > 15:
+                ins.append(f"🟢 **Growth Alert**: Revenue is surging up **{dr:.1f}%** compared to the previous period. High momentum detected!")
+            elif dr < -15:
+                ins.append(f"🔴 **Sales Gap**: Revenue is down **{abs(dr):.1f}%**. Suggest reviewing pricing or running a re-engagement campaign.")
+        
+        # Categorical Insights
+        sorted_sm = sm.sort_values("Total Amount", ascending=False)
+        if not sorted_sm.empty:
+            top_cat = sorted_sm.iloc[0]["Category"]
+            top_share = (sorted_sm.iloc[0]["Total Amount"] / max(total_rev, 1)) * 100
+            ins.append(f"📊 **Inventory Focus**: '{top_cat}' is your top performer, core to {top_share:.1f}% of your gross revenue.")
+
+    # 2. Customer Activity (Pulse Context)
+    if cust_metrics:
+        retention = cust_metrics.get("retention", 0)
+        if retention < 15:
+            ins.append("💡 **Retention Opportunity**: Most customers are one-time buyers. Suggest a loyalty discount for the 2nd order.")
+        elif retention > 35:
+            ins.append("✨ **Brand Loyalty**: Your retention rate is excellent! Your core audience is returning frequently.")
+        
+        avg_clv = cust_metrics.get("avg_clv", 0)
+        if avg_clv > 2500:
+             ins.append(f"💰 **High Value Base**: Avg customer spend is **TK {avg_clv:,.0f}**. Your audience has high purchasing power.")
+
+    # 3. Basket Size (Generic)
+    if bk:
+        avg_qty = bk.get("avg_basket_qty", 0)
+        if avg_qty < 1.3:
+            ins.append(f"🛒 **Upsell Hint**: Average basket size is low ({avg_qty:.1f} items). Consider 'Frequently Bought Together' bundles.")
+
+    if ins:
+        st.markdown(
+            f"""
+            <div style="background:var(--accent-soft); border:1px solid #bfdbfe; border-radius:18px; padding:1.15rem; margin-bottom:1.25rem;">
+                <div style="font-size:0.72rem; color:var(--accent-strong); font-weight:800; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.65rem;">System Insights & Suggestions</div>
+                <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                    {"".join(f"<div style='font-size:0.88rem; color:var(--text-strong);'> {i}</div>" for i in ins)}
+                </div>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+
+
 def render_dashboard_output(
     df,
     dr,
@@ -199,6 +257,10 @@ def render_dashboard_output(
         last_refresh="N/A",
         status="Active Dataset",
     )
+    
+    # NEW: Automated Insights
+    render_automated_insights(df, sm, bk, deltas=deltas)
+    
     st.caption(f"Charts and KPIs reflect {display_period or tf or 'the selected period'}.")
 
     top_row = st.columns(4)
@@ -223,8 +285,8 @@ def render_dashboard_output(
     with top_row[3]:
         render_ops_kpi(
             "Basket Analysis",
-            f"{bk['avg_basket_qty']:.1f}",
-            f"Avg basket <b>TK {bk['avg_basket_value']:,.0f}</b>",
+            f"TK {bk['avg_basket_value']:,.0f}",
+            f"Avg {bk['avg_basket_qty']:.1f} items per basket",
         )
 
     chart_a, chart_b = st.columns(2)
@@ -1052,12 +1114,16 @@ def render_customer_pulse_core(db, display_period: str | None = None):
             f"{returning_count:,}",
             "Customers with more than one order",
         )
-    with top_row[2]:
-        render_ops_kpi(
-            "Retention Rate",
-            f"{retention_rate:.1f}%",
-            "Share of returning customers",
-        )
+    with top_row[3]:
+        render_ops_kpi("Avg CLV", f"TK {avg_clv:,.0f}", "Value per customer")
+        
+    # NEW: Customer Insights
+    render_automated_insights(
+        db, 
+        sm=None, 
+        bk=None, 
+        cust_metrics={"retention": retention_rate, "avg_clv": avg_clv}
+    )
     with top_row[3]:
         render_ops_kpi(
             "Avg CLV",
