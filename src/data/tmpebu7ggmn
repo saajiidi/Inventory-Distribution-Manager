@@ -1,0 +1,401 @@
+[
+    {
+        "timestamp": "2026-03-26 08:05:51",
+        "context": "Main App Bootstrap",
+        "error": "'src.core.persistence'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 8, in <module>\n    from src.core.persistence import clear_state_keys, save_state\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.core.persistence'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:53",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 19, in <module>\n    from src.engine.inventory import core as inv_core\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:54",
+        "context": "Main App Bootstrap",
+        "error": "'src.modules.inventory'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.modules.inventory'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:55",
+        "context": "Main App Bootstrap",
+        "error": "'src.core.persistence'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 22, in run_app\n    from src.modules.logistics import render_pathao_tab\n  File \"G:\\Automation Hub\\src\\modules\\logistics.py\", line 4, in <module>\n    from src.core.persistence import clear_state_keys, save_state\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.core.persistence'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:55",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 13, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1314, in _find_and_load_unlocked\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:57",
+        "context": "Main App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:58",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 18, in run_app\n    from src.modules.tools import (\n    ...<2 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\modules\\tools.py\", line 9, in <module>\n    from src.modules.sales import find_columns\n  File \"G:\\Automation Hub\\src\\modules\\sales.py\", line 12, in <module>\n    from src.utils.data import find_columns, parse_dates\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:57",
+        "context": "Main App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:59",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 6, in <module>\n    from src.core.errors import log_error\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:05:59",
+        "context": "Main App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:06:01",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 18, in <module>\n    from src.utils.data import find_columns\n  File \"G:\\Automation Hub\\src\\utils\\data.py\", line 4, in <module>\n    from src.core.categories import get_category_for_orders\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1559, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1528, in _get_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1399, in __iter__\n  File \"<frozen importlib._bootstrap_external>\", line 1386, in _recalculate\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:06:02",
+        "context": "Main App Bootstrap",
+        "error": "'src.utils'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 18, in run_app\n    from src.modules.tools import (\n    ...<2 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\modules\\tools.py\", line 9, in <module>\n    from src.modules.sales import find_columns\n  File \"G:\\Automation Hub\\src\\modules\\sales.py\", line 12, in <module>\n    from src.utils.data import find_columns, parse_dates\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1337, in _find_and_load_unlocked\nKeyError: 'src.utils'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:06:05",
+        "context": "Main App Bootstrap",
+        "error": "'src.core.errors'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 6, in <module>\n    from src.core.errors import log_error\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.core.errors'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:06:05",
+        "context": "Main App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:06:06",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 13, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 08:06:07",
+        "context": "Main App Bootstrap",
+        "error": "'src.utils.io'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 173, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 7, in <module>\n    from src.utils.io import read_uploaded_file\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.utils.io'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 06:04:26",
+        "context": "Main App Bootstrap",
+        "error": "name 'summ' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 169, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 83, in run_app\n    render_custom_period_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 526, in render_custom_period_tab\n                dr,\n                ^^^\n    ...<9 lines>...\n        st.error(\"Date column not found in database to support period filtering.\")\n        ^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 196, in render_dashboard_output\n    render_story_summary(sm, top_prod, tf, bk)\n                         ^^^^\nNameError: name 'summ' is not defined. Did you mean: 'sum'?\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:40:50",
+        "context": "Main App Bootstrap",
+        "error": "'src.core.persistence'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 169, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 17, in run_app\n    from src.modules.parser import render_fuzzy_parser_tab\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\parser.py\", line 283, in <module>\n    from src.core.persistence import clear_state_keys\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.core.persistence'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:41:31",
+        "context": "Main App Bootstrap",
+        "error": "No module named 'dateparser'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 169, in <module>\n    st.caption(\"Powered by Antigravity AI Engine\")\n    ^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 83, in run_app\n    render_custom_period_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 519, in render_custom_period_tab\n    master, msg = get_all_statements_master(full_history=full_requested)\n                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 428, in get_all_statements_master\n    tab[\"parsed_date\"] = parse_date_from_tab_name(tab[\"name\"])\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 377, in parse_date_from_tab_name\n    import dateparser\nModuleNotFoundError: No module named 'dateparser'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:45:25",
+        "context": "Main App Bootstrap",
+        "error": "No module named 'dateparser'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 174, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 83, in run_app\n    render_custom_period_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 554, in render_custom_period_tab\n    master, msg = get_all_statements_master(full_history=full_requested)\n                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 463, in get_all_statements_master\n    tab[\"parsed_date\"] = parse_date_from_tab_name(tab[\"name\"])\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 412, in parse_date_from_tab_name\n    import dateparser\nModuleNotFoundError: No module named 'dateparser'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:45:27",
+        "context": "Main App Bootstrap",
+        "error": "No module named 'dateparser'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 174, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 83, in run_app\n    render_custom_period_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 554, in render_custom_period_tab\n    master, msg = get_all_statements_master(full_history=full_requested)\n                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 463, in get_all_statements_master\n    tab[\"parsed_date\"] = parse_date_from_tab_name(tab[\"name\"])\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 412, in parse_date_from_tab_name\n    import dateparser\nModuleNotFoundError: No module named 'dateparser'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:45:29",
+        "context": "Main App Bootstrap",
+        "error": "No module named 'dateparser'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 174, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 83, in run_app\n    render_custom_period_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 554, in render_custom_period_tab\n    master, msg = get_all_statements_master(full_history=full_requested)\n                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 463, in get_all_statements_master\n    tab[\"parsed_date\"] = parse_date_from_tab_name(tab[\"name\"])\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 412, in parse_date_from_tab_name\n    import dateparser\nModuleNotFoundError: No module named 'dateparser'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:45:31",
+        "context": "Main App Bootstrap",
+        "error": "No module named 'dateparser'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 174, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 83, in run_app\n    render_custom_period_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 554, in render_custom_period_tab\n    master, msg = get_all_statements_master(full_history=full_requested)\n                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 463, in get_all_statements_master\n    tab[\"parsed_date\"] = parse_date_from_tab_name(tab[\"name\"])\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 412, in parse_date_from_tab_name\n    import dateparser\nModuleNotFoundError: No module named 'dateparser'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:55:20",
+        "context": "Main App Bootstrap",
+        "error": "'src.ui.components'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 174, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\inventory.py\", line 7, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.ui.components'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:55:20",
+        "context": "Main App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Github\\Automation Pivot\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 174, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Github\\Automation Pivot\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:25",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:26",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:28",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:29",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:29",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:29",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:30",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 17:56:30",
+        "context": "Main App Bootstrap",
+        "error": "name 'render_bike_animation' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 252, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 141, in run_app\n    render_bike_animation()\n    ^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_bike_animation' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:01:04",
+        "context": "Main App Bootstrap",
+        "error": "render_distribution_tab() missing 1 required positional argument: 'search_q'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 196, in run_app\n    elif sub == \"Inventory\": render_distribution_tab(guided=False)\n                             ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\nTypeError: render_distribution_tab() missing 1 required positional argument: 'search_q'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:01:07",
+        "context": "Main App Bootstrap",
+        "error": "render_distribution_tab() missing 1 required positional argument: 'search_q'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 196, in run_app\n    elif sub == \"Inventory\": render_distribution_tab(guided=False)\n                             ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\nTypeError: render_distribution_tab() missing 1 required positional argument: 'search_q'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:01:09",
+        "context": "Main App Bootstrap",
+        "error": "render_distribution_tab() missing 1 required positional argument: 'search_q'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 196, in run_app\n    elif sub == \"Inventory\": render_distribution_tab(guided=False)\n                             ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\nTypeError: render_distribution_tab() missing 1 required positional argument: 'search_q'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:01:31",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 95, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\inventory.py\", line 5, in <module>\n    from src.utils.io import read_uploaded_file\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:02",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:03",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:04",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:06",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:07",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:08",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:09",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:11",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:12",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:14",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:16",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:17",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:02:18",
+        "context": "Main App Bootstrap",
+        "error": "name 'timezone' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 205, in run_app\n    render_cache_health_panel()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 941, in render_cache_health_panel\n    diff = datetime.now(timezone.utc) - dt\n                        ^^^^^^^^\nNameError: name 'timezone' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:16:39",
+        "context": "Customer Pulse Tab",
+        "error": "name 'fig_growth' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 688, in render_customer_pulse_tab\n    render_customer_pulse_core(master, full_hist)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 808, in render_customer_pulse_core\n    render_plotly_chart(fig_growth, key=\"pulse_scaling_line\")\n                        ^^^^^^^^^^\nNameError: name 'fig_growth' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:17:09",
+        "context": "Main App Bootstrap",
+        "error": "unexpected indent (sales.py, line 798)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 98, in run_app\n    from src.modules.tools import (\n    ...<2 lines>...\n    )\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\tools.py\", line 9, in <module>\n    from src.modules.sales import find_columns\n  File \"G:\\Github\\Automation Pivot\\src\\modules\\sales.py\", line 798\n    fig_growth = px.line(\nIndentationError: unexpected indent\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:28:21",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 94, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:42:33",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 94, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 18:42:33",
+        "context": "Main App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 229, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 94, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 19:27:12",
+        "context": "Main App Bootstrap",
+        "error": "'src.modules.inventory'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 228, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 95, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.modules.inventory'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-27 19:28:22",
+        "context": "Main App Bootstrap",
+        "error": "'src.modules.ai'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 228, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Github\\Automation Pivot\\app.py\", line 94, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 946, in _load_unlocked\nKeyError: 'src.modules.ai'\n",
+        "details": {}
+    }
+]

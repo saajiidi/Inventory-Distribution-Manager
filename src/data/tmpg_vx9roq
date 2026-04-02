@@ -1,0 +1,471 @@
+[
+    {
+        "timestamp": "2026-03-25 21:56:18",
+        "context": "App Bootstrap",
+        "error": "There are multiple `button` elements with the same auto-generated ID. When this element is created, it is assigned an internal ID based on the element type and provided parameters. Multiple elements with the same type and parameters will cause this error.\n\nTo fix this error, please pass a unique `key` argument to the `button` element.",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 129, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 104, in run_app\n    render_wp_tab(guided=False)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"G:\\Automation Hub\\src\\modules\\ecommerce.py\", line 73, in render_wp_tab\n    if st.button(\"\ud83d\udce1 Sync from Live Stream\", use_container_width=True):\n       ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Sajid\\AppData\\Roaming\\Python\\Python313\\site-packages\\streamlit\\runtime\\metrics_util.py\", line 532, in wrapped_func\n    result = non_optional_func(*args, **kwargs)\n  File \"C:\\Users\\Sajid\\AppData\\Roaming\\Python\\Python313\\site-packages\\streamlit\\elements\\widgets\\button.py\", line 367, in button\n    return self.dg._button(\n           ~~~~~~~~~~~~~~~^\n        label,\n        ^^^^^^\n    ...<12 lines>...\n        shortcut=shortcut,\n        ^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\Sajid\\AppData\\Roaming\\Python\\Python313\\site-packages\\streamlit\\elements\\widgets\\button.py\", line 1435, in _button\n    element_id = compute_and_register_element_id(\n        \"form_submit_button\" if is_form_submitter else \"button\",\n    ...<10 lines>...\n        shortcut=normalized_shortcut,\n    )\n  File \"C:\\Users\\Sajid\\AppData\\Roaming\\Python\\Python313\\site-packages\\streamlit\\elements\\lib\\utils.py\", line 265, in compute_and_register_element_id\n    _register_element_id(ctx, element_type, element_id)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Sajid\\AppData\\Roaming\\Python\\Python313\\site-packages\\streamlit\\elements\\lib\\utils.py\", line 150, in _register_element_id\n    raise StreamlitDuplicateElementId(element_type)\nstreamlit.errors.StreamlitDuplicateElementId: There are multiple `button` elements with the same auto-generated ID. When this element is created, it is assigned an internal ID based on the element type and provided parameters. Multiple elements with the same type and parameters will cause this error.\n\nTo fix this error, please pass a unique `key` argument to the `button` element.\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 22:29:34",
+        "context": "App Bootstrap",
+        "error": "name 'f1' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 124, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 79, in run_app\n    with tabs[1]: render_custom_period_tab()\n                  ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Automation Hub\\src\\modules\\sales.py\", line 227, in render_custom_period_tab\n    start = f1.date_input(\"Filter From\", default_start, min_value=abs_min, max_value=date.today(), key=\"cust_start\")\n            ^^\nNameError: name 'f1' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 22:30:06",
+        "context": "App Bootstrap",
+        "error": "name 'f1' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 124, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 79, in run_app\n    with tabs[1]: render_custom_period_tab()\n                  ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Automation Hub\\src\\modules\\sales.py\", line 227, in render_custom_period_tab\n    start = f1.date_input(\"Filter From\", default_start, min_value=abs_min, max_value=date.today(), key=\"cust_start\")\n            ^^\nNameError: name 'f1' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 22:30:14",
+        "context": "App Bootstrap",
+        "error": "name 'f1' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 124, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 79, in run_app\n    with tabs[1]: render_custom_period_tab()\n                  ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Automation Hub\\src\\modules\\sales.py\", line 227, in render_custom_period_tab\n    start = f1.date_input(\"Filter From\", default_start, min_value=abs_min, max_value=date.today(), key=\"cust_start\")\n            ^^\nNameError: name 'f1' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 22:30:31",
+        "context": "App Bootstrap",
+        "error": "name 'f1' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 124, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 79, in run_app\n    with tabs[1]: render_custom_period_tab()\n                  ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"G:\\Automation Hub\\src\\modules\\sales.py\", line 227, in render_custom_period_tab\n    start = f1.date_input(\"Filter From\", default_start, min_value=abs_min, max_value=date.today(), key=\"cust_start\")\n            ^^\nNameError: name 'f1' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:36:48",
+        "context": "App Bootstrap",
+        "error": "'src'",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 13, in run_app\n    from src.modules.ai import render_ai_chat_tab\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1322, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 1262, in _find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1568, in find_spec\n  File \"<frozen importlib._bootstrap_external>\", line 1366, in __init__\n  File \"<frozen importlib._bootstrap_external>\", line 1382, in _get_parent_path\nKeyError: 'src'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:40",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:42",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:43",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:43",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:45",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:45",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:46",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:46",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:47",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:47",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:48",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:48",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:49",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:49",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:50",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:50",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:51",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:51",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:52",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:52",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:53",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:53",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:54",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:54",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:56",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:56",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:57",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:57",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:58",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:59",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:44:59",
+        "context": "App Bootstrap",
+        "error": "invalid decimal literal (components.py, line 53)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 53\n    backdrop-filter: blur(16px);\n                           ^\nSyntaxError: invalid decimal literal\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:48:54",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:48:57",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:48:57",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:48:58",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:00",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:00",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:02",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:02",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:04",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:04",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:05",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\nImportError: cannot import name 'render_distribution_tab' from 'src.modules.inventory' (G:\\Automation Hub\\src\\modules\\inventory.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:09",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:09",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:10",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:10",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:11",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:11",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-25 23:49:17",
+        "context": "App Bootstrap",
+        "error": "unterminated triple-quoted string literal (detected at line 371) (components.py, line 323)",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 130, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 15, in run_app\n    from src.modules.inventory import render_distribution_tab\n  File \"G:\\Automation Hub\\src\\modules\\inventory.py\", line 9, in <module>\n    from src.ui.components import (\n    ...<5 lines>...\n    )\n  File \"G:\\Automation Hub\\src\\ui\\components.py\", line 323\n    \"\"\"Compact file uploader with a bold label and minimal icon interface.\"\"\"\n                                                                          ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 371)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:51:55",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:00",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:02",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:03",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:04",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:06",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:08",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:09",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:13",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:16",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:52:18",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-03-26 05:53:19",
+        "context": "App Bootstrap",
+        "error": "name 'render_wa_verification_tab' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"G:\\Automation Hub\\app.py\", line 161, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"G:\\Automation Hub\\app.py\", line 119, in run_app\n    render_wa_verification_tab(guided=False)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_wa_verification_tab' is not defined\n",
+        "details": {}
+    }
+]
