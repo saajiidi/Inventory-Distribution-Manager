@@ -20,3 +20,6 @@ requests
 
 # Analytics Database
 duckdb
+
+# AI Chatbot Integration
+google-generativeai
