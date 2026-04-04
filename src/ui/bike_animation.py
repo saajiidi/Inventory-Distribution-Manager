@@ -58,7 +58,7 @@ def render_bike_animation():
     .smoke {{
         width: 12px;
         height: 12px;
-        background: #cbd5e1;
+        background: var(--text-dim);
         border-radius: 50%;
         animation: smoke-puff 0.8s ease-out infinite;
         margin-left: -6px;

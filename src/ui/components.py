@@ -43,6 +43,33 @@ def inject_base_styles():
         --radius-sm: 14px;
     }
 
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --app-bg-1: #0f172a;
+            --app-bg-2: #020617;
+            --app-bg-3: #000000;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --panel-bg-strong: rgba(15, 23, 42, 0.95);
+            --panel-muted: rgba(15, 23, 42, 0.6);
+            --panel-border: #334155;
+            --panel-border-soft: #1e293b;
+            --surface-bg: #1e293b;
+            --surface-border: #334155;
+            --text-strong: #f8fafc;
+            --text-soft: #cbd5e1;
+            --text-dim: #94a3b8;
+            --text-color: #cbd5e1;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-primary: #3b82f6;
+            --accent-strong: #60a5fa;
+            --accent-soft: rgba(37, 99, 235, 0.15);
+            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --shadow-panel: 0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+    }
+
     html,
     body,
     [data-testid="stAppViewContainer"],
@@ -64,7 +91,7 @@ def inject_base_styles():
     }
 
     [data-testid="stHeader"] {
-        background: rgba(247, 249, 252, 0.96) !important;
+        background: var(--panel-bg-strong) !important;
         border-bottom: 1px solid var(--panel-border-soft) !important;
     }
 
@@ -118,7 +145,7 @@ def inject_base_styles():
     }
 
     [data-testid="stSidebar"] {
-        background: #f6f8fb !important;
+        background: var(--app-bg-1) !important;
         border-right: 1px solid var(--panel-border-soft);
     }
 
@@ -148,7 +175,7 @@ def inject_base_styles():
         border-radius: 12px;
         object-fit: cover;
         border: 1px solid var(--panel-border-soft);
-        background: #ffffff;
+        background: var(--panel-bg-strong);
     }
 
     .sidebar-brand-text {
@@ -364,19 +391,19 @@ def inject_base_styles():
     }
 
     .stButton > button:hover {
-        border-color: #bfd2e0 !important;
-        background: #ffffff !important;
+        border-color: var(--accent-strong) !important;
+        background: var(--panel-bg-strong) !important;
         color: var(--accent-strong) !important;
     }
 
     [data-testid="baseButton-primary"] {
-        background: #2563eb !important;
+        background: var(--accent) !important;
         color: #ffffff !important;
-        border-color: #1d4ed8 !important;
+        border-color: var(--accent-strong) !important;
     }
 
     [data-testid="baseButton-primary"]:hover {
-        background: #1d4ed8 !important;
+        background: var(--accent-strong) !important;
         color: #ffffff !important;
     }
 
@@ -386,7 +413,7 @@ def inject_base_styles():
     .stNumberInput input,
     div[data-baseweb="select"] > div,
     .stMultiSelect [data-baseweb="select"] > div {
-        background: rgba(255,255,255,0.98) !important;
+        background: var(--panel-bg-strong) !important;
         color: var(--text-strong) !important;
         border: 1px solid var(--panel-border) !important;
         border-radius: 14px !important;
@@ -417,7 +444,7 @@ def inject_base_styles():
     }
 
     .stTabs [data-baseweb="tab"] {
-        background: rgba(255,255,255,0.92) !important;
+        background: var(--panel-bg) !important;
         border: 1px solid var(--panel-border) !important;
         color: var(--text-soft) !important;
         border-radius: 999px !important;
@@ -428,7 +455,7 @@ def inject_base_styles():
     .stTabs [aria-selected="true"] {
         background: var(--accent-soft) !important;
         color: var(--accent-strong) !important;
-        border-color: #bfdbfe !important;
+        border-color: var(--accent-strong) !important;
     }
 
     [data-baseweb="button-group"] {
@@ -467,7 +494,7 @@ def inject_base_styles():
     [data-testid="stDataFrame"] [role="columnheader"],
     [data-testid="stDataFrame"] thead th,
     [data-testid="stTable"] thead th {
-        background: #f5f8fb !important;
+        background: var(--panel-muted) !important;
         color: var(--text-strong) !important;
     }
 
@@ -499,19 +526,19 @@ def inject_base_styles():
     }
 
     div[data-testid="stInfo"] {
-        background: #eff6ff !important;
+        background: var(--accent-soft) !important;
     }
 
     div[data-testid="stSuccess"] {
-        background: #f0fdf4 !important;
+        background: rgba(21, 128, 61, 0.1) !important;
     }
 
     div[data-testid="stWarning"] {
-        background: #fffbeb !important;
+        background: rgba(180, 83, 9, 0.1) !important;
     }
 
     div[data-testid="stError"] {
-        background: #fef2f2 !important;
+        background: rgba(185, 28, 28, 0.1) !important;
     }
 
     .inline-action-row {
@@ -519,7 +546,7 @@ def inject_base_styles():
         top: 0;
         z-index: 100;
         padding: 0.75rem 1rem;
-        background: rgba(247, 249, 252, 0.98);
+        background: var(--panel-bg-strong);
         border: 1px solid var(--panel-border);
         border-radius: 18px;
         margin-top: 1rem;
