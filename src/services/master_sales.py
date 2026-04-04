@@ -1,6 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import pandas as pd
 
@@ -9,26 +10,24 @@ from src.core.sync import load_shared_gsheet
 from src.data.normalized_sales import normalize_sales_dataframe
 
 CORE_WORKBOOK_PATH = DATA_DIR / "TotalOrder_TillLastTime.xlsx"
+CORE_PARQUET_SNAPSHOT_PATH = DATA_DIR / "TotalOrder_TillLastTime.parquet"
 MASTER_CACHE_FILE = CACHE_DIR / "historical_master.parquet"
 
 
 def load_master_sales_dataset(force_refresh: bool = False) -> tuple[pd.DataFrame | None, str]:
-    if not CORE_WORKBOOK_PATH.exists():
-        return None, f"Core workbook not found: {CORE_WORKBOOK_PATH.name}"
-
-    workbook_mtime = os.path.getmtime(CORE_WORKBOOK_PATH)
+    base_source_mtime = _get_base_source_mtime()
     if MASTER_CACHE_FILE.exists() and not force_refresh:
         cache_mtime = os.path.getmtime(MASTER_CACHE_FILE)
-        if cache_mtime >= workbook_mtime:
+        if base_source_mtime is None or cache_mtime >= base_source_mtime:
             try:
                 cached = pd.read_parquet(MASTER_CACHE_FILE)
                 if not cached.empty:
-                    return cached, f"Core workbook cache ({len(cached):,} rows)"
+                    return cached, f"Historical cache ready ({len(cached):,} rows)"
             except Exception:
                 pass
 
     try:
-        base_df, info = _load_core_workbook()
+        base_df, info = _load_local_base_dataset(force_refresh=force_refresh)
     except Exception as exc:
         if MASTER_CACHE_FILE.exists():
             try:
@@ -36,7 +35,7 @@ def load_master_sales_dataset(force_refresh: bool = False) -> tuple[pd.DataFrame
                 return cached, f"Fallback cache in use ({exc})"
             except Exception:
                 pass
-        return None, f"Failed to load core workbook: {exc}"
+        return None, f"Failed to load local historical source: {exc}"
 
     delta_df = _load_2026_delta(base_df, force_refresh=force_refresh)
     final_df = pd.concat([base_df, delta_df], ignore_index=True, copy=False) if not delta_df.empty else base_df
@@ -47,11 +46,84 @@ def load_master_sales_dataset(force_refresh: bool = False) -> tuple[pd.DataFrame
         pass
 
     msg = (
-        f"Core workbook loaded: {info['base_rows']:,} rows"
-        f" across {info['sheet_count']} tabs"
+        f"{info['source_label']} loaded: {info['base_rows']:,} rows"
+        f"{_format_sheet_count(info.get('sheet_count'))}"
         f" + {len(delta_df):,} new 2026 rows"
     )
     return final_df, msg
+
+
+def _get_base_source_mtime() -> float | None:
+    workbook_mtime = _safe_getmtime(CORE_WORKBOOK_PATH)
+    snapshot_mtime = _safe_getmtime(CORE_PARQUET_SNAPSHOT_PATH)
+
+    if workbook_mtime is None and snapshot_mtime is None:
+        return None
+    if workbook_mtime is None:
+        return snapshot_mtime
+    if snapshot_mtime is None:
+        return workbook_mtime
+    return max(workbook_mtime, snapshot_mtime)
+
+
+def _safe_getmtime(path: Path) -> float | None:
+    if path.exists():
+        return os.path.getmtime(path)
+    return None
+
+
+def _load_local_base_dataset(force_refresh: bool = False) -> tuple[pd.DataFrame, dict]:
+    snapshot_ready = _snapshot_is_fresh()
+
+    if CORE_PARQUET_SNAPSHOT_PATH.exists() and snapshot_ready and not force_refresh:
+        snapshot_df = pd.read_parquet(CORE_PARQUET_SNAPSHOT_PATH)
+        return snapshot_df, {
+            "base_rows": len(snapshot_df),
+            "sheet_count": None,
+            "source_label": "Local Parquet snapshot",
+        }
+
+    if CORE_WORKBOOK_PATH.exists():
+        workbook_df, info = _load_core_workbook()
+        _write_snapshot(workbook_df)
+        return workbook_df, {
+            "base_rows": info["base_rows"],
+            "sheet_count": info["sheet_count"],
+            "source_label": "Workbook core",
+        }
+
+    if CORE_PARQUET_SNAPSHOT_PATH.exists():
+        snapshot_df = pd.read_parquet(CORE_PARQUET_SNAPSHOT_PATH)
+        return snapshot_df, {
+            "base_rows": len(snapshot_df),
+            "sheet_count": None,
+            "source_label": "Local Parquet snapshot",
+        }
+
+    raise FileNotFoundError(
+        f"Neither {CORE_WORKBOOK_PATH.name} nor {CORE_PARQUET_SNAPSHOT_PATH.name} is available"
+    )
+
+
+def _snapshot_is_fresh() -> bool:
+    if not CORE_PARQUET_SNAPSHOT_PATH.exists():
+        return False
+    if not CORE_WORKBOOK_PATH.exists():
+        return True
+    return os.path.getmtime(CORE_PARQUET_SNAPSHOT_PATH) >= os.path.getmtime(CORE_WORKBOOK_PATH)
+
+
+def _write_snapshot(df: pd.DataFrame) -> None:
+    try:
+        df.to_parquet(CORE_PARQUET_SNAPSHOT_PATH, index=False)
+    except Exception:
+        pass
+
+
+def _format_sheet_count(sheet_count: int | None) -> str:
+    if sheet_count is None:
+        return ""
+    return f" across {sheet_count} tabs"
 
 
 def _load_core_workbook() -> tuple[pd.DataFrame, dict]:

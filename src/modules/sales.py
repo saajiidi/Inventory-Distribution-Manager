@@ -893,6 +893,7 @@ def render_custom_period_tab():
     if master is None:
         st.error(msg)
         return
+    st.caption(msg)
 
     if "_p_date" in master.columns:
         filtered = master[

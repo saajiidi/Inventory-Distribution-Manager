@@ -53,6 +53,8 @@ def run_app():
     )
     from src.ui.bike_animation import render_bike_animation
 
+    from src.modules.catwise import render_catwise_analytics_tab
+
     init_state()
     inject_base_styles()
 
@@ -72,6 +74,7 @@ def run_app():
             "Live Queue",
             "Sales Analysis",
             "Customer Pulse",
+            "Catwise Analytics",
         ]
 
         st.session_state.main_nav = st.radio(
@@ -109,6 +112,8 @@ def run_app():
         render_custom_period_tab()
     elif st.session_state.main_nav == "Customer Pulse":
         render_customer_pulse_tab()
+    elif st.session_state.main_nav == "Catwise Analytics":
+        render_catwise_analytics_tab()
 
     # Footer
     st.markdown("---")
