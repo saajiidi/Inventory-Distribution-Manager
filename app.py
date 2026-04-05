@@ -41,54 +41,50 @@ def _clear_error_logs():
 
 def _render_workspace_sidebar():
     from FrontEnd.components import render_sidebar_branding
-    from FrontEnd.pages import get_primary_pages
 
     with st.sidebar:
         render_sidebar_branding()
-        st.subheader("Workspace")
-        st.caption(f"Working directory: `{os.getcwd()}`")
-        with st.expander("Workspace Views", expanded=False):
-            for page in get_primary_pages():
-                st.markdown(f"**{page.label}**")
-                st.caption(page.description)
+        
+        # Polish: Clean spacing and user-friendly UX for sidebar
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.info("Explore the primary navigation tabs above to switch between different operational, customer, and product views.")
+        
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        # Hide developer/debug interactions in an expander for a much cleaner production look
+        with st.expander("🛠️ Developer & Admin Tools", expanded=False):
+            if st.button("Save Session State", use_container_width=True):
+                save_state()
+                st.success("Session state saved.")
 
-        if st.button("Save session state", use_container_width=True):
-            save_state()
-            st.success("Session state saved.")
-
-        st.divider()
-        st.subheader("Controls")
-        with st.expander("Reset Active Tool Data", expanded=False):
+            st.divider()
             registered = st.session_state.get("registered_resets", {})
-            if not registered:
-                st.info("No active tool data found.")
-            else:
-                tool_to_wipe = st.selectbox("Select tool", list(registered.keys()))
-                if st.button("Reset Tool Now", use_container_width=True, type="primary"):
+            if registered:
+                tool_to_wipe = st.selectbox("Select tool to reset", list(registered.keys()))
+                if st.button("Reset Tool Now", use_container_width=True, type="secondary"):
                     registered[tool_to_wipe]["fn"]()
                     st.session_state.confirm_tool_reset = False
                     st.success("Selected tool state was reset.")
                     st.rerun()
 
-        st.divider()
-        if st.button("Full System Reset", use_container_width=True, type="secondary"):
-            st.session_state.confirm_app_reset = True
+            st.divider()
+            if st.button("Full System Reset", use_container_width=True, type="secondary"):
+                st.session_state.confirm_app_reset = True
 
-        if st.session_state.get("confirm_app_reset"):
-            st.warning("This clears saved session state and all active tool data for this app session.")
-            c1, c2 = st.columns(2)
-            if c1.button("Yes", type="primary", use_container_width=True):
-                from FrontEnd.utils.state import STATE_FILE
+            if st.session_state.get("confirm_app_reset"):
+                st.warning("This clears saved session state and all active tool data for this app session.")
+                c1, c2 = st.columns(2)
+                if c1.button("Yes", type="primary", use_container_width=True):
+                    from FrontEnd.utils.state import STATE_FILE
 
-                if os.path.exists(STATE_FILE):
-                    os.remove(STATE_FILE)
-                st.session_state.clear()
-                st.rerun()
-            if c2.button("No", use_container_width=True):
-                st.session_state.confirm_app_reset = False
-                st.rerun()
+                    if os.path.exists(STATE_FILE):
+                        os.remove(STATE_FILE)
+                    st.session_state.clear()
+                    st.rerun()
+                if c2.button("No", use_container_width=True):
+                    st.session_state.confirm_app_reset = False
+                    st.rerun()
 
-        _render_system_logs()
+            _render_system_logs()
 
 
 def _render_system_logs():

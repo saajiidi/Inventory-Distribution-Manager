@@ -384,3 +384,7 @@ consumer_secret = "cs_your_consumer_secret"
                 st.dataframe(completeness, use_container_width=True, hide_index=True)
         except Exception as exc:
             st.caption(f"Could not load storage status: {exc}")
+
+    st.divider()
+    from FrontEnd.pages.dashboard import render_dashboard_products_section
+    render_dashboard_products_section()

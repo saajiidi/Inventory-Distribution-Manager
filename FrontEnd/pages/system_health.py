@@ -84,3 +84,7 @@ def render_system_health_tab():
     st.subheader("All System Logs")
     visible_cols = [col for col in ["timestamp", "context", "error_type", "error"] if col in df_errors.columns]
     st.dataframe(df_errors[visible_cols], use_container_width=True, hide_index=True)
+
+    st.divider()
+    from FrontEnd.pages.dashboard import render_dashboard_operations_section
+    render_dashboard_operations_section()

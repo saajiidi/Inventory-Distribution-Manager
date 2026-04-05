@@ -501,40 +501,12 @@ def render_dashboard_tab():
             "Rerun the page or click the sync button to refresh what you see."
         )
 
-    tabs = st.tabs([
-        "Overview",
-        "Customers",
-        "Products",
-        "Operations",
-    ])
-    with tabs[0]:
-        st.caption("Core business pulse with the most important WooCommerce metrics only.")
-        render_executive_summary(df_sales, df_customers, summary)
-        st.divider()
-        render_business_intelligence(df_sales, df_customers)
-        with st.expander("Data Confidence", expanded=False):
-            render_data_audit(df_sales, df_customers, start_date, end_date)
-    with tabs[1]:
-        st.caption("Customer growth, repeat behavior, and retention signals in one focused view.")
-        render_customer_behavior(df_woo_only, df_customers, historical_ready=historical_ready)
-    with tabs[2]:
-        st.caption("Top products, stock position, and demand coverage without extra noise.")
-        render_product_performance(df_woo_only)
-        st.divider()
-        render_inventory_health(stock_df, ml_bundle.get("forecast", pd.DataFrame()))
-    with tabs[3]:
-        st.caption("Secondary operational views for trends, geography, and machine-generated signals.")
-        operations_tabs = st.tabs([
-            "Sales Trends",
-            "Geographic",
-            "Forecast & Alerts",
-        ])
-        with operations_tabs[0]:
-            render_sales_trends(df_sales)
-        with operations_tabs[1]:
-            render_geographic_insights(df_sales)
-        with operations_tabs[2]:
-            render_forecast_and_alerts(ml_bundle)
+    st.caption("Core business pulse with the most important WooCommerce metrics only.")
+    render_executive_summary(df_sales, df_customers, summary)
+    st.divider()
+    render_business_intelligence(df_sales, df_customers)
+    with st.expander("Data Confidence", expanded=False):
+        render_data_audit(df_sales, df_customers, start_date, end_date)
 
 
 def render_business_intelligence(df_sales: pd.DataFrame, df_customers: pd.DataFrame):
@@ -1649,3 +1621,38 @@ def _pct_delta(current: float, previous: float, suffix: str = "") -> str | None:
         return None
     delta = ((current - previous) / previous) * 100
     return f"{delta:+.1f}% {suffix}".strip()
+
+def render_dashboard_customers_section():
+    if "dashboard_data" not in st.session_state:
+        st.info("⚠️ Please load data from the Business Intelligence tab first to view this section.")
+        return
+    data = st.session_state.dashboard_data
+    st.subheader("Dashboard Customer Behavior")
+    st.caption("Customer growth, repeat behavior, and retention signals loaded from BI cache.")
+    render_customer_behavior(data["sales"], data["customers"], historical_ready=data.get("historical_ready", False))
+
+def render_dashboard_products_section():
+    if "dashboard_data" not in st.session_state:
+        st.info("⚠️ Please load data from the Business Intelligence tab first to view this section.")
+        return
+    data = st.session_state.dashboard_data
+    st.subheader("Top Products & Inventory")
+    st.caption("Top products, stock position, and demand coverage.")
+    render_product_performance(data["sales"])
+    st.divider()
+    render_inventory_health(data.get("stock", pd.DataFrame()), data.get("ml", {}).get("forecast", pd.DataFrame()))
+
+def render_dashboard_operations_section():
+    if "dashboard_data" not in st.session_state:
+        st.info("⚠️ Please load data from the Business Intelligence tab first to view this section.")
+        return
+    data = st.session_state.dashboard_data
+    st.subheader("Operational Trends")
+    st.caption("Operational views for trends, geography, and machine-generated signals.")
+    operations_tabs = st.tabs(["Sales Trends", "Geographic", "Forecast & Alerts"])
+    with operations_tabs[0]:
+        render_sales_trends(data["sales"])
+    with operations_tabs[1]:
+        render_geographic_insights(data["sales"])
+    with operations_tabs[2]:
+        render_forecast_and_alerts(data.get("ml", {}))

@@ -178,3 +178,7 @@ def render_customer_insight_tab():
         file_name=f"customer_insights_{datetime.now().strftime('%Y%m%d')}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
+    st.divider()
+    from FrontEnd.pages.dashboard import render_dashboard_customers_section
+    render_dashboard_customers_section()
