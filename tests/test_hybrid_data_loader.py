@@ -30,7 +30,17 @@ class TestHybridDataLoader(unittest.TestCase):
         fake_service = _FakeWooService()
 
         with (
-            patch.object(hybrid_data_loader.st, "secrets", {"woocommerce": {"x": "y"}}),
+            patch.object(
+                hybrid_data_loader.st,
+                "secrets",
+                {
+                    "woocommerce": {
+                        "store_url": "https://example.com",
+                        "consumer_key": "ck_test",
+                        "consumer_secret": "cs_test",
+                    }
+                },
+            ),
             patch("BackEnd.services.woocommerce_service.WooCommerceService", return_value=fake_service),
         ):
             df = hybrid_data_loader.load_woocommerce_live_data(

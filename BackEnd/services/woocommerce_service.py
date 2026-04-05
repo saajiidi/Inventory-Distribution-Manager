@@ -4,14 +4,36 @@ import streamlit as st
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
+
+def get_woocommerce_credentials() -> dict[str, str]:
+    """Safely load WooCommerce credentials from Streamlit secrets."""
+    try:
+        woo = st.secrets.get("woocommerce", {})
+    except Exception:
+        return {}
+
+    if not woo:
+        return {}
+
+    credentials = dict(woo)
+    required = {"store_url", "consumer_key", "consumer_secret"}
+    if not required.issubset(credentials):
+        return {}
+    return credentials
+
+
 class WooCommerceService:
     def __init__(self):
         """Initialize connection using Streamlit secrets."""
         try:
+            credentials = get_woocommerce_credentials()
+            if not credentials:
+                self.wcapi = None
+                return
             self.wcapi = API(
-                url=st.secrets["woocommerce"]["store_url"],
-                consumer_key=st.secrets["woocommerce"]["consumer_key"],
-                consumer_secret=st.secrets["woocommerce"]["consumer_secret"],
+                url=credentials["store_url"],
+                consumer_key=credentials["consumer_key"],
+                consumer_secret=credentials["consumer_secret"],
                 version="wc/v3",
                 timeout=120
             )

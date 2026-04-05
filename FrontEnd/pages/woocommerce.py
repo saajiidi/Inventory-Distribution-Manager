@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
-from BackEnd.services.woocommerce_service import WooCommerceService
+from BackEnd.services.woocommerce_service import (
+    WooCommerceService,
+    get_woocommerce_credentials,
+)
 
 
 def _resolve_preview_columns(df: pd.DataFrame) -> list[str]:
@@ -35,14 +38,14 @@ def render_woocommerce_tab():
     st.header("🛍️ WooCommerce Connector")
     
     # 1. UI: Configuration Status
-    if "woocommerce" not in st.secrets:
+    if not get_woocommerce_credentials():
         st.warning("⚠️ WooCommerce secrets not found in `.streamlit/secrets.toml`.")
         st.info("To enable this integration, add your API keys to `.streamlit/secrets.toml`:")
         st.code("""
 [woocommerce]
-store_url = "https://deencommerce.com"
-consumer_key = "ck_954a53b921ceb29ff572460856193d9b57c94c23"
-consumer_secret = "cs_e3c0de58c7b1a8ff116215f5241c192f4b832e49"
+store_url = "https://your-store.com"
+consumer_key = "ck_your_consumer_key"
+consumer_secret = "cs_your_consumer_secret"
         """)
         return
 

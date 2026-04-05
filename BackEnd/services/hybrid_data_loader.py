@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
+from BackEnd.services.woocommerce_service import get_woocommerce_credentials
 from BackEnd.utils.sales_schema import ensure_sales_schema
 from FrontEnd.utils.error_handler import log_error
 
@@ -26,7 +27,7 @@ def load_woocommerce_live_data(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
 ) -> pd.DataFrame:
-    if "woocommerce" not in st.secrets:
+    if not get_woocommerce_credentials():
         return pd.DataFrame()
 
     try:
