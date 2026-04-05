@@ -11,6 +11,7 @@ import streamlit as st
 
 from BackEnd.services.customer_insights import generate_customer_insights
 from BackEnd.services.hybrid_data_loader import get_data_summary, load_hybrid_data
+from BackEnd.services.ml_insights import build_ml_insight_bundle
 from BackEnd.utils.sales_schema import ensure_sales_schema
 from FrontEnd.components.ui_components import (
     render_bi_hero,
@@ -77,6 +78,7 @@ def render_dashboard_tab():
                 "sales": df_sales,
                 "customers": df_customers,
                 "summary": get_data_summary(),
+                "ml": build_ml_insight_bundle(df_sales, df_customers, horizon_days=7),
             }
         except Exception as exc:
             log_error(exc, context="Dashboard Load")
@@ -91,8 +93,9 @@ def render_dashboard_tab():
     df_sales = ensure_sales_schema(data["sales"])
     df_customers = data["customers"]
     summary = data.get("summary", {})
+    ml_bundle = data.get("ml", {})
 
-    tabs = st.tabs(["Executive Summary", "Sales Trends", "Product Performance", "Customer Behavior", "Geographic"])
+    tabs = st.tabs(["Executive Summary", "Sales Trends", "Product Performance", "Customer Behavior", "Geographic", "Forecast & Alerts"])
     with tabs[0]:
         render_executive_summary(df_sales, df_customers, summary)
     with tabs[1]:
@@ -103,6 +106,8 @@ def render_dashboard_tab():
         render_customer_behavior(df_sales, df_customers)
     with tabs[4]:
         render_geographic_insights(df_sales)
+    with tabs[5]:
+        render_forecast_and_alerts(ml_bundle)
 
 
 
@@ -353,6 +358,111 @@ def render_geographic_insights(df: pd.DataFrame):
         fig_orders.update_layout(height=400, yaxis_title="Region")
         st.plotly_chart(fig_orders, use_container_width=True)
 
+
+
+def render_forecast_and_alerts(ml_bundle: dict[str, pd.DataFrame]):
+    st.subheader("Forecast & Alerts")
+    forecast_df = ml_bundle.get("forecast", pd.DataFrame())
+    risk_df = ml_bundle.get("customer_risk", pd.DataFrame())
+    anomaly_df = ml_bundle.get("anomalies", pd.DataFrame())
+
+    overview_notes = []
+    if not forecast_df.empty:
+        lead = forecast_df.iloc[0]
+        overview_notes.append(
+            f"Highest forecasted item is {lead['item_name']} with about {lead['forecast_7d_units']:.1f} expected units over the next 7 days."
+        )
+    if not risk_df.empty:
+        high_risk = int((risk_df["risk_band"] == "High").sum())
+        overview_notes.append(
+            f"{high_risk} customers are currently in the high-risk band for churn or inactivity."
+        )
+    if not anomaly_df.empty:
+        overview_notes.append(
+            f"{len(anomaly_df):,} recent metric anomalies were detected across revenue, orders, or AOV."
+        )
+    if not overview_notes:
+        overview_notes.append("No predictive signals are available yet. More clean sales history will improve forecast and risk quality.")
+    render_commentary_panel("Predictive Commentary", overview_notes)
+
+    top_row = st.columns(3)
+    with top_row[0]:
+        total_forecast_units = forecast_df["forecast_7d_units"].sum() if not forecast_df.empty else 0
+        st.metric("Forecast Units (7d)", f"{total_forecast_units:,.0f}")
+    with top_row[1]:
+        high_risk = int((risk_df["risk_band"] == "High").sum()) if not risk_df.empty else 0
+        st.metric("High-Risk Customers", f"{high_risk:,}")
+    with top_row[2]:
+        anomaly_count = len(anomaly_df) if not anomaly_df.empty else 0
+        st.metric("Anomalies", f"{anomaly_count:,}")
+
+    if not forecast_df.empty:
+        c1, c2 = st.columns([1.3, 1])
+        with c1:
+            fig_forecast = px.bar(
+                forecast_df.sort_values("forecast_7d_units"),
+                x="forecast_7d_units",
+                y="item_name",
+                orientation="h",
+                color="trend_ratio",
+                color_continuous_scale="Tealgrn",
+                title="Next 7-Day Demand Forecast",
+                labels={"forecast_7d_units": "Forecast Units", "item_name": "Product"},
+            )
+            fig_forecast.update_layout(height=420)
+            st.plotly_chart(fig_forecast, use_container_width=True)
+        with c2:
+            st.dataframe(
+                forecast_df[["item_name", "forecast_7d_units", "suggested_buffer_units", "risk_level", "reorder_comment"]].rename(
+                    columns={
+                        "item_name": "Product",
+                        "forecast_7d_units": "Forecast 7d",
+                        "suggested_buffer_units": "Buffer Units",
+                        "risk_level": "Demand State",
+                        "reorder_comment": "Suggestion",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    if not risk_df.empty:
+        st.markdown("#### Customer Risk Recommendations")
+        st.dataframe(
+            risk_df[["primary_name", "segment", "risk_score", "risk_band", "next_purchase_window_days", "recommended_action"]]
+            .head(20)
+            .rename(
+                columns={
+                    "primary_name": "Customer",
+                    "segment": "Segment",
+                    "risk_score": "Risk Score",
+                    "risk_band": "Risk Band",
+                    "next_purchase_window_days": "Next Window (days)",
+                    "recommended_action": "Recommendation",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    if not anomaly_df.empty:
+        st.markdown("#### Metric Anomalies")
+        fig_anomaly = px.scatter(
+            anomaly_df,
+            x="order_day",
+            y="z_score",
+            color="metric",
+            symbol="direction",
+            hover_data=["commentary"],
+            title="Recent Revenue / Orders / AOV Anomalies",
+        )
+        fig_anomaly.update_layout(height=360, xaxis_title="Date", yaxis_title="Z-Score")
+        st.plotly_chart(fig_anomaly, use_container_width=True)
+        st.dataframe(
+            anomaly_df[["order_day", "metric", "direction", "z_score", "commentary"]],
+            use_container_width=True,
+            hide_index=True,
+        )
 
 
 def _pct_delta(current: float, previous: float, suffix: str = "") -> str | None:
