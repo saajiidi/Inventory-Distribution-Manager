@@ -12,15 +12,25 @@ import streamlit as st
 from BackEnd.services.customer_insights import generate_customer_insights
 from BackEnd.services.hybrid_data_loader import get_data_summary, load_hybrid_data
 from BackEnd.utils.sales_schema import ensure_sales_schema
-from FrontEnd.components.ui_components import render_section_card
+from FrontEnd.components.ui_components import (
+    render_bi_hero,
+    render_commentary_panel,
+    render_section_card,
+)
 from FrontEnd.utils.error_handler import log_error
 
 
 
 def render_dashboard_tab():
-    render_section_card(
-        "Retail Dashboard",
-        "Sales, customer, product, and location insights powered by WooCommerce-first hybrid data.",
+    render_bi_hero(
+        "Commerce Command Center",
+        "A cleaner BI-style operating view for revenue, demand, customer health, and geographic performance. The dashboard is now optimized for WooCommerce-first analysis with less visual noise and clearer executive signals.",
+        chips=[
+            "WooCommerce-first",
+            "Hybrid live data",
+            "Customer intelligence",
+            "Modern BI layout",
+        ],
     )
 
     with st.sidebar:
@@ -145,21 +155,22 @@ def render_executive_summary(df_sales: pd.DataFrame, df_customers: pd.DataFrame,
         latest_date = df["order_date"].max()
         st.metric("Latest Order", latest_date.strftime("%Y-%m-%d %H:%M") if pd.notna(latest_date) else "N/A")
 
-    st.divider()
     insights = []
     if pending_count > 10:
-        insights.append("Shipping queue is building up. Review fulfillment workflow and courier handoff.")
+        insights.append("Fulfillment pressure is rising. The pending order queue is large enough to justify immediate courier and packing review.")
     mean_basket_qty = df.groupby("order_id")["qty"].sum().mean() if total_orders else 0
     if mean_basket_qty and mean_basket_qty < 1.5:
-        insights.append("Basket size is low. Bundles and checkout upsells could increase average order value.")
+        insights.append("Basket depth is light. Bundles, cross-sells, and checkout add-ons are the cleanest lever for AOV growth.")
     if isinstance(df_customers, pd.DataFrame) and not df_customers.empty and "segment" in df_customers.columns:
         churned = int((df_customers["segment"] == "Churned").sum())
         if churned:
-            insights.append(f"{churned} customers are tagged as churned. A win-back campaign is worth testing.")
+            insights.append(f"{churned} customers are currently classified as churned. A focused win-back sequence is likely worth testing.")
+        vip_count = int((df_customers["segment"] == "VIP").sum())
+        if vip_count:
+            insights.append(f"{vip_count} customers are in the VIP segment. Protect them with priority support, early launches, and higher-touch campaigns.")
     if not insights:
-        insights.append("Core business metrics are loading cleanly. Next gains will likely come from retention and stock planning.")
-    for insight in insights:
-        st.info(insight)
+        insights.append("The core metrics look stable. The biggest next upside will likely come from retention programs and inventory planning.")
+    render_commentary_panel("Intelligence Commentary", insights)
 
 
 
@@ -180,6 +191,19 @@ def render_sales_trends(df: pd.DataFrame):
     fig_line = px.line(daily, x="order_day", y="Revenue", title="Daily Revenue", markers=True)
     fig_line.update_layout(height=350, xaxis_title="Date")
     st.plotly_chart(fig_line, use_container_width=True)
+
+    commentary = []
+    if not daily.empty:
+        peak_day = daily.loc[daily["Revenue"].idxmax()]
+        commentary.append(
+            f"Peak daily revenue in this selection was TK {peak_day['Revenue']:,.0f} on {peak_day['order_day']}."
+        )
+        if len(daily) > 1:
+            recent_avg = daily["Revenue"].tail(min(7, len(daily))).mean()
+            commentary.append(
+                f"Recent run-rate is about TK {recent_avg:,.0f} per day based on the latest visible period."
+            )
+    render_commentary_panel("Trend Commentary", commentary)
 
     c1, c2 = st.columns(2)
     day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -220,6 +244,18 @@ def render_product_performance(df: pd.DataFrame):
         return
 
     top_products = grouped.head(10)
+    product_notes = []
+    if not top_products.empty:
+        leader = top_products.iloc[0]
+        product_notes.append(
+            f"Top product is {leader['item_name']} with TK {leader['Revenue']:,.0f} revenue and {leader['Units']:,.0f} units sold."
+        )
+        concentration = top_products["Revenue"].sum() / grouped["Revenue"].sum() if grouped["Revenue"].sum() else 0
+        product_notes.append(
+            f"The top 10 products contribute {concentration * 100:.1f}% of visible product revenue, which helps show catalog concentration risk."
+        )
+    render_commentary_panel("Merchandising Commentary", product_notes)
+
     c1, c2 = st.columns(2)
     with c1:
         fig_top = px.bar(top_products.sort_values("Revenue"), x="Revenue", y="item_name", orientation="h", title="Top Products by Revenue", color="Revenue", color_continuous_scale="Greens")
@@ -242,6 +278,22 @@ def render_customer_behavior(df_sales: pd.DataFrame, df_customers: pd.DataFrame)
 
     new_customers = int((df_customers["segment"] == "New").sum()) if "segment" in df_customers.columns else 0
     returning_customers = int((df_customers["total_orders"] > 1).sum()) if "total_orders" in df_customers.columns else 0
+    customer_notes = []
+    if len(df_customers):
+        customer_notes.append(
+            f"The customer base in the current filter includes {len(df_customers):,} distinct customers."
+        )
+    if returning_customers:
+        share = (returning_customers / max(len(df_customers), 1)) * 100
+        customer_notes.append(
+            f"Returning customers account for {share:.1f}% of the visible customer base."
+        )
+    churned = int((df_customers["segment"] == "Churned").sum()) if "segment" in df_customers.columns else 0
+    if churned:
+        customer_notes.append(
+            f"{churned} customers are flagged as churned, which makes retention automation a high-value next feature."
+        )
+    render_commentary_panel("Retention Commentary", customer_notes)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -281,6 +333,16 @@ def render_geographic_insights(df: pd.DataFrame):
         return
 
     geo_sales = geo.groupby("region").agg(Revenue=("order_total", "sum"), Orders=("order_id", "nunique")).reset_index().sort_values("Revenue", ascending=False).head(15)
+    geo_notes = []
+    if not geo_sales.empty:
+        leader = geo_sales.iloc[0]
+        geo_notes.append(
+            f"Top visible region is {leader['region']} with TK {leader['Revenue']:,.0f} revenue from {leader['Orders']:,} orders."
+        )
+        geo_notes.append(
+            "Use this view to prioritize delivery reliability, ad targeting, and stock placement by region."
+        )
+    render_commentary_panel("Regional Commentary", geo_notes)
     c1, c2 = st.columns(2)
     with c1:
         fig_geo = px.bar(geo_sales.sort_values("Revenue"), x="Revenue", y="region", orientation="h", title="Revenue by Region", color="Revenue", color_continuous_scale="Teal")
