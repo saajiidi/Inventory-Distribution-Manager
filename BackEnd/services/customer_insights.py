@@ -83,7 +83,8 @@ def generate_customer_id(email: str, phone: str) -> str:
 
 @st.cache_data(ttl=1800)  # Cache for 30 minutes
 def generate_customer_insights(
-    start_date: Optional[str] = None, end_date: Optional[str] = None
+    start_date: Optional[str] = None, end_date: Optional[str] = None,
+    include_gsheet: bool = True, include_woocommerce: bool = True
 ) -> pd.DataFrame:
     """Generate customer insights table using DuckDB aggregation with RFM metrics.
 
@@ -99,12 +100,14 @@ def generate_customer_insights(
     Args:
         start_date: Optional filter start date (YYYY-MM-DD)
         end_date: Optional filter end date (YYYY-MM-DD)
+        include_gsheet: Whether to include Google Sheets data
+        include_woocommerce: Whether to include WooCommerce data
 
     Returns:
         DataFrame with one row per unique customer including RFM metrics
     """
     # Load hybrid data
-    df = load_hybrid_data(start_date, end_date)
+    df = load_hybrid_data(start_date, end_date, include_gsheet, include_woocommerce)
 
     if df.empty:
         return pd.DataFrame()

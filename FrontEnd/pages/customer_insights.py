@@ -25,6 +25,20 @@ def render_customer_insight_tab():
         "RFM Analysis (Recency, Frequency, Monetary) with DuckDB-powered customer segmentation",
     )
 
+    # Source Selector
+    with st.sidebar:
+        st.subheader("🔌 Data Connectors")
+        live_source = st.radio(
+            "Primary Live Source",
+            ["WooCommerce API Only", "Merged (Woo + Sheets)", "Google Sheets Only"],
+            index=0,
+            key="insight_live_source",
+            help="Choose where the live dashboard fetches its latest 2026 data."
+        )
+        
+    include_gsheet = "Sheets" in live_source or "Merged" in live_source
+    include_woo = "Woo" in live_source or "Merged" in live_source
+
     # Date range selector
     col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
@@ -34,7 +48,7 @@ def render_customer_insight_tab():
     with col3:
         # Add vertical spacing to align button with date input fields
         st.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
-        load_clicked = st.button("🔍 Load Insights", use_container_width=True, type="primary")
+        load_clicked = st.button("🔍 Refresh Insights", use_container_width=True, type="primary")
 
     # Search box
     search_col1, search_col2 = st.columns([3, 1])
@@ -67,6 +81,8 @@ def render_customer_insight_tab():
                 df_insights = generate_customer_insights(
                     start_date=start_date.strftime("%Y-%m-%d"),
                     end_date=end_date.strftime("%Y-%m-%d"),
+                    include_gsheet=include_gsheet,
+                    include_woocommerce=include_woo
                 )
 
                 if df_insights.empty:

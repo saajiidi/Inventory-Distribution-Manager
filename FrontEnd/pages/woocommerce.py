@@ -3,6 +3,33 @@ import pandas as pd
 from datetime import datetime, timedelta
 from BackEnd.services.woocommerce_service import WooCommerceService
 
+
+def _resolve_preview_columns(df: pd.DataFrame) -> list[str]:
+    """Return the best available preview columns across old and new schemas."""
+    preferred_groups = [
+        ["Order ID", "Order Number"],
+        ["Order Date"],
+        ["Shipped Date"],
+        ["Full Name (Billing)", "Customer Name"],
+        ["Tracking"],
+        ["Product Name (main)", "Item Name"],
+        ["Quantity", "Qty"],
+        ["Order Total Amount"],
+    ]
+
+    preview_cols = []
+    for candidates in preferred_groups:
+        match = next((col for col in candidates if col in df.columns), None)
+        if match:
+            preview_cols.append(match)
+
+    if preview_cols:
+        return preview_cols
+
+    return list(df.columns[:8])
+
+
+
 def render_woocommerce_tab():
     """Render the WooCommerce data pull tab."""
     st.header("🛍️ WooCommerce Connector")
@@ -58,7 +85,7 @@ consumer_secret = "cs_e3c0de58c7b1a8ff116215f5241c192f4b832e49"
                     
                     if not df.empty:
                         # Post-fetch tracking filter if requested
-                        if require_tracking:
+                        if require_tracking and "Tracking" in df.columns:
                             df = df[df["Tracking"] != "N/A"]
                             
                         if not df.empty:
@@ -66,9 +93,8 @@ consumer_secret = "cs_e3c0de58c7b1a8ff116215f5241c192f4b832e49"
                             
                             # Display preview
                             st.subheader("Data Preview")
-                            # Re-order columns to show Tracking early in preview
-                            display_cols = ["Order ID", "Order Date", "Shipped Date", "Full Name (Billing)", "Tracking", "Product Name (main)", "Quantity", "Order Total Amount"]
-                            st.dataframe(df[display_cols].head(50), use_container_width=True)
+                            preview_cols = _resolve_preview_columns(df)
+                            st.dataframe(df[preview_cols].head(50), use_container_width=True)
                             
                             # Save
                             if st.button("Save to System Data Storage", use_container_width=True, type="secondary"):

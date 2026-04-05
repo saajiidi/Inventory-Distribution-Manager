@@ -10,8 +10,8 @@ class WooCommerceService:
         try:
             self.wcapi = API(
                 url=st.secrets["woocommerce"]["store_url"],
-                consumer_key=st.secrets["woocommerce"]["ck_954a53b921ceb29ff572460856193d9b57c94c23"],
-                consumer_secret=st.secrets["woocommerce"]["cs_e3c0de58c7b1a8ff116215f5241c192f4b832e49"],
+                consumer_key=st.secrets["woocommerce"]["consumer_key"],
+                consumer_secret=st.secrets["woocommerce"]["consumer_secret"],
                 version="wc/v3",
                 timeout=120
             )
@@ -112,20 +112,21 @@ class WooCommerceService:
             # Line items
             for item in order.get("line_items", []):
                 item_data = {
-                    "Order ID": order_id,
+                    "Order Number": order_id,
                     "Order Date": order_date,
                     "Shipped Date": shipped_date,
+                    "Order Status": order.get("status"),
                     "year": year,
-                    "Full Name (Billing)": full_name,
+                    "Customer Name": full_name,
                     "Phone (Billing)": phone,
                     "Address 1&2 (Billing)": address,
                     "City, State, Zip (Billing)": city_state_zip,
                     "Order Total Amount": total_amount,
                     "Payment Method Title": payment_method,
-                    "Product Name (main)": item.get("name"),
+                    "Item Name": item.get("name"),
                     "SKU": item.get("sku"),
-                    "Quantity": item.get("quantity"),
-                    "Item cost": item.get("price"),
+                    "Qty": item.get("quantity"),
+                    "Item Cost": item.get("price"),
                     "Tracking": tracking_number,
                     "_source": "woocommerce_api"
                 }

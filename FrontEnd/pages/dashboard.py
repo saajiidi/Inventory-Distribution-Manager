@@ -28,6 +28,20 @@ def render_dashboard_tab():
         "Executive insights into sales trends, product performance, and customer behavior",
     )
 
+    # Source Selector
+    with st.sidebar:
+        st.subheader("🔌 Data Connectors")
+        live_source = st.radio(
+            "Primary Live Source",
+            ["WooCommerce API Only", "Merged (Woo + Sheets)", "Google Sheets Only"],
+            index=0,
+            key="dashboard_live_source",
+            help="Choose where the live dashboard fetches its latest 2026 data."
+        )
+        
+    include_gsheet = "Sheets" in live_source or "Merged" in live_source
+    include_woo = "Woo" in live_source or "Merged" in live_source
+
     # Date range selector
     col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
@@ -37,15 +51,17 @@ def render_dashboard_tab():
     with col3:
         # Add vertical spacing to align button with date input fields
         st.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
-        load_clicked = st.button("🔄 Load Dashboard", use_container_width=True, type="primary")
+        load_clicked = st.button("🔄 Refresh Data", use_container_width=True, type="primary")
 
     if load_clicked or "dashboard_data" in st.session_state:
-        with st.spinner("Loading dashboard data..."):
+        with st.spinner("Syncing latest data..."):
             try:
                 # Load sales data
                 df_sales = load_hybrid_data(
                     start_date=start_date.strftime("%Y-%m-%d"),
                     end_date=end_date.strftime("%Y-%m-%d"),
+                    include_gsheet=include_gsheet,
+                    include_woocommerce=include_woo
                 )
 
                 # Load customer insights

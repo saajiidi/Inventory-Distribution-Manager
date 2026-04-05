@@ -21,31 +21,32 @@ DATA_FILE = Path(__file__).parent.parent.parent / "data" / "data.parquet"
 LIVE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOiRkybNzMNvEaLxSFsX0nGIiM07BbNVsBbsX1dG8AmGOmSu8baPrVYL0cOqoYN4tRWUj1UjUbH1Ij/pub?gid=2118542421&single=true&output=csv"
 
 
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def load_historical_data() -> pd.DataFrame:
-    """Load historical data (2022-2025) from merged parquet file.
-
+@st.cache_data(ttl=900)  # Shorter cache for live commerce data
+def load_woocommerce_live_data(days: int = 30) -> pd.DataFrame:
+    """Fetch live data directly from WooCommerce API.
+    
     Returns:
-        DataFrame with historical orders (year < 2026)
+        DataFrame with recent WooCommerce orders
     """
-    if not DATA_FILE.exists():
-        # Historical data is optional and often not available on fresh setups.
-        # Fallback to returning empty dataframe without breaking the UI.
+    if "woocommerce" not in st.secrets:
         return pd.DataFrame()
-
-    # Read with DuckDB for efficiency
-    con = duckdb.connect(database=":memory:")
-    query = f"""
-        SELECT * 
-        FROM read_parquet('{DATA_FILE}')
-        WHERE year < '2026'
-    """
-    df = con.execute(query).fetchdf()
-    con.close()
-
-    return df
-
-
+        
+    try:
+        from BackEnd.services.woocommerce_service import WooCommerceService
+        wc_service = WooCommerceService()
+        
+        # Calculate 'after' date
+        after = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%dT00:00:00Z")
+        
+        with st.spinner(f"Fetching latest {days} days of WooCommerce data..."):
+            df = wc_service.fetch_all_historical_orders(after=after, status="any")
+            if not df.empty:
+                df["_source"] = "woocommerce_live"
+                return df
+    except Exception as e:
+        st.warning(f"Could not load live WooCommerce data: {e}")
+    
+    return pd.DataFrame()
 @st.cache_data(ttl=3600)  # Cache for 1 hour - refresh live data periodically
 def load_live_2026_data() -> pd.DataFrame:
     """Load live 2026 data from Google Sheet CSV export.
@@ -109,112 +110,117 @@ def validate_missing_dates(df: pd.DataFrame):
 
     if missing:
         st.warning(f"⚠️ Found {len(missing)} missing dates in Google Sheet data!")
-        with st.expander("View Missing Dates"):
-            st.write([str(d.date()) for d in missing[:10]])
-            if len(missing) > 10:
-                remaining = len(missing) - 10
-                st.write(f"... and {remaining} more")
+
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def load_historical_data() -> pd.DataFrame:
+    """Load historical data from local parquet files using hive partitioning."""
+    data_dir = DATA_FILE.parent # h:/Analysis/Automation-Pivot/data
+    
+    # Check if we have the monolithic data.parquet OR partitioned folders
+    if not any(data_dir.glob("*.parquet")) and not any(data_dir.glob("year=*")):
+        return pd.DataFrame()
+
+    try:
+        con = duckdb.connect(database=":memory:")
+        
+        # Enhanced query to read all parquets including partitioned ones
+        # Use hive_partitioning=True to automatically extract 'year' from folder names
+        query = f"""
+            SELECT * 
+            FROM read_parquet([
+                '{data_dir}/*.parquet',
+                '{data_dir}/year=*/*.parquet'
+            ], hive_partitioning=True)
+            WHERE year < '{datetime.now().year}'
+        """
+        df = con.execute(query).fetchdf()
+        con.close()
+        return df
+    except Exception as e:
+        st.error(f"Error loading historical data: {e}")
+        return pd.DataFrame()
 
 
 def load_hybrid_data(
-    start_date: Optional[str] = None, end_date: Optional[str] = None
+    start_date: Optional[str] = None, end_date: Optional[str] = None, 
+    include_gsheet: bool = True, include_woocommerce: bool = True
 ) -> pd.DataFrame:
-    """Load combined historical + live data using DuckDB.
+    """Load combined historical + live data (GSheet + WooCommerce)."""
+    
+    # 1. Sources
+    df_hist = load_historical_data()
+    df_gsheet = load_live_2026_data() if include_gsheet else pd.DataFrame()
+    df_woo = load_woocommerce_live_data() if include_woocommerce else pd.DataFrame()
 
-    Args:
-        start_date: Optional filter start date (YYYY-MM-DD)
-        end_date: Optional filter end date (YYYY-MM-DD)
+    # 2. Merge logic
+    all_dfs = []
+    if not df_hist.empty: all_dfs.append(df_hist)
+    if not df_gsheet.empty: all_dfs.append(df_gsheet)
+    if not df_woo.empty: all_dfs.append(df_woo)
 
-    Returns:
-        Merged DataFrame with all data
-    """
-    # Load both sources
-    df_historical = load_historical_data()
-    df_live = load_live_2026_data()
-
-    # Short-circuit if either is empty
-    if df_historical.empty and df_live.empty:
+    if not all_dfs:
         return pd.DataFrame()
 
-    if df_historical.empty:
-        df_merged = df_live.copy()
-        date_col = "Order Date" if "Order Date" in df_merged.columns else None
-        if start_date and end_date and date_col:
-            df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors="coerce")
-            df_merged = df_merged[
-                (df_merged[date_col] >= start_date) & (df_merged[date_col] <= end_date)
-            ]
-        return df_merged
-
-    if df_live.empty:
-        df_merged = df_historical.copy()
-        date_col = "Order Date" if "Order Date" in df_merged.columns else None
-        if start_date and end_date and date_col:
-            df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors="coerce")
-            df_merged = df_merged[
-                (df_merged[date_col] >= start_date) & (df_merged[date_col] <= end_date)
-            ]
-        return df_merged
-
-    # Combine using DuckDB only if both have data
+    # Use DuckDB for a high-performance UNION
     con = duckdb.connect(database=":memory:")
+    
+    # Register all available dataframes
+    if not df_hist.empty: con.register("df_hist", df_hist)
+    else: con.execute("CREATE TABLE df_hist AS SELECT * FROM (SELECT 1 as x) WHERE 1=0")
+    
+    if not df_gsheet.empty: con.register("df_gsheet", df_gsheet)
+    else: con.execute("CREATE TABLE df_gsheet AS SELECT * FROM (SELECT 1 as x) WHERE 1=0")
+    
+    if not df_woo.empty: con.register("df_woo", df_woo)
+    else: con.execute("CREATE TABLE df_woo AS SELECT * FROM (SELECT 1 as x) WHERE 1=0")
 
-    # Register dataframes
-    con.register("historical", df_historical)
-    con.register("live", df_live)
-
-    # Get common columns for UNION ALL
-    historical_cols = set(df_historical.columns)
-    live_cols = set(df_live.columns)
-    common_cols = list(historical_cols & live_cols)
-
+    # Find common columns for union
+    cols = []
+    if not df_hist.empty: cols.append(set(df_hist.columns))
+    if not df_gsheet.empty: cols.append(set(df_gsheet.columns))
+    if not df_woo.empty: cols.append(set(df_woo.columns))
+    
+    common_cols_set = set.intersection(*cols) if cols else set()
+    common_cols = list(common_cols_set)
+    
     if not common_cols:
-        st.warning("No common columns between historical and live data")
-        return pd.concat([df_historical, df_live], ignore_index=True)
+        # Fallback if union is impossible directly
+        return pd.concat(all_dfs, ignore_index=True)
 
-    # Filter both dataframes to common columns
-    df_historical_common = df_historical[common_cols]
-    df_live_common = df_live[common_cols]
-
-    # Re-register with common columns only
-    con.register("historical", df_historical_common)
-    con.register("live", df_live_common)
-
-    # Build query with optional date filter
+    col_str = ", ".join([f'"{c}"' for c in common_cols])
+    
+    # Apply date filters in query if possible
     date_filter = ""
-    if start_date and end_date:
-        date_filter = f"WHERE \"Order Date\" >= '{start_date}' AND \"Order Date\" <= '{end_date}'"
+    # We look for standard date columns
+    date_col = next((c for c in ["Order Date", "order_date", "Date"] if c in common_cols), None)
+    
+    if start_date and end_date and date_col:
+        date_filter = f"WHERE \"{date_col}\" >= '{start_date}' AND \"{date_col}\" <= '{end_date}'"
 
     query = f"""
-        SELECT * FROM historical
+        (SELECT {col_str} FROM df_hist)
         UNION ALL
-        SELECT * FROM live
+        (SELECT {col_str} FROM df_gsheet)
+        UNION ALL
+        (SELECT {col_str} FROM df_woo)
         {date_filter}
     """
 
     try:
         df_merged = con.execute(query).fetchdf()
     except Exception as e:
-        # If still fails, fallback to pandas concat
-        st.warning(f"DuckDB merge failed, using pandas fallback: {e}")
-        df_merged = pd.concat([df_historical_common, df_live_common], ignore_index=True)
-        if start_date and end_date:
-            date_col = "Order Date" if "Order Date" in df_merged.columns else None
-            if date_col:
-                df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors="coerce")
-                df_merged = df_merged[
-                    (df_merged[date_col] >= start_date) & (df_merged[date_col] <= end_date)
-                ]
+        st.warning(f"DuckDB Union failed, falling back to concat: {e}")
+        df_merged = pd.concat(all_dfs, ignore_index=True)
+        if start_date and end_date and date_col:
+            df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors="coerce")
+            df_merged = df_merged[(df_merged[date_col] >= start_date) & (df_merged[date_col] <= end_date)]
 
     con.close()
-
-    # Ensure numeric columns are properly typed
-    if "Order Total Amount" in df_merged.columns:
-        df_merged["Order Total Amount"] = pd.to_numeric(
-            df_merged["Order Total Amount"], errors="coerce"
-        )
-    elif "order_total" in df_merged.columns:
-        df_merged["order_total"] = pd.to_numeric(df_merged["order_total"], errors="coerce")
+    
+    # Final cleanup
+    if not df_merged.empty and date_col:
+        df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors="coerce")
+        df_merged = df_merged.sort_values(date_col, ascending=False)
 
     return df_merged
 
