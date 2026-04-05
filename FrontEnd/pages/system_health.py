@@ -1,30 +1,34 @@
-import streamlit as st
-import pandas as pd
-import json
 import os
-from datetime import datetime
-from FrontEnd.utils.error_handler import get_logs, log_error, ERROR_LOG_FILE
+
+import pandas as pd
+import streamlit as st
+
+from FrontEnd.utils.error_handler import ERROR_LOG_FILE, LATEST_PROMPT_FILE, get_logs, log_error
+
 
 
 def clear_error_logs():
     """Clears all logged errors."""
     if os.path.exists(ERROR_LOG_FILE):
         os.remove(ERROR_LOG_FILE)
-        st.success("Error logs cleared.")
-        st.rerun()
+    if os.path.exists(LATEST_PROMPT_FILE):
+        os.remove(LATEST_PROMPT_FILE)
+    st.success("Error logs cleared.")
+    st.rerun()
+
 
 
 def render_system_health_tab():
     """Renders the System Health and Error Resolution hub."""
-    st.header("⚡ System Health & Error Resolver")
+    st.header("System Health & Error Resolver")
     st.info(
-        "This module captures runtime exceptions and formats them for AI-assisted self-healing."
+        "This module captures runtime exceptions, preserves structured diagnostics, and stores AI-ready prompts for future fixes."
     )
 
     logs = get_logs()
 
     if not logs:
-        st.success("🎉 No errors detected. System is running smoothly.")
+        st.success("No errors detected. System is running smoothly.")
         if st.button("Simulate Test Error"):
             try:
                 1 / 0
@@ -34,55 +38,49 @@ def render_system_health_tab():
                 st.rerun()
         return
 
-    # Error Summary
-    st.subheader(f"🚩 Reported Issues ({len(logs)})")
+    df_errors = pd.DataFrame(logs).sort_values("timestamp", ascending=False)
+    st.subheader(f"Reported Issues ({len(df_errors)})")
 
-    # Convert to DataFrame for easier display
-    df_errors = pd.DataFrame(logs)
-    df_errors = df_errors.sort_values("timestamp", ascending=False)
-
-    # Action Row
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        if st.button("🧹 Clear All Logs", use_container_width=True):
+    action_col, latest_col = st.columns([1, 3])
+    with action_col:
+        if st.button("Clear All Logs", use_container_width=True):
             clear_error_logs()
+    with latest_col:
+        if os.path.exists(LATEST_PROMPT_FILE):
+            st.caption(f"Latest AI-ready prompt file: `{LATEST_PROMPT_FILE}`")
 
-    # Display individual errors as Expanders
-    for idx, entry in enumerate(logs[::-1]):
-        with st.expander(
-            f"🔴 {entry['timestamp']} | {entry['context']} | {entry['error'][:60]}..."
-        ):
-            st.code(entry["error"], language="python")
-            st.caption("Traceback:")
-            st.code(entry["traceback"], language="python")
+    for idx, entry in enumerate(reversed(logs)):
+        title = f"{entry.get('timestamp', '')} | {entry.get('context', 'General')} | {entry.get('error', '')[:80]}"
+        with st.expander(title):
+            st.write(f"**Error Type:** {entry.get('error_type', 'Unknown')}")
+            st.code(entry.get("error", ""), language="text")
 
-            # THE MAGIC BUTTON: Format for Prompt
-            prompt_payload = f"""
-### 🚨 SYSTEM ERROR DETECTED FOR FIXING
+            details = entry.get("details") or {}
+            if details:
+                st.caption("Details")
+                st.json(details)
 
-**Context:** {entry['context']}
-**Error:** {entry['error']}
-**Timestamp:** {entry['timestamp']}
+            environment = entry.get("environment") or {}
+            if environment:
+                st.caption("Environment")
+                st.json(environment)
 
----
-**Traceback:**
-```python
-{entry['traceback']}
-```
----
-**Task:** Please analyze this error and provide a fix for the application.
-"""
+            st.caption("Traceback")
+            st.code(entry.get("traceback", ""), language="python")
+
+            prompt_payload = entry.get("fix_prompt") or ""
             st.markdown("---")
-            st.subheader("🤖 AI Resolver Prompt")
-            st.write("Copy the code block below and send it to your AI Developer (Antigravity):")
+            st.subheader("AI Resolver Prompt")
             st.code(prompt_payload, language="markdown")
 
-            if st.button(f"Mark as Resolved #{idx}", key=f"res_{idx}"):
-                # Simple way to 'resolve' is to remove from local list,
-                # but for now we just show a toast
-                st.toast("Solution requested. Paste the prompt above to Antigravity.")
+            prompt_file = entry.get("prompt_file")
+            if prompt_file:
+                st.caption(f"Saved prompt file: `{prompt_file}`")
 
-    # Detailed Table view
+            if st.button(f"Mark as Reviewed #{idx}", key=f"review_{idx}"):
+                st.toast("Error reviewed. Prompt is ready for reuse.")
+
     st.divider()
-    st.subheader("🔍 All System Logs")
-    st.dataframe(df_errors[["timestamp", "context", "error"]], use_container_width=True)
+    st.subheader("All System Logs")
+    visible_cols = [col for col in ["timestamp", "context", "error_type", "error"] if col in df_errors.columns]
+    st.dataframe(df_errors[visible_cols], use_container_width=True, hide_index=True)

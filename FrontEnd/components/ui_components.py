@@ -13,14 +13,27 @@ def inject_base_styles():
         """
         <style>
         :root {
-            --primary: var(--primary-color, #1d4ed8);
-            --surface: var(--background-color, #f8fafc);
-            --text-muted: var(--text-color, #64748b);
-            --step-surface: var(--background-color, #ffffff);
-            --step-text: var(--text-color, #0f172a);
-            --step-active-bg: var(--secondary-background-color, #eff6ff);
-            --action-surface: var(--background-color, rgba(255, 255, 255, 0.96));
-            --card-shadow: rgba(0, 0, 0, 0.15);
+            --primary: #0f4c81;
+            --primary-strong: #083358;
+            --accent: #14b8a6;
+            --surface: #f4f7fb;
+            --surface-raised: #ffffff;
+            --surface-soft: #eef4f8;
+            --text-strong: #102132;
+            --text-muted: #5f7183;
+            --border-soft: rgba(148, 163, 184, 0.22);
+            --action-surface: rgba(255, 255, 255, 0.88);
+            --card-shadow: 0 18px 44px rgba(15, 35, 58, 0.10);
+            --card-shadow-soft: 0 10px 28px rgba(15, 35, 58, 0.06);
+        }
+        html, body, [class*="css"] {
+            font-family: "Segoe UI", "IBM Plex Sans", "Helvetica Neue", sans-serif;
+        }
+        .stApp {
+            background:
+                radial-gradient(circle at top left, rgba(20, 184, 166, 0.08), transparent 28%),
+                radial-gradient(circle at top right, rgba(15, 76, 129, 0.10), transparent 24%),
+                linear-gradient(180deg, #f6fafc 0%, #eef4f8 100%);
         }
         .hub-footer {
             position: fixed;
@@ -35,7 +48,7 @@ def inject_base_styles():
             align-items: center;
             color: var(--text-muted);
             font-size: 0.8rem;
-            border-top: 1px solid var(--border, rgba(226, 232, 240, 0.8));
+            border-top: 1px solid var(--border-soft);
             z-index: 999;
         }
         .hub-footer a {
@@ -56,23 +69,24 @@ def inject_base_styles():
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(90deg, rgba(29, 78, 216, 0.03) 0%, rgba(29, 78, 216, 0) 100%);
-            border-left: 4px solid var(--primary);
-            border-bottom: 1px solid var(--border) !important;
-            padding: 2px 16px;
-            margin-bottom: 4px;
-            border-radius: 0 4px 4px 0;
+            background: linear-gradient(90deg, rgba(15, 76, 129, 0.08) 0%, rgba(20, 184, 166, 0.02) 100%);
+            border: 1px solid var(--border-soft);
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 18px;
             text-align: center;
+            box-shadow: var(--card-shadow-soft);
         }
         /* Remove the top gap without touching the sidebar toggle */
         .main .block-container {
-            padding-top: 0 !important;
-            margin-top: -1.0rem !important;
+            padding-top: 0.5rem !important;
+            margin-top: 0 !important;
             padding-bottom: 80px !important;
         }
         .hub-title {
             margin: 0;
             font-weight: 700;
+            color: var(--text-strong);
         }
         .hub-subtitle {
             margin: 0;
@@ -80,23 +94,100 @@ def inject_base_styles():
             font-size: 0.95rem;
         }
         .hub-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(248,251,253,0.98) 100%);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            padding: 16px 18px;
             margin-bottom: 12px;
-            box-shadow: 0 8px 24px var(--card-shadow);
+            box-shadow: var(--card-shadow-soft);
+        }
+        .bi-hero {
+            background: linear-gradient(135deg, rgba(8, 51, 88, 0.96) 0%, rgba(15, 76, 129, 0.94) 58%, rgba(20, 184, 166, 0.88) 100%);
+            color: #f8fbff;
+            border-radius: 24px;
+            padding: 1.35rem 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .bi-hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -8% -35% auto;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.0) 68%);
+        }
+        .bi-hero-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.35rem;
+        }
+        .bi-hero-subtitle {
+            max-width: 760px;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            color: rgba(244, 250, 255, 0.86);
+        }
+        .bi-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-top: 0.85rem;
+        }
+        .bi-chip {
+            border-radius: 999px;
+            padding: 0.36rem 0.72rem;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            font-size: 0.75rem;
+            color: #f5fbff;
+            backdrop-filter: blur(8px);
+        }
+        .bi-commentary {
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(242,248,251,0.92) 100%);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            box-shadow: var(--card-shadow-soft);
+            padding: 1rem 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .bi-commentary-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 0.55rem;
+        }
+        .bi-commentary ul {
+            margin: 0;
+            padding-left: 1rem;
+            color: var(--text-strong);
+        }
+        .bi-commentary li {
+            margin-bottom: 0.45rem;
+            line-height: 1.5;
+        }
+        [data-testid="stMetricContainer"] {
+            background: rgba(255,255,255,0.80);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            padding: 0.85rem 0.95rem;
+            box-shadow: var(--card-shadow-soft);
         }
         /* Target the streamlit container that HAS the hub-action-wrap marker inside it */
         div[data-testid="stVerticalBlock"]:has(> div[data-testid="stMarkdownContainer"] .hub-action-wrap) {
             position: sticky;
             bottom: 60px; /* Offset to stay above fixed footer */
             padding: 16px;
-            border: 1px solid var(--border, rgba(226, 232, 240, 0.8));
-            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
             background: var(--action-surface);
             backdrop-filter: blur(16px);
-            box-shadow: 0 -4px 20px var(--card-shadow);
+            box-shadow: var(--card-shadow);
             z-index: 100;
             margin-top: 20px;
         }
@@ -110,20 +201,20 @@ def inject_base_styles():
         div[data-testid="stTab"] button {
             font-size: 0.9rem !important;
             font-weight: 600 !important;
-            color: #64748b !important;
+            color: #617385 !important;
             transition: all 0.3s ease !important;
             border: none !important;
             background: transparent !important;
-            padding: 10px 20px !important;
+            padding: 10px 18px !important;
         }
         div[data-testid="stTab"] button:hover {
-            color: #1d4ed8 !important;
-            background: rgba(29, 78, 216, 0.04) !important;
-            border-radius: 8px 8px 0 0 !important;
+            color: var(--primary) !important;
+            background: rgba(15, 76, 129, 0.05) !important;
+            border-radius: 10px 10px 0 0 !important;
         }
         div[data-testid="stTab"] button[aria-selected="true"] {
-            color: #1d4ed8 !important;
-            border-bottom: 2px solid #1d4ed8 !important;
+            color: var(--primary) !important;
+            border-bottom: 2px solid var(--primary) !important;
         }
         
         /* Responsive Design - Mobile First */
@@ -237,16 +328,17 @@ def inject_base_styles():
         
         /* Consistent metric value alignment */
         [data-testid="stMetricValue"] {
-            font-size: 1.4rem !important;
+            font-size: 1.38rem !important;
             font-weight: 600 !important;
             line-height: 1.2 !important;
+            color: var(--text-strong) !important;
         }
         
         /* Metric label alignment */
         [data-testid="stMetricLabel"] {
             font-size: 0.8rem !important;
             font-weight: 500 !important;
-            color: #64748b !important;
+            color: var(--text-muted) !important;
         }
         
         /* Ensure proper column stacking on mobile */
@@ -330,6 +422,39 @@ def render_section_card(title: str, help_text: str = ""):
         <div class="hub-card">
           <div style="font-weight:600;">{title}</div>
           <div style="color:var(--text-muted); margin-top:4px;">{help_text}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_bi_hero(title: str, subtitle: str, chips: list[str] | None = None):
+    chips_html = ""
+    if chips:
+        chips_html = '<div class="bi-chip-row">' + "".join(
+            f'<span class="bi-chip">{chip}</span>' for chip in chips if chip
+        ) + "</div>"
+    st.markdown(
+        f"""
+        <div class="bi-hero">
+          <div class="bi-hero-title">{title}</div>
+          <div class="bi-hero-subtitle">{subtitle}</div>
+          {chips_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_commentary_panel(title: str, bullet_points: list[str]):
+    if not bullet_points:
+        return
+    items = "".join(f"<li>{point}</li>" for point in bullet_points if point)
+    st.markdown(
+        f"""
+        <div class="bi-commentary">
+          <div class="bi-commentary-label">{title}</div>
+          <ul>{items}</ul>
         </div>
         """,
         unsafe_allow_html=True,
