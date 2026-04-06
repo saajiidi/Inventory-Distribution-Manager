@@ -44,7 +44,7 @@ def _render_workspace_sidebar():
     with st.sidebar:
         ui.sidebar_branding()
 
-        st.caption("Move between BI, customer intelligence, business cycles, and ShopAI CRM from the primary navigation.")
+        st.caption("Move between BI, customer intelligence, business cycles, and CRM Analytics from the primary navigation.")
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         # Hide developer/debug interactions in an expander for a much cleaner production look

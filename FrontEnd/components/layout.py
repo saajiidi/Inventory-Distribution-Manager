@@ -552,7 +552,7 @@ def page_header():
         <div class="hub-title-row">
             <div>
                 <h1 class="hub-title">{APP_TITLE} <span style="color:var(--primary);">{APP_VERSION}</span></h1>
-                <p class="hub-subtitle">Commerce BI with operational storytelling, customer intelligence, and ShopAI CRM context.</p>
+                <p class="hub-subtitle">Commerce BI with operational storytelling, customer intelligence, and CRM Analytics context.</p>
             </div>
         </div>
         """,

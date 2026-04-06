@@ -1,4 +1,4 @@
-"""ShopAI CRM analytics page."""
+"""CRM Analytics page."""
 
 from __future__ import annotations
 
@@ -272,7 +272,7 @@ def render_shopai_crm_snapshot(customers_df: pd.DataFrame | None = None):
     crm = build_shopai_crm_summary(customers_df=customer_frame)
     kpis = crm["kpis"]
 
-    st.markdown("#### ShopAI CRM Snapshot")
+    st.markdown("#### CRM Analytics Snapshot")
     metric_cols = st.columns(4)
     metric_cols[0].metric("Conversations", f"{kpis['conversations']:,}")
     metric_cols[1].metric("Resolution Rate", f"{kpis['resolution_rate']:.0f}%")
