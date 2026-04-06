@@ -9,6 +9,8 @@ from BackEnd.services.woocommerce_service import (
     get_woocommerce_credentials,
     get_woocommerce_store_label,
 )
+from BackEnd.services.duckdb_loader import load_partitioned_data
+from BackEnd.utils.sales_schema import ensure_sales_schema
 from FrontEnd.components import ui
 def _resolve_preview_columns(df: pd.DataFrame) -> list[str]:
     """Return the best available preview columns across old and new schemas."""
@@ -185,38 +187,135 @@ def _build_inventory_charts(df: pd.DataFrame) -> list[tuple[str, callable]]:
     return charts[:3]
 
 
+def _render_live_comparison(live_df: pd.DataFrame):
+    """Compare freshly fetched 'Live' data against the previous day's local cache."""
+    if live_df.empty:
+        return
+
+    st.subheader("Performance Intelligence")
+    st.caption("Comparing the freshly fetched live orders against the previous business day's local data.")
+
+    # Calculate Live metrics (assuming the fetched DF is 'Live')
+    live = ensure_sales_schema(live_df)
+    live_revenue = float(live["order_total"].sum())
+    live_count = int(live["order_id"].nunique())
+    live_aov = live_revenue / live_count if live_count else 0.0
+
+    # Load Yesterday (simplified: today-1) from cache for comparison
+    try:
+        now = datetime.now()
+        yesterday_year = (now - timedelta(days=1)).year
+        cached_df = load_partitioned_data(year=yesterday_year)
+        
+        if cached_df.empty:
+            st.info("No local data found for the previous day to perform a comparison.")
+            return
+
+        baseline = ensure_sales_schema(cached_df)
+        # Filter baseline to just the previous 24h cycle
+        yesterday_cutoff = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0)
+        baseline = baseline[baseline["order_date"] >= pd.Timestamp(yesterday_cutoff)]
+        
+        baseline_revenue = float(baseline["order_total"].sum())
+        baseline_count = int(baseline["order_id"].nunique())
+        baseline_aov = baseline_revenue / baseline_count if baseline_count else 0.0
+        
+        # Display Metrics
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            ui.metric_highlight("Revenue delta", f"TK {live_revenue:,.0f}", f"{((live_revenue/baseline_revenue)-1)*100:+.1f}% vs Yesterday" if baseline_revenue else "New Session")
+        with m2:
+            ui.metric_highlight("Order volume", f"{live_count:,} orders", f"{live_count - baseline_count:+} vs Yesterday")
+        with m3:
+            ui.metric_highlight("AOV focus", f"TK {live_aov:,.0f}", f"{live_aov - baseline_aov:+.0f} change")
+            
+        if live_revenue < baseline_revenue * 0.5:
+             st.warning(f"Live revenue is significantly lower than yesterday's baseline ({((live_revenue/baseline_revenue)*100):.0f}% of goal). Check if the sync window matches.")
+        elif live_revenue > baseline_revenue:
+             st.balloons()
+             st.success(f"Live performance has outpaced yesterday's full day by {live_revenue - baseline_revenue:,.0f} TK!")
+
+    except Exception as e:
+        st.caption(f"Could not calculate comparison metrics: {e}")
+
+
 def _render_order_sync(wc_service: WooCommerceService):
     st.subheader("Order Sync")
     st.caption("Pull WooCommerce orders, review the preview, then save them into local storage.")
 
     with st.expander("Fetch Settings", expanded=True):
-        # Fixed rolling 120-day window
-        end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=120)
-
         col1, col2 = st.columns(2)
         with col1:
+            sync_mode = st.selectbox(
+                "Sync Mode",
+                ["Standard (Date Range)", "Current Cycle (Since 5 PM)", "Fulfillment Queue (Processing)", "Recent Shipped"],
+                index=0,
+                help="Select a preset to automatically set date/time ranges based on business cycles."
+            )
+            
+        with col2:
             status_filter = st.selectbox(
                 "Order Status",
-                ["any", "pending", "processing", "on-hold", "completed", "cancelled", "refunded", "failed"],
+                ["any", "processing", "on-hold", "completed", "cancelled", "refunded", "failed"],
                 index=0,
                 help="Select the exact order status to fetch from the WooCommerce database.",
             )
-        with col2:
-            require_tracking = st.checkbox(
-                "Only tracked orders",
-                value=False,
-                help="Keep only orders that include a tracking reference.",
-            )
+
+        # Operational calculation for the 5 PM cutoff
+        now = datetime.now()
+        yesterday_5pm = (now - timedelta(days=1)).replace(hour=17, minute=0, second=0, microsecond=0)
+        
+        if sync_mode == "Current Cycle (Since 5 PM)":
+            start_date_val = yesterday_5pm.date()
+            start_time_val = yesterday_5pm.time()
+            end_date_val = now.date()
+            end_time_val = now.time()
+            status_filter = "any"
+        elif sync_mode == "Fulfillment Queue (Processing)":
+            start_date_val = yesterday_5pm.date()
+            start_time_val = yesterday_5pm.time()
+            end_date_val = now.date()
+            end_time_val = now.time()
+            status_filter = "processing"
+        elif sync_mode == "Recent Shipped":
+            start_date_val = yesterday_5pm.date()
+            start_time_val = yesterday_5pm.time()
+            end_date_val = now.date()
+            end_time_val = now.time()
+            status_filter = "completed"
+        else:
+            # Fallback to standard 120-day range
+            start_date_val = now.date() - timedelta(days=120)
+            start_time_val = yesterday_5pm.time().replace(hour=0)
+            end_date_val = now.date()
+            end_time_val = yesterday_5pm.time().replace(hour=23, minute=59)
+
+        if sync_mode == "Standard (Date Range)":
+            c1, c2 = st.columns(2)
+            with c1:
+                start_date = st.date_input("From Date", value=start_date_val)
+            with c2:
+                end_date = st.date_input("To Date", value=end_date_val)
+            after = datetime.combine(start_date, start_time_val).strftime("%Y-%m-%dT%H:%M:%SZ")
+            before = datetime.combine(end_date, end_time_val).strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            st.info(f"Targeting window: **{yesterday_5pm.strftime('%d %b %I:%M %p')}** to **Now**")
+            after = yesterday_5pm.strftime("%Y-%m-%dT17:00:00Z")
+            before = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+            start_date = start_date_val # For UI date_context
+            end_date = end_date_val
+
+        require_tracking = st.checkbox(
+            "Only tracked orders",
+            value=False,
+            help="Keep only orders that include a tracking reference.",
+        )
 
         st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
         fetch_btn = st.button("Fetch Fresh Data", use_container_width=True, type="primary")
 
     if not fetch_btn:
         return
-
-    after = start_date.strftime("%Y-%m-%dT00:00:00Z")
-    before = end_date.strftime("%Y-%m-%dT23:59:59Z")
 
     with st.status("Fetching WooCommerce orders...", expanded=True) as status:
         try:
@@ -255,6 +354,9 @@ def _render_order_sync(wc_service: WooCommerceService):
     if st.button("Save Orders to Local Storage", use_container_width=True, type="secondary"):
         wc_service.save_to_parquet(df)
         st.success("Orders were saved and are now available to the dashboard.")
+    
+    st.divider()
+    _render_live_comparison(df)
 
 
 def _render_inventory_sync(wc_service: WooCommerceService):
