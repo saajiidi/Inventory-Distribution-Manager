@@ -25,6 +25,9 @@ from BackEnd.services.hybrid_data_loader import (
 from BackEnd.services.ml_insights import build_ml_insight_bundle, detect_sales_anomalies, generate_demand_forecast
 from BackEnd.utils.sales_schema import ensure_sales_schema
 from FrontEnd.components.ui_components import (
+    apply_plotly_theme,
+    build_adaptive_donut,
+    build_spotlight_bar,
     render_audit_card,
     render_bi_hero,
     render_commentary_panel,
@@ -1353,12 +1356,26 @@ def render_product_performance(df: pd.DataFrame):
 
     c1, c2 = st.columns(2)
     with c1:
-        fig_top = px.bar(top_products.sort_values("Revenue"), x="Revenue", y="item_name", orientation="h", title="Top Products by Revenue", color="Revenue", color_continuous_scale="Greens")
-        fig_top.update_layout(height=400, yaxis_title="Product")
+        fig_top = build_spotlight_bar(
+            top_products.sort_values("Revenue"),
+            x="Revenue",
+            y="item_name",
+            title="Top Products by Revenue",
+            color="Revenue",
+            color_scale="Tealgrn",
+            text_auto=".2s",
+        )
         st.plotly_chart(fig_top, use_container_width=True)
     with c2:
-        fig_units = px.bar(top_products.sort_values("Units"), x="Units", y="item_name", orientation="h", title="Top Products by Units Sold", color="Units", color_continuous_scale="Blues")
-        fig_units.update_layout(height=400, yaxis_title="Product")
+        fig_units = build_spotlight_bar(
+            top_products.sort_values("Units"),
+            x="Units",
+            y="item_name",
+            title="Top Products by Units Sold",
+            color="Units",
+            color_scale="Blues",
+            text_auto=".0f",
+        )
         st.plotly_chart(fig_units, use_container_width=True)
 
     st.dataframe(top_products.rename(columns={"item_name": "Product"}), use_container_width=True, hide_index=True)
@@ -1400,14 +1417,32 @@ def render_customer_behavior(
 
     c1, c2 = st.columns(2)
     with c1:
-        fig_donut = go.Figure(data=[go.Pie(labels=["New", "Returning"], values=[new_customers, returning_customers], hole=0.45)])
-        fig_donut.update_layout(title="New vs Returning Customers", height=320)
+        donut_df = pd.DataFrame(
+            {
+                "Customer Type": ["New", "Returning"],
+                "Customers": [new_customers, returning_customers],
+            }
+        )
+        fig_donut = build_adaptive_donut(
+            donut_df,
+            values="Customers",
+            names="Customer Type",
+            title="New vs Returning Customers",
+            color_scale="Tealgrn",
+        )
         st.plotly_chart(fig_donut, use_container_width=True)
     with c2:
         segment_counts = df_customers["segment"].value_counts().reset_index()
         segment_counts.columns = ["Segment", "Count"]
-        fig_segments = px.bar(segment_counts, x="Segment", y="Count", color="Count", title="Customer Segments")
-        fig_segments.update_layout(height=320)
+        fig_segments = build_spotlight_bar(
+            segment_counts.sort_values("Count"),
+            x="Count",
+            y="Segment",
+            title="Customer Segments",
+            color="Count",
+            color_scale="Plasma",
+            text_auto=".0f",
+        )
         st.plotly_chart(fig_segments, use_container_width=True)
 
     if all(col in df_customers.columns for col in ["total_orders", "total_revenue"]):
@@ -1421,7 +1456,7 @@ def render_customer_behavior(
             title="Customer Value Matrix",
             labels={"total_orders": "Orders", "total_revenue": "Revenue"},
         )
-        fig_scatter.update_layout(height=420)
+        fig_scatter = apply_plotly_theme(fig_scatter, height=420)
         st.plotly_chart(fig_scatter, use_container_width=True)
 
 
@@ -1449,12 +1484,26 @@ def render_geographic_insights(df: pd.DataFrame):
     render_commentary_panel("Regional Commentary", geo_notes)
     c1, c2 = st.columns(2)
     with c1:
-        fig_geo = px.bar(geo_sales.sort_values("Revenue"), x="Revenue", y="region", orientation="h", title="Revenue by Region", color="Revenue", color_continuous_scale="Teal")
-        fig_geo.update_layout(height=400, yaxis_title="Region")
+        fig_geo = build_spotlight_bar(
+            geo_sales.sort_values("Revenue"),
+            x="Revenue",
+            y="region",
+            title="Revenue by Region",
+            color="Revenue",
+            color_scale="Tealgrn",
+            text_auto=".2s",
+        )
         st.plotly_chart(fig_geo, use_container_width=True)
     with c2:
-        fig_orders = px.bar(geo_sales.sort_values("Orders"), x="Orders", y="region", orientation="h", title="Orders by Region", color="Orders", color_continuous_scale="Oranges")
-        fig_orders.update_layout(height=400, yaxis_title="Region")
+        fig_orders = build_spotlight_bar(
+            geo_sales.sort_values("Orders"),
+            x="Orders",
+            y="region",
+            title="Orders by Region",
+            color="Orders",
+            color_scale="Oranges",
+            text_auto=".0f",
+        )
         st.plotly_chart(fig_orders, use_container_width=True)
 
 

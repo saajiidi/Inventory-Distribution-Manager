@@ -44,11 +44,9 @@ def _render_workspace_sidebar():
 
     with st.sidebar:
         render_sidebar_branding()
-        
-        # Polish: Clean spacing and user-friendly UX for sidebar
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.info("Explore the primary navigation tabs above to switch between different operational, customer, and product views.")
-        
+
+        st.caption("Move between BI, customer intelligence, business cycles, and ShopAI CRM from the primary navigation.")
+
         st.markdown("<br><br>", unsafe_allow_html=True)
         # Hide developer/debug interactions in an expander for a much cleaner production look
         with st.expander("🛠️ Developer & Admin Tools", expanded=False):

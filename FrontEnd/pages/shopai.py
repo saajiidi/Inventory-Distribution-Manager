@@ -1,301 +1,592 @@
-import streamlit as st
-import anthropic
-import random
+"""ShopAI CRM analytics page."""
+
+from __future__ import annotations
+
 import time
 from datetime import datetime, timedelta
 
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+try:
+    import anthropic
+except Exception:  # pragma: no cover - optional dependency at runtime
+    anthropic = None
+
+from FrontEnd.components.ui_components import (
+    apply_plotly_theme,
+    build_adaptive_donut,
+    build_spotlight_bar,
+    render_audit_card,
+    render_bi_hero,
+    render_commentary_panel,
+    render_highlight_stat,
+    render_kpi_note,
+)
+
+
 MOCK_CONVERSATIONS = [
     {
-        "id": "c001", "customer": "Arif Rahman", "customer_id": "+8801711234567",
-        "platform": "whatsapp", "status": "open",
-        "preview": "Where is my order? I placed it 3 days ago",
+        "id": "c001",
+        "customer": "Arif Rahman",
+        "customer_id": "+8801711234567",
+        "platform": "whatsapp",
+        "status": "open",
+        "preview": "Where is my order? I placed it 3 days ago.",
         "updated": datetime.now() - timedelta(minutes=4),
+        "response_minutes": 2.8,
+        "topic": "Order tracking",
+        "tools": ["get_order_status"],
         "messages": [
             {"role": "customer", "content": "Hi, I placed order #2041 three days ago. Where is it?", "time": "10:02 AM"},
-            {"role": "ai", "content": "Hi Arif! Let me check order #2041 for you right away. 🔍", "time": "10:02 AM", "tool": "get_order_status"},
-            {"role": "ai", "content": "Your order #2041 (Blue Denim Jacket, XL) was shipped yesterday via Sundarban Courier. Tracking: SB-88291. Expected delivery: tomorrow by 6 PM. 📦", "time": "10:02 AM"},
-            {"role": "customer", "content": "Thanks! What if it doesn't arrive tomorrow?", "time": "10:05 AM"},
-            {"role": "ai", "content": "No worries! If it doesn't arrive by tomorrow evening, message me and I'll escalate it to our logistics team and offer you a full refund or reship. 🤝", "time": "10:05 AM"},
-        ]
+            {"role": "assistant", "content": "I checked order #2041. It shipped yesterday by Sundarban Courier and should arrive tomorrow by 6 PM.", "time": "10:02 AM"},
+            {"role": "customer", "content": "Thanks. What if it does not arrive tomorrow?", "time": "10:05 AM"},
+            {"role": "assistant", "content": "If it misses tomorrow evening, I will escalate it to logistics and offer a reship or refund.", "time": "10:05 AM"},
+        ],
     },
     {
-        "id": "c002", "customer": "Nadia Islam", "customer_id": "nadia.islam",
-        "platform": "instagram", "status": "escalated",
-        "preview": "I received a damaged product, want refund",
+        "id": "c002",
+        "customer": "Nadia Islam",
+        "customer_id": "nadia.islam",
+        "platform": "instagram",
+        "status": "escalated",
+        "preview": "I received a damaged product and want a refund.",
         "updated": datetime.now() - timedelta(minutes=22),
+        "response_minutes": 6.4,
+        "topic": "Refund",
+        "tools": ["create_refund", "escalate_to_human"],
         "messages": [
-            {"role": "customer", "content": "I received my order but the kurta is torn at the sleeve. This is unacceptable!", "time": "9:41 AM"},
-            {"role": "ai", "content": "I'm really sorry to hear that, Nadia! That's definitely not okay. Can you share a photo of the damage? I'll process a refund or replacement immediately. 🙏", "time": "9:41 AM"},
-            {"role": "customer", "content": "I already sent the photo on Instagram. I want a FULL refund, not replacement.", "time": "9:44 AM"},
-            {"role": "ai", "content": "Completely understood. I'm escalating this to our senior support team right now — they'll process your full refund within 24 hours. You'll get an SMS confirmation. ⚡", "time": "9:44 AM", "tool": "escalate_to_human"},
-            {"role": "escalated", "content": "⚠️ Escalated to human agent — awaiting response", "time": "9:44 AM"},
-        ]
+            {"role": "customer", "content": "My kurta arrived torn at the sleeve. I want a full refund.", "time": "9:41 AM"},
+            {"role": "assistant", "content": "I am sorry about that. I have escalated this to a human agent for a full-refund workflow.", "time": "9:44 AM"},
+        ],
     },
     {
-        "id": "c003", "customer": "Karim Uddin", "customer_id": "karim.uddin.88",
-        "platform": "messenger", "status": "resolved",
-        "preview": "Do you have this in red color?",
+        "id": "c003",
+        "customer": "Karim Uddin",
+        "customer_id": "karim.uddin.88",
+        "platform": "messenger",
+        "status": "resolved",
+        "preview": "Do you have this panjabi in red?",
         "updated": datetime.now() - timedelta(hours=1),
+        "response_minutes": 1.9,
+        "topic": "Product discovery",
+        "tools": ["search_products", "get_coupon"],
         "messages": [
-            {"role": "customer", "content": "Do you have the Cotton Panjabi in red? I only see blue and white on the website.", "time": "8:15 AM"},
-            {"role": "ai", "content": "Let me search our catalog for you! 🔍", "time": "8:15 AM", "tool": "search_products"},
-            {"role": "ai", "content": "Great news! The Cotton Panjabi is available in Red (sizes M, L, XL) at ৳ 850. The red variant is actually our bestseller! Want me to send you the direct link? 🎉", "time": "8:15 AM"},
-            {"role": "customer", "content": "Yes please! And can I get a discount?", "time": "8:17 AM"},
-            {"role": "ai", "content": "I've sent you the link! 🔗 I can apply coupon SAVE10 for 10% off — that brings it to ৳ 765. Valid today only! Shall I reserve a size for you?", "time": "8:17 AM", "tool": "get_coupon"},
-            {"role": "customer", "content": "Perfect, L please. Thanks!", "time": "8:20 AM"},
-            {"role": "ai", "content": "Done! ✅ Your L size Red Cotton Panjabi is reserved. Use SAVE10 at checkout. Happy shopping! 🛒", "time": "8:20 AM"},
-        ]
+            {"role": "customer", "content": "Do you have the cotton panjabi in red?", "time": "8:15 AM"},
+            {"role": "assistant", "content": "Yes. The red variant is available in M, L, and XL for Tk 850.", "time": "8:15 AM"},
+            {"role": "customer", "content": "Can I get a discount?", "time": "8:17 AM"},
+            {"role": "assistant", "content": "You can use SAVE10 today for 10 percent off.", "time": "8:17 AM"},
+        ],
     },
     {
-        "id": "c004", "customer": "Sumi Akter", "customer_id": "+8801822345678",
-        "platform": "whatsapp", "status": "open",
-        "preview": "What are your delivery charges?",
+        "id": "c004",
+        "customer": "Sumi Akter",
+        "customer_id": "+8801822345678",
+        "platform": "whatsapp",
+        "status": "open",
+        "preview": "What are your delivery charges to Chittagong?",
         "updated": datetime.now() - timedelta(minutes=2),
+        "response_minutes": 1.2,
+        "topic": "Delivery policy",
+        "tools": ["delivery_policy"],
         "messages": [
-            {"role": "customer", "content": "Hello, what are your delivery charges to Chittagong?", "time": "10:18 AM"},
-            {"role": "ai", "content": "Hi Sumi! Delivery to Chittagong: ৳ 120 standard (3-5 days) or ৳ 200 express (next day). Free delivery on orders above ৳ 2000! 🚚", "time": "10:18 AM"},
-        ]
+            {"role": "customer", "content": "What are your delivery charges to Chittagong?", "time": "10:18 AM"},
+            {"role": "assistant", "content": "Standard delivery is Tk 120 and express delivery is Tk 200. Orders above Tk 2000 ship free.", "time": "10:18 AM"},
+        ],
     },
 ]
 
 MOCK_PRODUCTS = [
-    {"id": 101, "name": "Blue Denim Jacket", "price": "৳ 2,200", "stock": 14, "category": "Outerwear"},
-    {"id": 102, "name": "Cotton Panjabi - Red", "price": "৳ 850", "stock": 8, "category": "Traditional"},
-    {"id": 103, "name": "Printed Kurti Set", "price": "৳ 1,450", "stock": 0, "category": "Women"},
-    {"id": 104, "name": "Casual Joggers", "price": "৳ 680", "stock": 23, "category": "Men"},
-    {"id": 105, "name": "Embroidered Saree", "price": "৳ 3,800", "stock": 5, "category": "Women"},
+    {"id": 101, "name": "Blue Denim Jacket", "price": "Tk 2,200", "stock": 14, "category": "Outerwear"},
+    {"id": 102, "name": "Cotton Panjabi - Red", "price": "Tk 850", "stock": 8, "category": "Traditional"},
+    {"id": 103, "name": "Printed Kurti Set", "price": "Tk 1,450", "stock": 0, "category": "Women"},
+    {"id": 104, "name": "Casual Joggers", "price": "Tk 680", "stock": 23, "category": "Men"},
+    {"id": 105, "name": "Embroidered Saree", "price": "Tk 3,800", "stock": 5, "category": "Women"},
 ]
 
 MOCK_ORDERS_TODAY = [
-    {"id": "#2048", "customer": "Rahim Ali", "total": "৳ 2,200", "status": "Processing"},
-    {"id": "#2047", "customer": "Fatema B.", "total": "৳ 1,450", "status": "Shipped"},
-    {"id": "#2046", "customer": "Jabir H.", "total": "৳ 680", "status": "Delivered"},
+    {"id": "#2048", "customer": "Rahim Ali", "total": "Tk 2,200", "status": "Processing"},
+    {"id": "#2047", "customer": "Fatema B.", "total": "Tk 1,450", "status": "Shipped"},
+    {"id": "#2046", "customer": "Jabir H.", "total": "Tk 680", "status": "Delivered"},
 ]
 
 
+def _normalize_name(value: str) -> str:
+    return " ".join(str(value).strip().lower().split()) if value else ""
+
+
+def _normalize_phone(value: str) -> str:
+    digits = "".join(ch for ch in str(value) if ch.isdigit())
+    if len(digits) == 13 and digits.startswith("880"):
+        return "0" + digits[3:]
+    if len(digits) == 10 and digits.startswith("1"):
+        return "0" + digits
+    return digits
+
+
+def _customer_lookup(customers_df: pd.DataFrame) -> tuple[dict[str, dict], dict[str, dict]]:
+    if customers_df is None or customers_df.empty:
+        return {}, {}
+
+    customers = customers_df.copy()
+    if "primary_name" not in customers.columns:
+        customers["primary_name"] = customers.get("customer_name", "")
+    name_lookup: dict[str, dict] = {}
+    phone_lookup: dict[str, dict] = {}
+
+    for record in customers.to_dict("records"):
+        normalized_name = _normalize_name(record.get("primary_name", ""))
+        if normalized_name and normalized_name not in name_lookup:
+            name_lookup[normalized_name] = record
+
+        for phone in str(record.get("all_phones", "")).split(","):
+            normalized_phone = _normalize_phone(phone)
+            if normalized_phone and normalized_phone not in phone_lookup:
+                phone_lookup[normalized_phone] = record
+
+    return name_lookup, phone_lookup
+
+
+def build_shopai_conversation_frame(
+    conversations: list[dict] | None = None,
+    customers_df: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    conversations = conversations or MOCK_CONVERSATIONS
+    name_lookup, phone_lookup = _customer_lookup(customers_df if isinstance(customers_df, pd.DataFrame) else pd.DataFrame())
+
+    rows = []
+    for convo in conversations:
+        customer_record = phone_lookup.get(_normalize_phone(convo.get("customer_id", ""))) or name_lookup.get(
+            _normalize_name(convo.get("customer", ""))
+        )
+        total_orders = pd.to_numeric((customer_record or {}).get("total_orders", 0), errors="coerce")
+        total_orders = 0 if pd.isna(total_orders) else int(total_orders)
+        total_revenue = pd.to_numeric((customer_record or {}).get("total_revenue", 0), errors="coerce")
+        total_revenue = 0.0 if pd.isna(total_revenue) else float(total_revenue)
+        rows.append(
+            {
+                "conversation_id": convo["id"],
+                "customer": convo["customer"],
+                "customer_id": convo["customer_id"],
+                "platform": convo["platform"].title(),
+                "status": convo["status"].title(),
+                "preview": convo["preview"],
+                "updated": convo["updated"],
+                "response_minutes": float(convo.get("response_minutes", 0)),
+                "topic": convo.get("topic", "General"),
+                "tools": convo.get("tools", []),
+                "segment": (customer_record or {}).get("segment", "Unmapped"),
+                "total_orders": total_orders,
+                "total_revenue": total_revenue,
+                "favorite_product": (customer_record or {}).get("favorite_product", ""),
+                "recency_days": pd.to_numeric((customer_record or {}).get("recency_days", pd.NA), errors="coerce"),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def build_shopai_crm_summary(
+    conversations: list[dict] | None = None,
+    customers_df: pd.DataFrame | None = None,
+) -> dict[str, object]:
+    frame = build_shopai_conversation_frame(conversations=conversations, customers_df=customers_df)
+    if frame.empty:
+        return {
+            "conversations": frame,
+            "status_mix": pd.DataFrame(),
+            "platform_mix": pd.DataFrame(),
+            "segment_mix": pd.DataFrame(),
+            "tool_usage": pd.DataFrame(),
+            "queue": pd.DataFrame(),
+            "recommendations": ["No ShopAI conversations are available yet."],
+            "kpis": {
+                "conversations": 0,
+                "resolution_rate": 0.0,
+                "avg_response_minutes": 0.0,
+                "needs_attention": 0,
+                "linked_customers": 0,
+            },
+        }
+
+    status_mix = frame["status"].value_counts().rename_axis("Status").reset_index(name="Conversations")
+    platform_mix = frame["platform"].value_counts().rename_axis("Platform").reset_index(name="Conversations")
+    segment_mix = (
+        frame["segment"].fillna("Unmapped").replace("", "Unmapped").value_counts().rename_axis("Segment").reset_index(name="Conversations")
+    )
+    tool_usage = (
+        frame.explode("tools")["tools"]
+        .fillna("no_tool")
+        .value_counts()
+        .rename_axis("Tool")
+        .reset_index(name="Calls")
+    )
+
+    resolution_rate = float((frame["status"].eq("Resolved").sum() / max(len(frame), 1)) * 100)
+    needs_attention = int(frame["status"].isin(["Open", "Escalated"]).sum())
+    linked_customers = int(frame["segment"].ne("Unmapped").sum())
+
+    queue = frame.copy()
+    queue["priority_score"] = (
+        queue["status"].map({"Escalated": 3, "Open": 2, "Resolved": 1}).fillna(0)
+        + queue["segment"].map({"VIP": 2, "At Risk": 2, "Potential Loyalist": 1}).fillna(0)
+    )
+    queue = queue.sort_values(["priority_score", "updated"], ascending=[False, False]).reset_index(drop=True)
+
+    recommendations: list[str] = []
+    escalated_vips = frame[(frame["status"] == "Escalated") & (frame["segment"] == "VIP")]
+    if not escalated_vips.empty:
+        recommendations.append(f"{len(escalated_vips)} VIP conversations are escalated and should be handled first.")
+    at_risk_open = frame[(frame["status"].isin(["Open", "Escalated"])) & (frame["segment"] == "At Risk")]
+    if not at_risk_open.empty:
+        recommendations.append(f"{len(at_risk_open)} at-risk customers are waiting inside the support queue.")
+    delivery_share = (frame["topic"] == "Order tracking").mean()
+    if delivery_share >= 0.25:
+        recommendations.append("Order-tracking demand is high. A stronger delivery-status macro would reduce repetitive support load.")
+    if linked_customers < len(frame):
+        recommendations.append("Some conversations are not matched to customer intelligence yet. Add phone or account linking for stronger CRM routing.")
+    if not recommendations:
+        recommendations.append("ShopAI conversation load is balanced. Keep automations focused on fast order-tracking and refund resolution.")
+
+    return {
+        "conversations": frame,
+        "status_mix": status_mix,
+        "platform_mix": platform_mix,
+        "segment_mix": segment_mix,
+        "tool_usage": tool_usage,
+        "queue": queue,
+        "recommendations": recommendations,
+        "kpis": {
+            "conversations": int(len(frame)),
+            "resolution_rate": resolution_rate,
+            "avg_response_minutes": float(frame["response_minutes"].mean()),
+            "needs_attention": needs_attention,
+            "linked_customers": linked_customers,
+        },
+    }
+
+
+def _format_currency(value: float) -> str:
+    return f"Tk {value:,.0f}"
+
+
+def _customer_source_frame() -> pd.DataFrame:
+    if "customer_insights_df" in st.session_state:
+        return st.session_state["customer_insights_df"]
+    if "dashboard_data" in st.session_state:
+        return st.session_state["dashboard_data"].get("customers", pd.DataFrame())
+    return pd.DataFrame()
+
+
+def render_shopai_crm_snapshot(customers_df: pd.DataFrame | None = None):
+    customer_frame = customers_df if isinstance(customers_df, pd.DataFrame) else _customer_source_frame()
+    crm = build_shopai_crm_summary(customers_df=customer_frame)
+    kpis = crm["kpis"]
+
+    st.markdown("#### ShopAI CRM Snapshot")
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("Conversations", f"{kpis['conversations']:,}")
+    metric_cols[1].metric("Resolution Rate", f"{kpis['resolution_rate']:.0f}%")
+    metric_cols[2].metric("Avg Response", f"{kpis['avg_response_minutes']:.1f} min")
+    metric_cols[3].metric("Needs Attention", f"{kpis['needs_attention']:,}")
+    render_commentary_panel("CRM signals", crm["recommendations"][:3])
+
+    chart_cols = st.columns(2)
+    with chart_cols[0]:
+        status_chart = build_adaptive_donut(
+            crm["status_mix"],
+            values="Conversations",
+            names="Status",
+            title="Conversation Status Mix",
+        )
+        st.plotly_chart(status_chart, use_container_width=True)
+    with chart_cols[1]:
+        platform_chart = build_spotlight_bar(
+            crm["platform_mix"].sort_values("Conversations"),
+            x="Conversations",
+            y="Platform",
+            title="Conversation Volume by Platform",
+            color="Conversations",
+            color_scale="Blues",
+            orientation="h",
+            text_auto=".0f",
+        )
+        st.plotly_chart(platform_chart, use_container_width=True)
+
+
+def _ensure_shopai_state():
+    st.session_state.setdefault("shopai_test_messages", [])
+    st.session_state.setdefault("shopai_selected_conversation", MOCK_CONVERSATIONS[0]["id"])
+    st.session_state.setdefault("shopai_anthropic_key", "")
+
+
+def _render_conversation_detail(conversation: dict, crm_frame: pd.DataFrame):
+    matched = crm_frame[crm_frame["conversation_id"] == conversation["id"]]
+    if not matched.empty:
+        row = matched.iloc[0]
+        render_audit_card(
+            "Customer context",
+            (
+                f"Segment: {row['segment']} | Lifetime revenue: {_format_currency(row['total_revenue'])} | "
+                f"Orders: {int(row['total_orders'])} | Favorite product: {row['favorite_product'] or 'Unknown'}"
+            ),
+        )
+
+    st.markdown(f"**{conversation['customer']}**")
+    st.caption(
+        f"{conversation['platform'].title()} | {conversation['status'].title()} | "
+        f"Updated {conversation['updated'].strftime('%Y-%m-%d %H:%M')}"
+    )
+    for message in conversation["messages"]:
+        role = "assistant" if message["role"] == "assistant" else "user"
+        with st.chat_message(role):
+            st.write(message["content"])
+            st.caption(message["time"])
+
+
+def _render_agent_lab():
+    config_col, chat_col = st.columns([1, 1.5])
+    with config_col:
+        system_prompt = st.text_area(
+            "System Prompt",
+            value=(
+                "You are ShopAI, a concise customer-support agent for a Bangladeshi commerce brand. "
+                "Prioritize delivery clarity, refund confidence, and sales conversion."
+            ),
+            height=140,
+        )
+        st.session_state["shopai_anthropic_key"] = st.text_input(
+            "Anthropic API Key",
+            type="password",
+            value=st.session_state["shopai_anthropic_key"],
+            placeholder="sk-ant-...",
+        )
+        if st.button("Clear Agent Lab", use_container_width=True):
+            st.session_state["shopai_test_messages"] = []
+            st.rerun()
+
+    with chat_col:
+        for message in st.session_state["shopai_test_messages"]:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+
+        prompt = st.chat_input("Test ShopAI with a customer message...")
+        if not prompt:
+            return
+
+        st.session_state["shopai_test_messages"].append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.write(prompt)
+
+        api_key = st.session_state["shopai_anthropic_key"]
+        if not api_key or anthropic is None:
+            mock_replies = {
+                "order": "I checked the order. It is in transit and scheduled for delivery tomorrow.",
+                "refund": "I have marked this for a refund workflow and escalated it to the human queue.",
+                "discount": "You can use SAVE10 today for a 10 percent discount.",
+            }
+            reply = next((text for key, text in mock_replies.items() if key in prompt.lower()), "ShopAI would answer here. Add an Anthropic key to test live responses.")
+            time.sleep(0.4)
+        else:
+            try:
+                client = anthropic.Anthropic(api_key=api_key)
+                response = client.messages.create(
+                    model="claude-3-haiku-20240307",
+                    max_tokens=350,
+                    system=system_prompt,
+                    messages=[{"role": msg["role"], "content": msg["content"]} for msg in st.session_state["shopai_test_messages"]],
+                )
+                reply = next((block.text for block in response.content if hasattr(block, "text")), "No response returned.")
+            except Exception as exc:  # pragma: no cover - runtime API failures
+                reply = f"API error: {exc}"
+
+        st.session_state["shopai_test_messages"].append({"role": "assistant", "content": reply})
+        with st.chat_message("assistant"):
+            st.write(reply)
+
+
 def render_shopai_tab():
-    if "test_messages" not in st.session_state:
-        st.session_state.test_messages = []
-    if "selected_convo" not in st.session_state:
-        st.session_state.selected_convo = None
-    if "human_replies" not in st.session_state:
-        st.session_state.human_replies = {}
-    if "anthropic_key" not in st.session_state:
-        st.session_state.anthropic_key = ""
+    _ensure_shopai_state()
+    customer_frame = _customer_source_frame()
+    crm = build_shopai_crm_summary(customers_df=customer_frame)
+    crm_frame = crm["conversations"]
+    kpis = crm["kpis"]
 
-    # Scoped Custom CSS
-    st.markdown("""
-    <style>
-    .shopai-wrap {
-        font-family: 'Space Grotesk', sans-serif;
-    }
-    .metric-card {
-        background: #fff; border: 1px solid #e8e6e0; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
-    .metric-value { font-size: 2.2rem; font-weight: 700; color: #0f0f0f; line-height: 1; }
-    .metric-label { font-size: 0.78rem; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
-    .metric-delta { font-size: 0.82rem; font-weight: 500; color: #22c55e; margin-top: 4px; }
-    .convo-card { background: #fff; border: 1px solid #e8e6e0; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; cursor: pointer; transition: box-shadow 0.15s; }
-    .convo-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-    .badge-whatsapp { background: #dcfce7; color: #15803d; }
-    .badge-instagram { background: #fce7f3; color: #be185d; }
-    .badge-messenger { background: #dbeafe; color: #1d4ed8; }
-    .badge-resolved  { background: #f0fdf4; color: #16a34a; }
-    .badge-open      { background: #fff7ed; color: #c2410c; }
-    .badge-escalated { background: #fef9c3; color: #a16207; }
-    .bubble-user { background: #f3f4f6; border-radius: 18px 18px 18px 4px; padding: 10px 14px; margin: 6px 0; max-width: 75%; font-size: 0.9rem; color: #1f2937; }
-    .bubble-ai { background: #0f0f0f; color: #f9fafb; border-radius: 18px 18px 4px 18px; padding: 10px 14px; margin: 6px 0 6px auto; max-width: 75%; font-size: 0.9rem; text-align: right; }
-    .bubble-human { background: #fef3c7; border-radius: 18px 18px 4px 18px; padding: 10px 14px; margin: 6px 0 6px auto; max-width: 75%; font-size: 0.9rem; text-align: right; }
-    .section-header { font-size: 1.1rem; font-weight: 700; color: #0f0f0f; border-bottom: 2px solid #0f0f0f; padding-bottom: 8px; margin-bottom: 16px; letter-spacing: -0.01em; }
-    .tool-tag { display: inline-block; background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 2px 8px; margin: 2px; }
-    .woo-panel { background: #fff; border: 1px solid #e8e6e0; border-left: 4px solid #7c3aed; border-radius: 8px; padding: 14px 16px; margin: 8px 0; font-size: 0.88rem; }
-    .dot-green { display:inline-block; width:8px; height:8px; background:#22c55e; border-radius:50%; margin-right:6px; }
-    .dot-yellow { display:inline-block; width:8px; height:8px; background:#f59e0b; border-radius:50%; margin-right:6px; }
-    .chat-scroll { max-height: 420px; overflow-y: auto; padding: 8px; background: #f9f9f7; border-radius: 8px; border: 1px solid #e8e6e0; }
-    </style>
-    <div class="shopai-wrap">
-    """, unsafe_allow_html=True)
+    render_bi_hero(
+        "ShopAI CRM",
+        (
+            "Support operations are surfaced as CRM analytics: conversation load, linked customer value, resolution pressure, "
+            "and the highest-priority follow-ups for the team."
+        ),
+        chips=[
+            "Conversation analytics",
+            "Customer-linked routing",
+            "Agent lab",
+            "Commerce context",
+        ],
+    )
 
-    st.header("ShopAI CRM")
-    
-    with st.expander("System Configuration & Anthropic Keys", expanded=False):
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**System Status**")
-            st.markdown('<span class="dot-green"></span> AI Agent Online (Ready for test routing)', unsafe_allow_html=True)
-            st.markdown('<span class="dot-green"></span> WooCommerce API (Mock linked)', unsafe_allow_html=True)
-            st.markdown('<span class="dot-yellow"></span> Meta Webhook (Simulated callbacks)', unsafe_allow_html=True)
-        with c2:
-            st.markdown("**API Key**")
-            st.session_state.anthropic_key = st.text_input("Anthropic API Key", type="password", value=st.session_state.anthropic_key, placeholder="sk-ant-...", help="Required for Claude-powered Test Agent")
+    linked_share = (kpis["linked_customers"] / max(kpis["conversations"], 1)) * 100
+    render_highlight_stat(
+        "CRM pressure",
+        f"{kpis['needs_attention']} conversations need action",
+        f"{linked_share:.0f}% of the visible queue is matched to customer intelligence.",
+    )
+    render_commentary_panel("CRM narrative", crm["recommendations"])
 
-    shop_tabs = st.tabs(["📊 Dashboard", "💬 Conversations", "🤖 Test Agent", "📦 Mock WooCommerce"])
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("Conversations", f"{kpis['conversations']:,}")
+    metric_cols[1].metric("Resolution Rate", f"{kpis['resolution_rate']:.0f}%")
+    metric_cols[2].metric("Avg Response", f"{kpis['avg_response_minutes']:.1f} min")
+    metric_cols[3].metric("Linked Customers", f"{kpis['linked_customers']:,}")
+    render_kpi_note("Customer linking uses phone first, then normalized name matching against customer intelligence.")
 
-    # ──────────────── DASHBOARD ────────────────
-    with shop_tabs[0]:
-        st.markdown(f"**Today · {datetime.now().strftime('%A, %d %B %Y')}**")
+    tabs = st.tabs(["CRM Command", "Queue", "Agent Lab", "Commerce Context"])
 
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.markdown('<div class="metric-card"><div class="metric-value">47</div><div class="metric-label">Conversations Today</div><div class="metric-delta">↑ 12 from yesterday</div></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown('<div class="metric-card"><div class="metric-value">89%</div><div class="metric-label">AI Resolution Rate</div><div class="metric-delta">↑ 4% this week</div></div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown('<div class="metric-card"><div class="metric-value">2.8s</div><div class="metric-label">Avg Response Time</div><div class="metric-delta">↓ 0.4s improvement</div></div>', unsafe_allow_html=True)
-        with col4:
-            st.markdown('<div class="metric-card"><div class="metric-value">5</div><div class="metric-label">Needs Human Attention</div><div class="metric-delta" style="color:#f59e0b">↑ 2 escalated</div></div>', unsafe_allow_html=True)
+    with tabs[0]:
+        top_left, top_right = st.columns(2)
+        with top_left:
+            status_chart = build_adaptive_donut(
+                crm["status_mix"],
+                values="Conversations",
+                names="Status",
+                title="Conversation Status Mix",
+            )
+            st.plotly_chart(status_chart, use_container_width=True)
+        with top_right:
+            platform_chart = build_spotlight_bar(
+                crm["platform_mix"].sort_values("Conversations"),
+                x="Conversations",
+                y="Platform",
+                title="Platform Load",
+                color="Conversations",
+                color_scale="Blues",
+                text_auto=".0f",
+            )
+            st.plotly_chart(platform_chart, use_container_width=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_l, col_r = st.columns([1.4, 1])
-        with col_l:
-            st.markdown('<div class="section-header">Platform Breakdown</div>', unsafe_allow_html=True)
-            import pandas as pd
-            df = pd.DataFrame({"Platform": ["WhatsApp", "Instagram", "Messenger"], "Conversations": [28, 12, 7]}).set_index("Platform")
-            st.bar_chart(df, color="#0f0f0f")
+        bottom_left, bottom_right = st.columns(2)
+        with bottom_left:
+            segment_chart = build_adaptive_donut(
+                crm["segment_mix"],
+                values="Conversations",
+                names="Segment",
+                title="CRM Segment Exposure",
+                color_scale="Tealgrn",
+            )
+            st.plotly_chart(segment_chart, use_container_width=True)
+        with bottom_right:
+            tool_chart = build_spotlight_bar(
+                crm["tool_usage"].sort_values("Calls"),
+                x="Calls",
+                y="Tool",
+                title="Tool Usage in Queue",
+                color="Calls",
+                color_scale="Oranges",
+                text_auto=".0f",
+            )
+            st.plotly_chart(tool_chart, use_container_width=True)
 
-        with col_r:
-            st.markdown('<div class="section-header">Recent Orders</div>', unsafe_allow_html=True)
-            for o in MOCK_ORDERS_TODAY:
-                color = "#22c55e" if o["status"] == "Delivered" else "#f59e0b" if o["status"] == "Shipped" else "#3b82f6"
-                st.markdown(f"""
-                <div class="woo-panel">
-                    <b>{o['id']}</b> · {o['customer']}<br>
-                    <span style="color:#888;font-size:0.82rem">{o['total']}</span>
-                    <span style="float:right;color:{color};font-size:0.8rem;font-weight:600">{o['status']}</span>
-                </div>""", unsafe_allow_html=True)
+        st.markdown("#### Priority Queue")
+        st.dataframe(
+            crm["queue"][
+                [
+                    "customer",
+                    "platform",
+                    "status",
+                    "topic",
+                    "segment",
+                    "response_minutes",
+                    "preview",
+                ]
+            ].rename(
+                columns={
+                    "customer": "Customer",
+                    "platform": "Platform",
+                    "status": "Status",
+                    "topic": "Topic",
+                    "segment": "Segment",
+                    "response_minutes": "Response (min)",
+                    "preview": "Latest Message",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+            height=320,
+        )
 
-        st.markdown('<div class="section-header" style="margin-top:20px">AI Tool Usage Today</div>', unsafe_allow_html=True)
-        t_cols = st.columns(4)
-        tools_used = [("get_order_status", 31, "#dbeafe"), ("search_products", 18, "#f0fdf4"), ("escalate_to_human", 5, "#fef9c3"), ("create_refund", 3, "#fce7f3")]
-        for i, (tool, count, bg) in enumerate(tools_used):
-            with t_cols[i]:
-                st.markdown(f"""
-                <div class="metric-card" style="background:{bg}">
-                    <div style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#555;margin-bottom:6px">{tool}</div>
-                    <div class="metric-value" style="font-size:1.8rem">{count}×</div>
-                    <div class="metric-label">calls today</div>
-                </div>""", unsafe_allow_html=True)
+    with tabs[1]:
+        filter_col_1, filter_col_2, filter_col_3 = st.columns([1, 1, 1.2])
+        with filter_col_1:
+            status_filter = st.selectbox("Status", ["All"] + sorted(crm_frame["status"].unique().tolist()))
+        with filter_col_2:
+            platform_filter = st.selectbox("Platform", ["All"] + sorted(crm_frame["platform"].unique().tolist()))
+        with filter_col_3:
+            segment_filter = st.selectbox("Customer Segment", ["All"] + sorted(crm_frame["segment"].unique().tolist()))
 
-    # ──────────────── CONVERSATIONS ────────────────
-    with shop_tabs[1]:
-        f1, f2, _ = st.columns([1, 1, 3])
-        with f1:
-            status_f = st.selectbox("Status", ["All", "Open", "Escalated", "Resolved"])
-        with f2:
-            platform_f = st.selectbox("Platform", ["All", "WhatsApp", "Instagram", "Messenger"])
+        queue_view = crm_frame.copy()
+        if status_filter != "All":
+            queue_view = queue_view[queue_view["status"] == status_filter]
+        if platform_filter != "All":
+            queue_view = queue_view[queue_view["platform"] == platform_filter]
+        if segment_filter != "All":
+            queue_view = queue_view[queue_view["segment"] == segment_filter]
 
-        filtered = MOCK_CONVERSATIONS
-        if status_f != "All":
-            filtered = [c for c in filtered if c["status"] == status_f.lower()]
-        if platform_f != "All":
-            filtered = [c for c in filtered if c["platform"] == platform_f.lower()]
+        queue_col, detail_col = st.columns([1, 1.5])
+        with queue_col:
+            st.markdown(f"#### {len(queue_view)} visible conversations")
+            for convo_id in queue_view["conversation_id"].tolist():
+                row = queue_view[queue_view["conversation_id"] == convo_id].iloc[0]
+                label = f"{row['customer']} | {row['status']} | {row['platform']}"
+                if st.button(label, key=f"shopai_queue_{convo_id}", use_container_width=True):
+                    st.session_state["shopai_selected_conversation"] = convo_id
 
-        c_list, c_det = st.columns([1, 1.6])
-        with c_list:
-            st.markdown(f'<div class="section-header">{len(filtered)} Conversations</div>', unsafe_allow_html=True)
-            for c in filtered:
-                b_plat = f'<span class="badge badge-{c["platform"]}">{c["platform"]}</span>'
-                b_stat = f'<span class="badge badge-{c["status"]}">{c["status"]}</span>'
-                mins_ago = int((datetime.now() - c["updated"]).total_seconds() / 60)
-                time_str = f"{mins_ago}m ago" if mins_ago < 60 else f"{mins_ago//60}h ago"
-
-                if st.button(f"{'🟢' if c['status']=='open' else '🟡' if c['status']=='escalated' else '✅'} {c['customer']} · {time_str}", key=f"b_{c['id']}", use_container_width=True):
-                    st.session_state.selected_convo = c["id"]
-
-                st.markdown(f"""<div style="padding:0 4px 8px 4px;font-size:0.8rem;color:#888;border-bottom:1px solid #f0ede8;margin-bottom:4px">
-                    {b_plat} {b_stat}<br><span style="margin-top:4px;display:block">{c['preview'][:50]}…</span></div>""", unsafe_allow_html=True)
-
-        with c_det:
-            selected = next((c for c in MOCK_CONVERSATIONS if c["id"] == st.session_state.selected_convo), None)
+        with detail_col:
+            selected = next(
+                (convo for convo in MOCK_CONVERSATIONS if convo["id"] == st.session_state["shopai_selected_conversation"]),
+                None,
+            )
             if not selected:
-                st.markdown('<div style="height:400px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:1rem;border:1px dashed #e0ddd8;border-radius:12px">← Select a conversation</div>', unsafe_allow_html=True)
+                st.info("Select a conversation to inspect the CRM context.")
             else:
-                st.markdown(f"**{selected['customer']}** &nbsp; <span class='badge badge-{selected['platform']}'>{selected['platform']}</span> <span class='badge badge-{selected['status']}'>{selected['status']}</span>", unsafe_allow_html=True)
-                st.markdown(f'<div style="color:#888;font-size:0.8rem;margin-bottom:12px">{selected["customer_id"]}</div>', unsafe_allow_html=True)
-                
-                chat_html = '<div class="chat-scroll">'
-                for m in selected["messages"]:
-                    t, tool = m.get("time", ""), m.get("tool", "")
-                    tool_h = f'<br><span class="tool-tag">⚙ {tool}()</span>' if tool else ""
-                    if m["role"] == "customer":
-                        chat_html += f'<div><div class="bubble-user">{m["content"]}{tool_h}</div><div style="font-size:0.7rem;color:#aaa;margin-bottom:4px">{t}</div></div>'
-                    elif m["role"] == "ai":
-                        chat_html += f'<div style="text-align:right"><div class="bubble-ai">{m["content"]}{tool_h}</div><div style="font-size:0.7rem;color:#aaa;margin-bottom:4px;text-align:right">AI · {t}</div></div>'
-                    elif m["role"] == "escalated":
-                        chat_html += f'<div style="text-align:center;color:#a16207;font-size:0.8rem;padding:8px;background:#fef9c3;border-radius:8px;margin:8px 0">{m["content"]}</div>'
-                chat_html += '</div>'
-                st.markdown(chat_html, unsafe_allow_html=True)
+                _render_conversation_detail(selected, crm_frame)
 
-                if selected["status"] == "escalated":
-                    st.markdown("**🧑 Human Agent Reply**")
-                    human_reply = st.text_area("Type your reply", key=f"reply_{selected['id']}", height=80)
-                    if st.button("📤 Send as Human Agent", key=f"send_{selected['id']}"):
-                        st.success("✅ Reply sent! (In production this calls Meta Cloud API)")
-                elif selected["status"] == "open":
-                    st.info("🤖 AI agent is handling this conversation.")
-                    st.button("👤 Take Over from AI", key=f"takeover_{selected['id']}")
+    with tabs[2]:
+        _render_agent_lab()
 
-    # ──────────────── TEST AGENT ────────────────
-    with shop_tabs[2]:
-        cc, ci = st.columns([1.6, 1])
-        with ci:
-            st.markdown('<div class="section-header">Agent Config</div>', unsafe_allow_html=True)
-            persona = st.text_area("System Prompt", height=120, value="You are a helpful customer support agent for a Bangladeshi e-commerce clothing store.\nYou have access to order tracking, product catalog, and can process refunds. Be friendly, brief (this is WhatsApp), and use occasional emojis.\nAlways respond in the same language the customer uses.")
-            if st.button("🗑️ Clear Chat"): st.session_state.test_messages = []; st.rerun()
-            st.markdown('<div class="section-header" style="margin-top:16px">Try These</div>', unsafe_allow_html=True)
-            for s in ["Where is my order #2041?", "Do you have kurtas in XL?", "Give me a discount code"]:
-                if st.button(s, use_container_width=True):
-                    st.session_state.test_messages.append({"role": "user", "content": s}); st.rerun()
-        
-        with cc:
-            st.markdown('<div class="section-header">Chat Simulator</div>', unsafe_allow_html=True)
-            for msg in st.session_state.test_messages:
-                st.chat_message(msg["role"]).write(msg["content"])
-            
-            user_input = st.chat_input("Type a customer message to test...")
-            if user_input:
-                st.session_state.test_messages.append({"role": "user", "content": user_input})
-                st.chat_message("user").write(user_input)
+    with tabs[3]:
+        commerce_left, commerce_right = st.columns([1.2, 1])
+        with commerce_left:
+            product_df = pd.DataFrame(MOCK_PRODUCTS)
+            search = st.text_input("Search product catalog", "")
+            if search:
+                product_df = product_df[product_df["name"].str.contains(search, case=False, na=False)]
+            stock_chart = px.bar(
+                product_df.sort_values("stock"),
+                x="stock",
+                y="name",
+                orientation="h",
+                color="stock",
+                title="Product Stock Context",
+                color_continuous_scale="Tealgrn",
+                text_auto=".0f",
+            )
+            st.plotly_chart(apply_plotly_theme(stock_chart, height=380), use_container_width=True)
+            st.dataframe(product_df.rename(columns={"name": "Product", "price": "Price", "stock": "Stock", "category": "Category"}), use_container_width=True, hide_index=True)
 
-                api_key = st.session_state.anthropic_key
-                if not api_key:
-                    mock_res = {"order": "I've checked your order! expected tomorrow by 6 PM 📦", "deliver": "Delivery charges: ৳ 120 standard 🚚", "refund": "Full refund initiated. 💳", "discount": "Use SAVE10! 🎉"}
-                    reply = next((v for k, v in mock_res.items() if k in user_input.lower()), "Thanks for reaching out! (Add your Anthropic API key in Settings for real AI)")
-                    time.sleep(0.8)
-                    st.session_state.test_messages.append({"role": "assistant", "content": reply})
-                    st.chat_message("assistant").write(reply)
-                else:
-                    try:
-                        client = anthropic.Anthropic(api_key=api_key)
-                        tools = [
-                            {"name": "get_order_status", "description": "Get order status", "input_schema": {"type": "object", "properties": {"order_id": {"type": "string"}}, "required": []}},
-                            {"name": "search_products", "description": "Search the catalog", "input_schema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}}
-                        ]
-                        api_messages = [{"role": m["role"], "content": m["content"]} for m in st.session_state.test_messages]
-                        with st.chat_message("assistant"):
-                            with st.spinner("Agent thinking..."):
-                                while True:
-                                    response = client.messages.create(model="claude-3-haiku-20240307", max_tokens=600, system=persona, tools=tools, messages=api_messages)
-                                    if response.stop_reason == "end_turn":
-                                        final_text = next((b.text for b in response.content if hasattr(b, "text")), "")
-                                        st.write(final_text); st.session_state.test_messages.append({"role": "assistant", "content": final_text})
-                                        break
-                                    if response.stop_reason == "tool_use":
-                                        tb = next(b for b in response.content if b.type == "tool_use")
-                                        st.markdown(f'<span class="tool-tag">⚙ {tb.name}()</span>', unsafe_allow_html=True)
-                                        api_messages.append({"role": "assistant", "content": response.content})
-                                        api_messages.append({"role": "user", "content": [{"type": "tool_result", "tool_use_id": tb.id, "content": "{'status': 'success'}"}]})
-                    except Exception as e:
-                        st.error(f"API Error: {e}")
-                st.rerun()
-
-    # ──────────────── MOCK WOOCOMMERCE ────────────────
-    with shop_tabs[3]:
-        search = st.text_input("Search products catalog")
-        products = [p for p in MOCK_PRODUCTS if search.lower() in p["name"].lower()] if search else MOCK_PRODUCTS
-        for p in products:
-            sc = "#22c55e" if p["stock"] > 5 else "#f59e0b" if p["stock"] > 0 else "#ef4444"
-            st.markdown(f"<div class='woo-panel'><b>#{p['id']} · {p['name']}</b> <span style='float:right'>{p['price']}</span><br><span style='font-size:0.8rem;color:#888'>{p['category']}</span> <span style='float:right;color:{sc}'>{p['stock']} in stock</span></div>", unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+        with commerce_right:
+            st.markdown("#### Orders touched today")
+            for order in MOCK_ORDERS_TODAY:
+                st.markdown(
+                    f"""
+                    <div class="hub-card" style="padding:0.9rem 1rem;">
+                        <div style="font-weight:700; color:#102132;">{order['id']} · {order['customer']}</div>
+                        <div style="color:#5f7183; margin-top:0.25rem;">{order['total']} · {order['status']}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            render_audit_card(
+                "Why this matters",
+                "Keep ShopAI close to order and stock context so support can resolve tracking, refund, and conversion questions without jumping between tools.",
+            )
