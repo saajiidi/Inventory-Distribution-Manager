@@ -44,11 +44,18 @@ def _render_workspace_sidebar():
     with st.sidebar:
         ui.sidebar_branding()
 
-        st.caption("Move between BI, customer intelligence, business cycles, and CRM Analytics from the primary navigation.")
+        # Workspace Context
+        st.markdown(
+            """
+            <div style="margin: 0.5rem 0.6rem; font-size: 0.8rem; color: #64748b; line-height: 1.4;">
+                Operating at the edge of WooCommerce sync. 
+                Manage data flow and visibility below.
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
 
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        # Hide developer/debug interactions in an expander for a much cleaner production look
-        with st.expander("🛠️ Developer & Admin Tools", expanded=False):
+        with st.expander("🛠️ System Control", expanded=False):
             if st.button("Save Session State", use_container_width=True):
                 save_state()
                 st.success("Session state saved.")

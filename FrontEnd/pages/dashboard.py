@@ -140,7 +140,7 @@ def _render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, 
     # 4. Anomalies
     anomalies = ml_bundle.get("anomalies", pd.DataFrame())
     if not anomalies.empty:
-        spike_count = len(anomalies[anomalies["is_anomaly"]])
+        spike_count = len(anomalies)
         if spike_count > 0:
             narrative.append(f"Detected <b>{spike_count} unexpected traffic/sales spikes</b> which should be cross-referenced with your marketing schedule.")
 
