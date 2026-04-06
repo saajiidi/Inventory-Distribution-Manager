@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-06 07:41:37",
+  "generated_at": "2026-04-06 09:20:31",
   "rows": [
     {
       "customer_id": "cust_059845b11314",
@@ -101,8 +101,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f15f4da0338a",
-      "primary_name": "Balaram Sutradhar",
+      "customer_id": "cust_536df676e44c",
+      "primary_name": "Samiha Kaiser",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -110,8 +110,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_536df676e44c",
-      "primary_name": "Samiha Kaiser",
+      "customer_id": "cust_f15f4da0338a",
+      "primary_name": "Balaram Sutradhar",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -218,15 +218,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_a73edd7e6e82",
-      "primary_name": "Naymur",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_87ebbf1af5b3",
       "primary_name": "Ariyan Sports",
       "segment": "New",
@@ -236,8 +227,17 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_67b0473d2733",
-      "primary_name": "Shuvo",
+      "customer_id": "cust_a73edd7e6e82",
+      "primary_name": "Naymur",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_bb15516c539c",
+      "primary_name": "Md. Akharuzzaman Jewel",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -254,8 +254,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_bb15516c539c",
-      "primary_name": "Md. Akharuzzaman Jewel",
+      "customer_id": "cust_67b0473d2733",
+      "primary_name": "Shuvo",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -371,8 +371,8 @@
       "recommended_action": "Send a VIP recovery message with priority support and a limited-time private offer."
     },
     {
-      "customer_id": "cust_d5c300287c6b",
-      "primary_name": "Dedar Khan",
+      "customer_id": "cust_21be059280c7",
+      "primary_name": "শাকিল আহম্মেদ",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -380,8 +380,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_21be059280c7",
-      "primary_name": "শাকিল আহম্মেদ",
+      "customer_id": "cust_d5c300287c6b",
+      "primary_name": "Dedar Khan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -524,8 +524,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e92910b5beed",
-      "primary_name": "Zakir Hossain",
+      "customer_id": "cust_5cc57f62586e",
+      "primary_name": "Sanji Chowdhury",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -533,8 +533,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5cc57f62586e",
-      "primary_name": "Sanji Chowdhury",
+      "customer_id": "cust_e92910b5beed",
+      "primary_name": "Zakir Hossain",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -650,15 +650,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5ab65fae81dd",
-      "primary_name": "N R Sojib",
-      "segment": "VIP",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 7,
-      "recommended_action": "Send a VIP recovery message with priority support and a limited-time private offer."
-    },
-    {
       "customer_id": "cust_b59e2ceebc35",
       "primary_name": "Faisal Nahian",
       "segment": "Potential Loyalist",
@@ -666,6 +657,15 @@
       "risk_band": "High",
       "next_purchase_window_days": 7,
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_5ab65fae81dd",
+      "primary_name": "N R Sojib",
+      "segment": "VIP",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 7,
+      "recommended_action": "Send a VIP recovery message with priority support and a limited-time private offer."
     },
     {
       "customer_id": "cust_2bca2a856f19",
@@ -812,17 +812,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_d162f7a16ad1",
-      "primary_name": "Masum Khan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_7365f0ace37c",
-      "primary_name": "মো: রবিউল ইসলাম",
+      "customer_id": "cust_b7030cdf1c6f",
+      "primary_name": "Pinto",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -839,8 +830,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_b7030cdf1c6f",
-      "primary_name": "Pinto",
+      "customer_id": "cust_d162f7a16ad1",
+      "primary_name": "Masum Khan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -850,6 +841,15 @@
     {
       "customer_id": "cust_451c623347ff",
       "primary_name": "Faisal Ahammed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7365f0ace37c",
+      "primary_name": "মো: রবিউল ইসলাম",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -875,17 +875,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_7480562f2b6b",
-      "primary_name": "Abu Naser",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_605e03caf26a",
-      "primary_name": "Shamim",
+      "customer_id": "cust_e37480b820dc",
+      "primary_name": "Naser",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -902,15 +893,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e37480b820dc",
-      "primary_name": "Naser",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_fd43f6f8a94c",
       "primary_name": "Ahmed Abdulla",
       "segment": "New",
@@ -920,8 +902,17 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_cb94192dae85",
-      "primary_name": "Md Mosharaf Hossain",
+      "customer_id": "cust_605e03caf26a",
+      "primary_name": "Shamim",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7480562f2b6b",
+      "primary_name": "Abu Naser",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -938,6 +929,15 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_cb94192dae85",
+      "primary_name": "Md Mosharaf Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_96ccb6305b41",
       "primary_name": "Mehrab Hossain",
       "segment": "VIP",
@@ -947,8 +947,8 @@
       "recommended_action": "Send a VIP recovery message with priority support and a limited-time private offer."
     },
     {
-      "customer_id": "cust_c538c676d4c2",
-      "primary_name": "Md Siam Sarker",
+      "customer_id": "cust_216cf82c3591",
+      "primary_name": "Md Rayhan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -965,8 +965,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_cd4c281d8800",
-      "primary_name": "Munna",
+      "customer_id": "cust_c538c676d4c2",
+      "primary_name": "Md Siam Sarker",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -974,8 +974,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_216cf82c3591",
-      "primary_name": "Md Rayhan",
+      "customer_id": "cust_cd4c281d8800",
+      "primary_name": "Munna",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1028,15 +1028,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f8096f350676",
-      "primary_name": "Hasinur",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_515d3b9f4cba",
       "primary_name": "Nazim Uddin",
       "segment": "New",
@@ -1048,6 +1039,15 @@
     {
       "customer_id": "cust_49f311af3cf3",
       "primary_name": "Sobuz Ahmed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f8096f350676",
+      "primary_name": "Hasinur",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1082,6 +1082,15 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_04037b37c10a",
+      "primary_name": "Jibran Ahmed Sami",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_894bd4a7574d",
       "primary_name": "Mehedi Hasan",
       "segment": "New",
@@ -1100,15 +1109,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_04037b37c10a",
-      "primary_name": "Jibran Ahmed Sami",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_27f840014db4",
       "primary_name": "Abdulla Al",
       "segment": "Potential Loyalist",
@@ -1118,8 +1118,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_ba34434b7b9a",
-      "primary_name": "Sharmila Zaman Shejuti",
+      "customer_id": "cust_879cdfefd46a",
+      "primary_name": "আকরাম ভূইয়া",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1127,8 +1127,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_879cdfefd46a",
-      "primary_name": "আকরাম ভূইয়া",
+      "customer_id": "cust_ba34434b7b9a",
+      "primary_name": "Sharmila Zaman Shejuti",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1163,179 +1163,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2abc4acfd78d",
-      "primary_name": "সাহস সরদার",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_6b51ab703661",
-      "primary_name": "Sadaf",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_594fc0327333",
-      "primary_name": "Abu Salay Md Nasim",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d283a7a8d764",
-      "primary_name": "Shahariyar Hossain Shanto",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_1533623d3dc0",
-      "primary_name": "Ashiqul",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_dd4bfaf2f934",
-      "primary_name": "Bhanu Lal Dey",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_a376a2408fe4",
-      "primary_name": "Sayed Monayem Billah Shakil",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_20377a62369a",
-      "primary_name": "Jasim Ahmed",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_a4fd53563359",
-      "primary_name": "রুহুল আমিন রাসেল",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c2ce8adfaf72",
-      "primary_name": "Areyan Al Sabid",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_e3824721aefc",
-      "primary_name": "Sayem Ahmed",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_2080d7d317e7",
-      "primary_name": "Jahedul Lslam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_b82441f087c6",
       "primary_name": "Robiul Islam Rafi",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_dbe6d91eabc5",
-      "primary_name": "ফাহিম আল ওয়াসি",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_9afc0d7324e8",
-      "primary_name": "Ahsan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_dbba6e3caa13",
-      "primary_name": "Diderul Alam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c54796375a03",
-      "primary_name": "Rukon Shanto",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d875de54a973",
-      "primary_name": "Emran Hossain Chanchal",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_98cc6f8c80e4",
-      "primary_name": "Hasan Chowdhury",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_91eef04569cd",
-      "primary_name": "Mehedi Hasan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1352,44 +1181,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_b513c197123e",
-      "primary_name": "Mir Babu",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c03f042e0e91",
-      "primary_name": "Shakhawat Tanjib",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_86c0a272022d",
-      "primary_name": "Md. Abdullah Al Mamun",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c860285600d7",
-      "primary_name": "Fahim Miah",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_4cb7dcdecf31",
-      "primary_name": "Amzad Hossain",
+      "customer_id": "cust_f67845215a0c",
+      "primary_name": "Hasibul Hasan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1406,8 +1199,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_0056c0b82519",
-      "primary_name": "Mehedi Hasan",
+      "customer_id": "cust_6b51ab703661",
+      "primary_name": "Sadaf",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1415,8 +1208,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_471ece859e1b",
-      "primary_name": "Zakir",
+      "customer_id": "cust_86c0a272022d",
+      "primary_name": "Md. Abdullah Al Mamun",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1424,8 +1217,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f251d2de50ca",
-      "primary_name": "Tanvir Hasan Topu",
+      "customer_id": "cust_1533623d3dc0",
+      "primary_name": "Ashiqul",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1433,8 +1226,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_acde9f601052",
-      "primary_name": "Muhit",
+      "customer_id": "cust_d875de54a973",
+      "primary_name": "Emran Hossain Chanchal",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1442,8 +1235,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f67845215a0c",
-      "primary_name": "Hasibul Hasan",
+      "customer_id": "cust_dd4bfaf2f934",
+      "primary_name": "Bhanu Lal Dey",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1460,6 +1253,87 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_b513c197123e",
+      "primary_name": "Mir Babu",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_e3824721aefc",
+      "primary_name": "Sayem Ahmed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_98cc6f8c80e4",
+      "primary_name": "Hasan Chowdhury",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_a4fd53563359",
+      "primary_name": "রুহুল আমিন রাসেল",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_a376a2408fe4",
+      "primary_name": "Sayed Monayem Billah Shakil",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_4cb7dcdecf31",
+      "primary_name": "Amzad Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_20377a62369a",
+      "primary_name": "Jasim Ahmed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_594fc0327333",
+      "primary_name": "Abu Salay Md Nasim",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_9afc0d7324e8",
+      "primary_name": "Ahsan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_f73ec9050731",
       "primary_name": "Sajjad",
       "segment": "New",
@@ -1469,8 +1343,134 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_f251d2de50ca",
+      "primary_name": "Tanvir Hasan Topu",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_0056c0b82519",
+      "primary_name": "Mehedi Hasan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_b22ef94d9ddb",
       "primary_name": "Zaman Badhon",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_2080d7d317e7",
+      "primary_name": "Jahedul Lslam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_acde9f601052",
+      "primary_name": "Muhit",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_471ece859e1b",
+      "primary_name": "Zakir",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d283a7a8d764",
+      "primary_name": "Shahariyar Hossain Shanto",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c54796375a03",
+      "primary_name": "Rukon Shanto",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_dbe6d91eabc5",
+      "primary_name": "ফাহিম আল ওয়াসি",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_91eef04569cd",
+      "primary_name": "Mehedi Hasan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_2abc4acfd78d",
+      "primary_name": "সাহস সরদার",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c2ce8adfaf72",
+      "primary_name": "Areyan Al Sabid",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c03f042e0e91",
+      "primary_name": "Shakhawat Tanjib",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_dbba6e3caa13",
+      "primary_name": "Diderul Alam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c860285600d7",
+      "primary_name": "Fahim Miah",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1496,8 +1496,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e723a6a86810",
-      "primary_name": "Mridul Sarkar",
+      "customer_id": "cust_8f943741fa9c",
+      "primary_name": "Mr. Dhrubo",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1505,8 +1505,35 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_873e44dd2024",
-      "primary_name": "Aminul Hoq",
+      "customer_id": "cust_c57fd63d5283",
+      "primary_name": "Shahadat Hussain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f179e7a4ec74",
+      "primary_name": "Sudipto",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_4a9ab2d81e77",
+      "primary_name": "A S H F A Q",
+      "segment": "Regular",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 7,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_fafe2e071aef",
+      "primary_name": "Najmul",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1516,6 +1543,69 @@
     {
       "customer_id": "cust_3da52cc924aa",
       "primary_name": "Aminul Islam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_b93140a4778a",
+      "primary_name": "Tanvir",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_4d6746e45b82",
+      "primary_name": "Test Order",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_e723a6a86810",
+      "primary_name": "Mridul Sarkar",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_bebc021f8e54",
+      "primary_name": "Sohel Rana",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7e9e5d8e39cc",
+      "primary_name": "Mostafa Al Mahmood",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_6370e151b8e2",
+      "primary_name": "Mahabub Rasid",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_873e44dd2024",
+      "primary_name": "Aminul Hoq",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1541,89 +1631,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_4a9ab2d81e77",
-      "primary_name": "A S H F A Q",
-      "segment": "Regular",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 7,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_c3e9d02025e5",
       "primary_name": "Md Monir Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_8f943741fa9c",
-      "primary_name": "Mr. Dhrubo",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_b93140a4778a",
-      "primary_name": "Tanvir",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_f179e7a4ec74",
-      "primary_name": "Sudipto",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c57fd63d5283",
-      "primary_name": "Shahadat Hussain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_bebc021f8e54",
-      "primary_name": "Sohel Rana",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_fafe2e071aef",
-      "primary_name": "Najmul",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_7e9e5d8e39cc",
-      "primary_name": "Mostafa Al Mahmood",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_6370e151b8e2",
-      "primary_name": "Mahabub Rasid",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1658,197 +1667,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_d1c48000527f",
-      "primary_name": "Khokon",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_029f5db0bddc",
-      "primary_name": "Md Naimur Rahaman Durjoy",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_b02be06751a2",
-      "primary_name": "Manoz Kumar Saha",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_73efc9579532",
-      "primary_name": "Md. Saidul Islam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_cf88fde633c1",
-      "primary_name": "Shahad Mohammad",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_8ac54ba39aa9",
-      "primary_name": "বজলু মিয়া",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_7457169187f0",
-      "primary_name": "Nayem Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_ac89f75c3447",
-      "primary_name": "Mohammed",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_7d6a7890d024",
-      "primary_name": "Akash",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_b2228f791289",
-      "primary_name": "Ashik",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_32945274f841",
-      "primary_name": "Elias",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_4cc12ac07fbd",
-      "primary_name": "জহির রায়হান",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_045b70859507",
-      "primary_name": "Sohag Alam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_faade329374a",
-      "primary_name": "Rm Dalim",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_78d4e451502b",
-      "primary_name": "Shohidul Alam Moon",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_b2d8ecdaea51",
-      "primary_name": "Jamil",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c0171bd38973",
-      "primary_name": "Ayan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c123f4045508",
-      "primary_name": "Zoha Zoha",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_0e19f904a177",
-      "primary_name": "রেজওয়ান করিম",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_a3563b5f2d0f",
-      "primary_name": "Rashed Jaman",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_651d689826b8",
-      "primary_name": "Anamul",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_168e0b3005a8",
-      "primary_name": "Zakaria Rana",
+      "customer_id": "cust_39526af47496",
+      "primary_name": "Arif",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1865,80 +1685,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_13ca89167b4f",
-      "primary_name": "Akid",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c33ca2dbbf20",
-      "primary_name": "Dr. Shamsul Alam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_9bda81f38c09",
-      "primary_name": "Saif Uddin",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_28e6c19f2c09",
-      "primary_name": "Ahmed Jamil",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_5c7f6a6a98e7",
-      "primary_name": "Ariyan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_1202e849af64",
-      "primary_name": "আরিফ বিল্লাহ",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_11de898f5442",
-      "primary_name": "Ahmedur",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_a957b991aeb0",
-      "primary_name": "Md.Abullah Al-Mamun",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_6037270b4653",
-      "primary_name": "Zahidul Haque",
+      "customer_id": "cust_5aacce6744aa",
+      "primary_name": "Md Shamim",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1955,8 +1703,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_71c4cea79b2a",
-      "primary_name": "Miton Vattacharza",
+      "customer_id": "cust_9bda81f38c09",
+      "primary_name": "Saif Uddin",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1964,8 +1712,71 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f0f4213d3af8",
-      "primary_name": "রিংকন",
+      "customer_id": "cust_5c7f6a6a98e7",
+      "primary_name": "Ariyan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_a3563b5f2d0f",
+      "primary_name": "Rashed Jaman",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_4cc12ac07fbd",
+      "primary_name": "জহির রায়হান",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_b2d8ecdaea51",
+      "primary_name": "Jamil",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_b02be06751a2",
+      "primary_name": "Manoz Kumar Saha",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_b2228f791289",
+      "primary_name": "Ashik",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_28e6c19f2c09",
+      "primary_name": "Ahmed Jamil",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_faade329374a",
+      "primary_name": "Rm Dalim",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -1982,8 +1793,26 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_39526af47496",
-      "primary_name": "Arif",
+      "customer_id": "cust_029f5db0bddc",
+      "primary_name": "Md Naimur Rahaman Durjoy",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_a957b991aeb0",
+      "primary_name": "Md.Abullah Al-Mamun",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_ac89f75c3447",
+      "primary_name": "Mohammed",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2000,8 +1829,188 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5aacce6744aa",
-      "primary_name": "Md Shamim",
+      "customer_id": "cust_6037270b4653",
+      "primary_name": "Zahidul Haque",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_651d689826b8",
+      "primary_name": "Anamul",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_8ac54ba39aa9",
+      "primary_name": "বজলু মিয়া",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_0e19f904a177",
+      "primary_name": "রেজওয়ান করিম",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_168e0b3005a8",
+      "primary_name": "Zakaria Rana",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7d6a7890d024",
+      "primary_name": "Akash",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_1202e849af64",
+      "primary_name": "আরিফ বিল্লাহ",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_13ca89167b4f",
+      "primary_name": "Akid",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_11de898f5442",
+      "primary_name": "Ahmedur",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c33ca2dbbf20",
+      "primary_name": "Dr. Shamsul Alam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c123f4045508",
+      "primary_name": "Zoha Zoha",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c0171bd38973",
+      "primary_name": "Ayan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_71c4cea79b2a",
+      "primary_name": "Miton Vattacharza",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d1c48000527f",
+      "primary_name": "Khokon",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_73efc9579532",
+      "primary_name": "Md. Saidul Islam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_32945274f841",
+      "primary_name": "Elias",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_cf88fde633c1",
+      "primary_name": "Shahad Mohammad",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f0f4213d3af8",
+      "primary_name": "রিংকন",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_78d4e451502b",
+      "primary_name": "Shohidul Alam Moon",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7457169187f0",
+      "primary_name": "Nayem Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_045b70859507",
+      "primary_name": "Sohag Alam",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2018,8 +2027,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_c1b7e9b16733",
-      "primary_name": "Riyad Hossain",
+      "customer_id": "cust_c2219e002fd3",
+      "primary_name": "Md Shihab Hasan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2027,8 +2036,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_8eb358717918",
-      "primary_name": "Arif",
+      "customer_id": "cust_c1b7e9b16733",
+      "primary_name": "Riyad Hossain",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2045,44 +2054,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_d41afe0fbb04",
-      "primary_name": "Jahid Hasan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_a691e6798e9b",
-      "primary_name": "Muhammad",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_e4981f1854d9",
-      "primary_name": "Ashraful Palash",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_93d069a552b2",
-      "primary_name": "Mainul Islam Anik",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c2219e002fd3",
-      "primary_name": "Md Shihab Hasan",
+      "customer_id": "cust_81f0ff0e8e3a",
+      "primary_name": "Sakib",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2099,8 +2072,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5d6b98bda60c",
-      "primary_name": "Mehrab Uddin",
+      "customer_id": "cust_330e84c97133",
+      "primary_name": "Hasan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2108,8 +2081,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2e0d6a1d0095",
-      "primary_name": "Mahedi Hassan Munna",
+      "customer_id": "cust_d41afe0fbb04",
+      "primary_name": "Jahid Hasan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2117,8 +2090,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_620a1c94a16b",
-      "primary_name": "আল-আমিন",
+      "customer_id": "cust_93d069a552b2",
+      "primary_name": "Mainul Islam Anik",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2126,8 +2099,17 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_81f0ff0e8e3a",
-      "primary_name": "Sakib",
+      "customer_id": "cust_e4981f1854d9",
+      "primary_name": "Ashraful Palash",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_a691e6798e9b",
+      "primary_name": "Muhammad",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2144,8 +2126,35 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_330e84c97133",
-      "primary_name": "Hasan",
+      "customer_id": "cust_5d6b98bda60c",
+      "primary_name": "Mehrab Uddin",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_620a1c94a16b",
+      "primary_name": "আল-আমিন",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_8eb358717918",
+      "primary_name": "Arif",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_2e0d6a1d0095",
+      "primary_name": "Mahedi Hassan Munna",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2162,6 +2171,60 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_850eda60d2be",
+      "primary_name": "Osman Gani",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_669eeade9577",
+      "primary_name": "Topu Rayhan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_be991b9930c8",
+      "primary_name": "Abrar Al Amin",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_8935113d1246",
+      "primary_name": "Sanuwar St",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_38b86c23f65b",
+      "primary_name": "Ranchoman",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f13a3bfcc34a",
+      "primary_name": "Hridoy Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_02e777082964",
       "primary_name": "Tanbir",
       "segment": "New",
@@ -2171,8 +2234,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e8abff398925",
-      "primary_name": "Mamun Nur Rahsid",
+      "customer_id": "cust_7fbf3999c3cc",
+      "primary_name": "Shuvo",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2180,8 +2243,26 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_4493c58d39fa",
-      "primary_name": "Husain",
+      "customer_id": "cust_92ce8a599c79",
+      "primary_name": "Tamjid Islam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d9e582d2eb88",
+      "primary_name": "জিসান",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_19d1870c9a81",
+      "primary_name": "Sharif",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2207,33 +2288,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_669eeade9577",
-      "primary_name": "Topu Rayhan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_f13a3bfcc34a",
-      "primary_name": "Hridoy Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_92ce8a599c79",
-      "primary_name": "Tamjid Islam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_5c3dcf77130c",
       "primary_name": "Shofiq Khan",
       "segment": "New",
@@ -2243,71 +2297,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_38b86c23f65b",
-      "primary_name": "Ranchoman",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d9e582d2eb88",
-      "primary_name": "জিসান",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_850eda60d2be",
-      "primary_name": "Osman Gani",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_19d1870c9a81",
-      "primary_name": "Sharif",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_7fbf3999c3cc",
-      "primary_name": "Shuvo",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_27d43b44216e",
       "primary_name": "জিবন মাহেদ",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_8935113d1246",
-      "primary_name": "Sanuwar St",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_be991b9930c8",
-      "primary_name": "Abrar Al Amin",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2333,6 +2324,42 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_4493c58d39fa",
+      "primary_name": "Husain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_e8abff398925",
+      "primary_name": "Mamun Nur Rahsid",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d3e080bafda8",
+      "primary_name": "Naimul Islam Naim",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7e84a50bb0ab",
+      "primary_name": "Arif Rahman",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_b62d093bf5f5",
       "primary_name": "Shamim",
       "segment": "New",
@@ -2351,24 +2378,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_1c03587cd5ab",
-      "primary_name": "Faysal Alam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d3e080bafda8",
-      "primary_name": "Naimul Islam Naim",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_4feb21c14a29",
       "primary_name": "Hasan Chowdhury",
       "segment": "New",
@@ -2378,8 +2387,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_7e84a50bb0ab",
-      "primary_name": "Arif Rahman",
+      "customer_id": "cust_1c03587cd5ab",
+      "primary_name": "Faysal Alam",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2450,107 +2459,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_83b06759bdf6",
-      "primary_name": "Keya",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_7575d81366aa",
       "primary_name": "Sarwardi Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_fb30f2d9b2ea",
-      "primary_name": "Sazzad Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_ab3da6ad5332",
-      "primary_name": "Emon Hasan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_be65043b091d",
-      "primary_name": "Kawsar Uddin Kamal-Kanur Nuton Bari, Vill-Sontospur,Ward",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_72ed1ab97a3b",
-      "primary_name": "Md. Razu Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_b0ab58463fb9",
-      "primary_name": "Mamun",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_3c8f76743fd6",
-      "primary_name": "Hossain",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c42bc02936ff",
-      "primary_name": "আহসান হাবিব",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_f00c914fb1f0",
-      "primary_name": "ফেলারাম চাকমা",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_364e74aa53c1",
-      "primary_name": "Md. Maeen Uddin Emon",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_323ab9876da7",
-      "primary_name": "Shariar Riad",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2567,8 +2477,107 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_3c8f76743fd6",
+      "primary_name": "Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_ab3da6ad5332",
+      "primary_name": "Emon Hasan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_fb30f2d9b2ea",
+      "primary_name": "Sazzad Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_b0ab58463fb9",
+      "primary_name": "Mamun",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f00c914fb1f0",
+      "primary_name": "ফেলারাম চাকমা",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_be65043b091d",
+      "primary_name": "Kawsar Uddin Kamal-Kanur Nuton Bari, Vill-Sontospur,Ward",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_42b8a9aa621f",
       "primary_name": "Sanaullah",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_364e74aa53c1",
+      "primary_name": "Md. Maeen Uddin Emon",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c42bc02936ff",
+      "primary_name": "আহসান হাবিব",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_323ab9876da7",
+      "primary_name": "Shariar Riad",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_72ed1ab97a3b",
+      "primary_name": "Md. Razu Hossain",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_83b06759bdf6",
+      "primary_name": "Keya",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2630,8 +2639,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f7d91e287131",
-      "primary_name": "Parvaz",
+      "customer_id": "cust_cbf4420729b1",
+      "primary_name": "Md.Shakib",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2639,8 +2648,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_cbf4420729b1",
-      "primary_name": "Md.Shakib",
+      "customer_id": "cust_f7d91e287131",
+      "primary_name": "Parvaz",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2684,15 +2693,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_8cf739124b23",
-      "primary_name": "Foysal Ahmed",
-      "segment": "Potential Loyalist",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 7,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_ef1665e92558",
       "primary_name": "Md Khokon",
       "segment": "Regular",
@@ -2702,8 +2702,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e1f33dc66f8f",
-      "primary_name": "Sadat",
+      "customer_id": "cust_8cf739124b23",
+      "primary_name": "Foysal Ahmed",
       "segment": "Potential Loyalist",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2713,6 +2713,15 @@
     {
       "customer_id": "cust_e6e37cb7ad87",
       "primary_name": "Ashik",
+      "segment": "Potential Loyalist",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 7,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_e1f33dc66f8f",
+      "primary_name": "Sadat",
       "segment": "Potential Loyalist",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2738,24 +2747,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_b61bf0a63b6a",
-      "primary_name": "Songlap",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_53aa4fc0df89",
-      "primary_name": "Nahid",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_34ed881e6c3d",
       "primary_name": "Anas",
       "segment": "New",
@@ -2765,44 +2756,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_b541fcd84b52",
-      "primary_name": "Imraan",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_adb8b13d1104",
-      "primary_name": "Ahmed",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_42b7f72b1669",
-      "primary_name": "Pallab Sikder",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_e241fd53ca75",
-      "primary_name": "Rabbi Mr",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_e4803a7d61c5",
-      "primary_name": "Yesin",
+      "customer_id": "cust_8156fc4b70a0",
+      "primary_name": "Sadman Nasif",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2819,24 +2774,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_eea5dff56b83",
-      "primary_name": "Shajjad Karim",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_f021d9c59305",
-      "primary_name": "Sajid",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_cb728b1deb53",
       "primary_name": "Mugdho",
       "segment": "New",
@@ -2846,35 +2783,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f05697c7eff6",
-      "primary_name": "শাহিন ইয়াজির",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_8f57acc31750",
-      "primary_name": "Mohammad Noman",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_ebb5a01baa85",
-      "primary_name": "Shahrear",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_8f30dd0d3696",
-      "primary_name": "Md.Fazle Rabbi",
+      "customer_id": "cust_42b7f72b1669",
+      "primary_name": "Pallab Sikder",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2900,24 +2810,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2cff4dce1752",
-      "primary_name": "Khandoker Shazedul Haque Rabbi",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_8156fc4b70a0",
-      "primary_name": "Sadman Nasif",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_c1ebd9494969",
       "primary_name": "Hasan Al Banna",
       "segment": "New",
@@ -2927,8 +2819,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5eee7dcf742a",
-      "primary_name": "Shahid Hasayn",
+      "customer_id": "cust_e241fd53ca75",
+      "primary_name": "Rabbi Mr",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2945,6 +2837,51 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_2cff4dce1752",
+      "primary_name": "Khandoker Shazedul Haque Rabbi",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_8f57acc31750",
+      "primary_name": "Mohammad Noman",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_5eee7dcf742a",
+      "primary_name": "Shahid Hasayn",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_8f30dd0d3696",
+      "primary_name": "Md.Fazle Rabbi",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_e4803a7d61c5",
+      "primary_name": "Yesin",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_e6fa67cc3e7e",
       "primary_name": "Dip",
       "segment": "New",
@@ -2954,8 +2891,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_4ab5c68c2259",
-      "primary_name": "Jahid",
+      "customer_id": "cust_b61bf0a63b6a",
+      "primary_name": "Songlap",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2963,8 +2900,80 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_bc094c4554b6",
-      "primary_name": "Rashed Hasan",
+      "customer_id": "cust_b541fcd84b52",
+      "primary_name": "Imraan",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_53aa4fc0df89",
+      "primary_name": "Nahid",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_ebb5a01baa85",
+      "primary_name": "Shahrear",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_eea5dff56b83",
+      "primary_name": "Shajjad Karim",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_adb8b13d1104",
+      "primary_name": "Ahmed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f021d9c59305",
+      "primary_name": "Sajid",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f05697c7eff6",
+      "primary_name": "শাহিন ইয়াজির",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_0107bddd8c6a",
+      "primary_name": "Habibur Rahman Muhin",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_b45251165c40",
+      "primary_name": "Sayful Islam",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -2981,17 +2990,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_75670cee094f",
-      "primary_name": "Nayem Islam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d8aa85a25e11",
-      "primary_name": "Md Azimul Islam Sheblu",
+      "customer_id": "cust_4ab5c68c2259",
+      "primary_name": "Jahid",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3008,8 +3008,44 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_0107bddd8c6a",
-      "primary_name": "Habibur Rahman Muhin",
+      "customer_id": "cust_58dd595ec52e",
+      "primary_name": "Md. Fakrul Islam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_59731e74e1a5",
+      "primary_name": "Mazharul",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d8aa85a25e11",
+      "primary_name": "Md Azimul Islam Sheblu",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_75670cee094f",
+      "primary_name": "Nayem Islam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_bc094c4554b6",
+      "primary_name": "Rashed Hasan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3035,134 +3071,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_59731e74e1a5",
-      "primary_name": "Mazharul",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_b45251165c40",
-      "primary_name": "Sayful Islam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_58dd595ec52e",
-      "primary_name": "Md. Fakrul Islam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_43ba4073fc54",
-      "primary_name": "Mahmudul Islam Piash",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_23abdb488bbe",
-      "primary_name": "ইসমাইল হক",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d73eb6c364e8",
-      "primary_name": "Mahin Shahrukh",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_2f9909a5cc7e",
-      "primary_name": "Al Mamun",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_6c16b0a6bd50",
-      "primary_name": "শফিকুল",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_3fdafd58cd1e",
-      "primary_name": "Abhijet",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_3befb97bd4a8",
-      "primary_name": "Tamzid Sarkar",
-      "segment": "Potential Loyalist",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 7,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_eb91a15b6fa6",
       "primary_name": "Mahbub",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_9dd083e688c5",
-      "primary_name": "Samiul Haque Pappu",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_1288d3e840ad",
-      "primary_name": "Tarikul Islam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_bb1b850a9991",
-      "primary_name": "Imrul Kayes",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_fcd501ff5009",
-      "primary_name": "Jabed Ahmed",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3179,8 +3089,107 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_8ec6e8a76e66",
-      "primary_name": "M. Islam Alvi",
+      "customer_id": "cust_23abdb488bbe",
+      "primary_name": "ইসমাইল হক",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_2f9909a5cc7e",
+      "primary_name": "Al Mamun",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_3befb97bd4a8",
+      "primary_name": "Tamzid Sarkar",
+      "segment": "Potential Loyalist",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 7,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_6c16b0a6bd50",
+      "primary_name": "শফিকুল",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_1288d3e840ad",
+      "primary_name": "Tarikul Islam",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d73eb6c364e8",
+      "primary_name": "Mahin Shahrukh",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_9dd083e688c5",
+      "primary_name": "Samiul Haque Pappu",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_bb1b850a9991",
+      "primary_name": "Imrul Kayes",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_43ba4073fc54",
+      "primary_name": "Mahmudul Islam Piash",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_3fdafd58cd1e",
+      "primary_name": "Abhijet",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_fcd501ff5009",
+      "primary_name": "Jabed Ahmed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7454668aa1b6",
+      "primary_name": "Rony",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3197,8 +3206,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_7454668aa1b6",
-      "primary_name": "Rony",
+      "customer_id": "cust_8ec6e8a76e66",
+      "primary_name": "M. Islam Alvi",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3260,8 +3269,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_a7d1a3da4776",
-      "primary_name": "মো সজিব",
+      "customer_id": "cust_06b2831c64a3",
+      "primary_name": "Md. Arafat Rahman",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3269,8 +3278,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_06b2831c64a3",
-      "primary_name": "Md. Arafat Rahman",
+      "customer_id": "cust_a7d1a3da4776",
+      "primary_name": "মো সজিব",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3305,24 +3314,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_c997912792cb",
-      "primary_name": "নাইমুর রহমান দুর্জয়",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_7d18adf7c476",
-      "primary_name": "M A Sayed",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_e2ea436d12ed",
       "primary_name": "Harunur Roshid",
       "segment": "New",
@@ -3334,6 +3325,24 @@
     {
       "customer_id": "cust_358409377d9f",
       "primary_name": "Km Shahed",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c997912792cb",
+      "primary_name": "নাইমুর রহমান দুর্জয়",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_7d18adf7c476",
+      "primary_name": "M A Sayed",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3395,8 +3404,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5643dc32d86d",
-      "primary_name": "Fahim Bin Karim Hridoy",
+      "customer_id": "cust_b0fd73b9408d",
+      "primary_name": "Sahriyar Rahman Shanto",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3404,8 +3413,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_b0fd73b9408d",
-      "primary_name": "Sahriyar Rahman Shanto",
+      "customer_id": "cust_5643dc32d86d",
+      "primary_name": "Fahim Bin Karim Hridoy",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3440,8 +3449,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_6d61477a564b",
-      "primary_name": "Md Neyam",
+      "customer_id": "cust_45164835c6f7",
+      "primary_name": "Azhar Forid Chowdhury Chowdhury",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3449,8 +3458,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_45164835c6f7",
-      "primary_name": "Azhar Forid Chowdhury Chowdhury",
+      "customer_id": "cust_6d61477a564b",
+      "primary_name": "Md Neyam",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3467,8 +3476,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_1b0182c2a348",
-      "primary_name": "Sm.Suzon",
+      "customer_id": "cust_c696d08255ca",
+      "primary_name": "Shahaan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3478,24 +3487,6 @@
     {
       "customer_id": "cust_de3e55ba2b82",
       "primary_name": "Zabid",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_d320e0f4ac16",
-      "primary_name": "Tisam",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c696d08255ca",
-      "primary_name": "Shahaan",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3521,8 +3512,17 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2be2584ecbbd",
-      "primary_name": "Ramim",
+      "customer_id": "cust_1b0182c2a348",
+      "primary_name": "Sm.Suzon",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_d320e0f4ac16",
+      "primary_name": "Tisam",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3532,6 +3532,15 @@
     {
       "customer_id": "cust_a97bcabe9b67",
       "primary_name": "Shetu",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_2be2584ecbbd",
+      "primary_name": "Ramim",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3557,17 +3566,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e04ce2a716c0",
-      "primary_name": "Ashraf",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_0c661c13ceb8",
-      "primary_name": "Arfan Uddin Rokib",
+      "customer_id": "cust_604f3c00b0d1",
+      "primary_name": "Rafi",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3593,8 +3593,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_9a317ca0a7f7",
-      "primary_name": "Mahadi Hossain",
+      "customer_id": "cust_8c7bc0421808",
+      "primary_name": "Mahbuba Zeba",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3602,8 +3602,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_604f3c00b0d1",
-      "primary_name": "Rafi",
+      "customer_id": "cust_0c661c13ceb8",
+      "primary_name": "Arfan Uddin Rokib",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3620,8 +3620,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_8c7bc0421808",
-      "primary_name": "Mahbuba Zeba",
+      "customer_id": "cust_9a317ca0a7f7",
+      "primary_name": "Mahadi Hossain",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3629,26 +3629,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_0daca077a82b",
-      "primary_name": "Sheikh",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_21a8272a4811",
-      "primary_name": "Sadaf",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_54a291fbb63f",
-      "primary_name": "Jihad",
+      "customer_id": "cust_e04ce2a716c0",
+      "primary_name": "Ashraf",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3665,26 +3647,35 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_54a291fbb63f",
+      "primary_name": "Jihad",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_21a8272a4811",
+      "primary_name": "Sadaf",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_0daca077a82b",
+      "primary_name": "Sheikh",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_3778bf62dfb9",
       "primary_name": "Abiir",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_3d96416b05ba",
-      "primary_name": "Sri N S",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_0de84189871e",
-      "primary_name": "Kawsar",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3710,6 +3701,24 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_0de84189871e",
+      "primary_name": "Kawsar",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_3d96416b05ba",
+      "primary_name": "Sri N S",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_5548957e1a90",
       "primary_name": "Mortuja Murshed",
       "segment": "New",
@@ -3719,8 +3728,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e90615cc5a34",
-      "primary_name": "Md.Shamsuddin Al Masud",
+      "customer_id": "cust_41abbfbcfb4d",
+      "primary_name": "Mostafizur Rahman",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3728,8 +3737,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_0c5cc11f1fda",
-      "primary_name": "Abdur Razzak",
+      "customer_id": "cust_0d233d4aa051",
+      "primary_name": "Rhoudrom Arghyo",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3737,8 +3746,26 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_932f89543a42",
-      "primary_name": "Shahed",
+      "customer_id": "cust_3c7147d63ee3",
+      "primary_name": "M Riday",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_2444e6a268e5",
+      "primary_name": "Ziaul Kabir",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f423f7c192b8",
+      "primary_name": "Syed Opu Miha",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3764,8 +3791,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2444e6a268e5",
-      "primary_name": "Ziaul Kabir",
+      "customer_id": "cust_0c5cc11f1fda",
+      "primary_name": "Abdur Razzak",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3773,8 +3800,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_3c7147d63ee3",
-      "primary_name": "M Riday",
+      "customer_id": "cust_e90615cc5a34",
+      "primary_name": "Md.Shamsuddin Al Masud",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3782,26 +3809,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f423f7c192b8",
-      "primary_name": "Syed Opu Miha",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_0d233d4aa051",
-      "primary_name": "Rhoudrom Arghyo",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_41abbfbcfb4d",
-      "primary_name": "Mostafizur Rahman",
+      "customer_id": "cust_932f89543a42",
+      "primary_name": "Shahed",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3836,6 +3845,15 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_108dff4d72cd",
+      "primary_name": "Rafsan Kabir",
+      "segment": "New",
+      "risk_score": 100.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_96559844aff6",
       "primary_name": "Md Mijanur Rahman",
       "segment": "New",
@@ -3845,8 +3863,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_108dff4d72cd",
-      "primary_name": "Rafsan Kabir",
+      "customer_id": "cust_9f1d4f9716e7",
+      "primary_name": "Md. Mahbub-Ur Rashid",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3872,15 +3890,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_9f1d4f9716e7",
-      "primary_name": "Md. Mahbub-Ur Rashid",
-      "segment": "New",
-      "risk_score": 100.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_9411cc692186",
       "primary_name": "Sajid Test",
       "segment": "New",
@@ -3890,8 +3899,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_205889389085",
-      "primary_name": "Al Mamun",
+      "customer_id": "cust_6b3bb6648850",
+      "primary_name": "Inzamum Ul Hoque",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3899,8 +3908,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_6b3bb6648850",
-      "primary_name": "Inzamum Ul Hoque",
+      "customer_id": "cust_205889389085",
+      "primary_name": "Al Mamun",
       "segment": "New",
       "risk_score": 100.0,
       "risk_band": "High",
@@ -3944,8 +3953,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_99b5c2f10950",
-      "primary_name": "Faisal",
+      "customer_id": "cust_bbca029bfc7c",
+      "primary_name": "Pinkoo",
       "segment": "Regular",
       "risk_score": 99.2,
       "risk_band": "High",
@@ -3953,8 +3962,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_bbca029bfc7c",
-      "primary_name": "Pinkoo",
+      "customer_id": "cust_99b5c2f10950",
+      "primary_name": "Faisal",
       "segment": "Regular",
       "risk_score": 99.2,
       "risk_band": "High",
@@ -4007,17 +4016,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_40b5c0ac2f8b",
-      "primary_name": "Ibrahim Khalil",
-      "segment": "Regular",
-      "risk_score": 99.1,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_0f5bdf99ae9a",
-      "primary_name": "Sagor",
+      "customer_id": "cust_2da740410e06",
+      "primary_name": "Maruf",
       "segment": "Regular",
       "risk_score": 99.1,
       "risk_band": "High",
@@ -4034,8 +4034,17 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2da740410e06",
-      "primary_name": "Maruf",
+      "customer_id": "cust_0f5bdf99ae9a",
+      "primary_name": "Sagor",
+      "segment": "Regular",
+      "risk_score": 99.1,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_40b5c0ac2f8b",
+      "primary_name": "Ibrahim Khalil",
       "segment": "Regular",
       "risk_score": 99.1,
       "risk_band": "High",
@@ -4047,24 +4056,6 @@
       "primary_name": "মো: ওয়াসিম ইসলাম",
       "segment": "Regular",
       "risk_score": 99.1,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_c98df0a185a6",
-      "primary_name": "আবদুল করিম",
-      "segment": "Regular",
-      "risk_score": 99.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_768bbffcf74c",
-      "primary_name": "Ashik Biswas",
-      "segment": "Regular",
-      "risk_score": 99.0,
       "risk_band": "High",
       "next_purchase_window_days": 21,
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
@@ -4097,6 +4088,24 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_768bbffcf74c",
+      "primary_name": "Ashik Biswas",
+      "segment": "Regular",
+      "risk_score": 99.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_c98df0a185a6",
+      "primary_name": "আবদুল করিম",
+      "segment": "Regular",
+      "risk_score": 99.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_cb5d8b91642e",
       "primary_name": "Khabibur Rahman",
       "segment": "Regular",
@@ -4115,8 +4124,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_d8a68b2a3573",
-      "primary_name": "Zinnuryne Arefin",
+      "customer_id": "cust_057f385eafb5",
+      "primary_name": "Abdullah Al Mamun",
       "segment": "Regular",
       "risk_score": 99.0,
       "risk_band": "High",
@@ -4124,8 +4133,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_057f385eafb5",
-      "primary_name": "Abdullah Al Mamun",
+      "customer_id": "cust_d8a68b2a3573",
+      "primary_name": "Zinnuryne Arefin",
       "segment": "Regular",
       "risk_score": 99.0,
       "risk_band": "High",
@@ -4142,6 +4151,15 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_fc2f1544e60c",
+      "primary_name": "Ashfaque",
+      "segment": "Regular",
+      "risk_score": 99.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_1c0904f0f0cd",
       "primary_name": "Jahid",
       "segment": "Regular",
@@ -4151,17 +4169,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e288e1c1f0e3",
-      "primary_name": "Rasel",
-      "segment": "Regular",
-      "risk_score": 99.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_fc2f1544e60c",
-      "primary_name": "Ashfaque",
+      "customer_id": "cust_1a5dc8022b30",
+      "primary_name": "Ieshak",
       "segment": "Regular",
       "risk_score": 99.0,
       "risk_band": "High",
@@ -4187,17 +4196,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_1a5dc8022b30",
-      "primary_name": "Ieshak",
-      "segment": "Regular",
-      "risk_score": 99.0,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_19be960addb0",
-      "primary_name": "Md. Asaduzzaman Asad",
+      "customer_id": "cust_e288e1c1f0e3",
+      "primary_name": "Rasel",
       "segment": "Regular",
       "risk_score": 99.0,
       "risk_band": "High",
@@ -4207,6 +4207,15 @@
     {
       "customer_id": "cust_533f1effd0aa",
       "primary_name": "Md Abubokor Siddik",
+      "segment": "Regular",
+      "risk_score": 99.0,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_19be960addb0",
+      "primary_name": "Md. Asaduzzaman Asad",
       "segment": "Regular",
       "risk_score": 99.0,
       "risk_band": "High",
@@ -4259,8 +4268,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_76d1a2982c89",
-      "primary_name": "Jewel",
+      "customer_id": "cust_10238a587700",
+      "primary_name": "Rony",
       "segment": "Regular",
       "risk_score": 98.9,
       "risk_band": "High",
@@ -4268,8 +4277,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_10238a587700",
-      "primary_name": "Rony",
+      "customer_id": "cust_76d1a2982c89",
+      "primary_name": "Jewel",
       "segment": "Regular",
       "risk_score": 98.9,
       "risk_band": "High",
@@ -4511,8 +4520,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_19cada4d47fd",
-      "primary_name": "Mehedi Hasan Lekhon",
+      "customer_id": "cust_d4fc24bbd587",
+      "primary_name": "Sadi Talukder",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4520,8 +4529,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_d4fc24bbd587",
-      "primary_name": "Sadi Talukder",
+      "customer_id": "cust_19cada4d47fd",
+      "primary_name": "Mehedi Hasan Lekhon",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4565,8 +4574,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_6a09ca32732b",
-      "primary_name": "Sazzad",
+      "customer_id": "cust_c915249ece00",
+      "primary_name": "Sobuj",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4574,8 +4583,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_c915249ece00",
-      "primary_name": "Sobuj",
+      "customer_id": "cust_6a09ca32732b",
+      "primary_name": "Sazzad",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4592,8 +4601,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_a84afa946cf6",
-      "primary_name": "Masum",
+      "customer_id": "cust_953f3c7eb16e",
+      "primary_name": "Ashraful",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4601,8 +4610,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_953f3c7eb16e",
-      "primary_name": "Ashraful",
+      "customer_id": "cust_a84afa946cf6",
+      "primary_name": "Masum",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4628,8 +4637,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_76c2098f45e3",
-      "primary_name": "Daud Hossain",
+      "customer_id": "cust_619c6d36b9d4",
+      "primary_name": "Apu",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4637,8 +4646,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_619c6d36b9d4",
-      "primary_name": "Apu",
+      "customer_id": "cust_76c2098f45e3",
+      "primary_name": "Daud Hossain",
       "segment": "Regular",
       "risk_score": 96.5,
       "risk_band": "High",
@@ -4664,8 +4673,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_ecd2f7e9c0dd",
-      "primary_name": "Nafis",
+      "customer_id": "cust_37dcfe4d42fe",
+      "primary_name": "Jewel",
       "segment": "Regular",
       "risk_score": 96.4,
       "risk_band": "High",
@@ -4682,8 +4691,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_37dcfe4d42fe",
-      "primary_name": "Jewel",
+      "customer_id": "cust_ecd2f7e9c0dd",
+      "primary_name": "Nafis",
       "segment": "Regular",
       "risk_score": 96.4,
       "risk_band": "High",
@@ -4745,8 +4754,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_26bbcf968c0f",
-      "primary_name": "মাহফুজ",
+      "customer_id": "cust_8a8e5fc728fa",
+      "primary_name": "Nazmul Haque",
       "segment": "Regular",
       "risk_score": 96.3,
       "risk_band": "High",
@@ -4763,8 +4772,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_cb726162d8b0",
-      "primary_name": "Naser",
+      "customer_id": "cust_26bbcf968c0f",
+      "primary_name": "মাহফুজ",
       "segment": "Regular",
       "risk_score": 96.3,
       "risk_band": "High",
@@ -4781,8 +4790,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_8a8e5fc728fa",
-      "primary_name": "Nazmul Haque",
+      "customer_id": "cust_cb726162d8b0",
+      "primary_name": "Naser",
       "segment": "Regular",
       "risk_score": 96.3,
       "risk_band": "High",
@@ -4817,24 +4826,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_f731103fd3de",
-      "primary_name": "Md Abdul Mazid",
-      "segment": "Regular",
-      "risk_score": 96.3,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_03e769ac663f",
-      "primary_name": "Hossain",
-      "segment": "Regular",
-      "risk_score": 96.3,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_59f2b683efe4",
       "primary_name": "Polash",
       "segment": "Regular",
@@ -4862,6 +4853,33 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_03e769ac663f",
+      "primary_name": "Hossain",
+      "segment": "Regular",
+      "risk_score": 96.3,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_f731103fd3de",
+      "primary_name": "Md Abdul Mazid",
+      "segment": "Regular",
+      "risk_score": 96.3,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_57ee7cb7feb7",
+      "primary_name": "Sheikh Yamin Rahman",
+      "segment": "Regular",
+      "risk_score": 96.3,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_ef4ee6077b9d",
       "primary_name": "Foysal",
       "segment": "Regular",
@@ -4873,15 +4891,6 @@
     {
       "customer_id": "cust_2bcb68d48d37",
       "primary_name": "Tanveer Hassan",
-      "segment": "Regular",
-      "risk_score": 96.3,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_57ee7cb7feb7",
-      "primary_name": "Sheikh Yamin Rahman",
       "segment": "Regular",
       "risk_score": 96.3,
       "risk_band": "High",
@@ -5132,8 +5141,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_bc5c2da05bfe",
-      "primary_name": "Shahid",
+      "customer_id": "cust_8166cc9753e8",
+      "primary_name": "Shohidul Islam",
       "segment": "Regular",
       "risk_score": 93.8,
       "risk_band": "High",
@@ -5141,8 +5150,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_8166cc9753e8",
-      "primary_name": "Shohidul Islam",
+      "customer_id": "cust_bc5c2da05bfe",
+      "primary_name": "Shahid",
       "segment": "Regular",
       "risk_score": 93.8,
       "risk_band": "High",
@@ -5186,8 +5195,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_e2de50b70eeb",
-      "primary_name": "Mehedi Hasan Emon",
+      "customer_id": "cust_c7cd7809b92c",
+      "primary_name": "Rahul Islam",
       "segment": "Regular",
       "risk_score": 93.7,
       "risk_band": "High",
@@ -5195,8 +5204,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_c7cd7809b92c",
-      "primary_name": "Rahul Islam",
+      "customer_id": "cust_e2de50b70eeb",
+      "primary_name": "Mehedi Hasan Emon",
       "segment": "Regular",
       "risk_score": 93.7,
       "risk_band": "High",
@@ -5213,15 +5222,6 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_3ac8a977633f",
-      "primary_name": "Sohag",
-      "segment": "Regular",
-      "risk_score": 93.7,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_18ab1105779a",
       "primary_name": "Rafiz",
       "segment": "Regular",
@@ -5231,8 +5231,26 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_3ac8a977633f",
+      "primary_name": "Sohag",
+      "segment": "Regular",
+      "risk_score": 93.7,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_e2d940dd7494",
       "primary_name": "Md Parvez",
+      "segment": "Regular",
+      "risk_score": 93.7,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
+      "customer_id": "cust_112112fb43a4",
+      "primary_name": "Arafat",
       "segment": "Regular",
       "risk_score": 93.7,
       "risk_band": "High",
@@ -5251,15 +5269,6 @@
     {
       "customer_id": "cust_426950edac7d",
       "primary_name": "ইমতিয়াজ",
-      "segment": "Regular",
-      "risk_score": 93.7,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_112112fb43a4",
-      "primary_name": "Arafat",
       "segment": "Regular",
       "risk_score": 93.7,
       "risk_band": "High",
@@ -5645,6 +5654,15 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_1c0d0ee2123b",
+      "primary_name": "Jahangir",
+      "segment": "Regular",
+      "risk_score": 78.2,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_8839739878f5",
       "primary_name": "Badal Sheikh",
       "segment": "Regular",
@@ -5663,26 +5681,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_1c0d0ee2123b",
-      "primary_name": "Jahangir",
-      "segment": "Regular",
-      "risk_score": 78.2,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
       "customer_id": "cust_c802f9177b8d",
       "primary_name": "Joy",
-      "segment": "Regular",
-      "risk_score": 78.2,
-      "risk_band": "High",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
-    },
-    {
-      "customer_id": "cust_2eee11a6d584",
-      "primary_name": "Alamgir",
       "segment": "Regular",
       "risk_score": 78.2,
       "risk_band": "High",
@@ -5699,6 +5699,15 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
+      "customer_id": "cust_832a0f53e96a",
+      "primary_name": "Ataullah",
+      "segment": "Regular",
+      "risk_score": 78.2,
+      "risk_band": "High",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
+    },
+    {
       "customer_id": "cust_171429e28559",
       "primary_name": "Noyon Mirdh",
       "segment": "Regular",
@@ -5708,8 +5717,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_832a0f53e96a",
-      "primary_name": "Ataullah",
+      "customer_id": "cust_2eee11a6d584",
+      "primary_name": "Alamgir",
       "segment": "Regular",
       "risk_score": 78.2,
       "risk_band": "High",
@@ -5870,8 +5879,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_9f00883ca575",
-      "primary_name": "Rh",
+      "customer_id": "cust_70c8df85e3af",
+      "primary_name": "Amirul",
       "segment": "Regular",
       "risk_score": 75.6,
       "risk_band": "High",
@@ -5879,8 +5888,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_70c8df85e3af",
-      "primary_name": "Amirul",
+      "customer_id": "cust_9f00883ca575",
+      "primary_name": "Rh",
       "segment": "Regular",
       "risk_score": 75.6,
       "risk_band": "High",
@@ -5942,8 +5951,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_5b7015844a99",
-      "primary_name": "Al",
+      "customer_id": "cust_2eee67e1cb2c",
+      "primary_name": "Khandaker Fayazul Haque Rifat",
       "segment": "Regular",
       "risk_score": 75.4,
       "risk_band": "High",
@@ -5960,8 +5969,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_2eee67e1cb2c",
-      "primary_name": "Khandaker Fayazul Haque Rifat",
+      "customer_id": "cust_5b7015844a99",
+      "primary_name": "Al",
       "segment": "Regular",
       "risk_score": 75.4,
       "risk_band": "High",
@@ -5978,8 +5987,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_307c61bd0f25",
-      "primary_name": "Md.Hossain Rafayat",
+      "customer_id": "cust_bae9de617eef",
+      "primary_name": "Maharuz Ahmed",
       "segment": "Regular",
       "risk_score": 75.4,
       "risk_band": "High",
@@ -5987,8 +5996,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_bae9de617eef",
-      "primary_name": "Maharuz Ahmed",
+      "customer_id": "cust_307c61bd0f25",
+      "primary_name": "Md.Hossain Rafayat",
       "segment": "Regular",
       "risk_score": 75.4,
       "risk_band": "High",
@@ -6149,8 +6158,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_9f5350a87547",
-      "primary_name": "Somir Kumar Das",
+      "customer_id": "cust_c861dfbfa735",
+      "primary_name": "Rahmat",
       "segment": "Regular",
       "risk_score": 70.4,
       "risk_band": "High",
@@ -6158,8 +6167,8 @@
       "recommended_action": "Launch a win-back message with a clear incentive and product reminder."
     },
     {
-      "customer_id": "cust_c861dfbfa735",
-      "primary_name": "Rahmat",
+      "customer_id": "cust_9f5350a87547",
+      "primary_name": "Somir Kumar Das",
       "segment": "Regular",
       "risk_score": 70.4,
       "risk_band": "High",
@@ -6473,8 +6482,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_250f3c5ebccd",
-      "primary_name": "Shakhawat Hossain",
+      "customer_id": "cust_03c169ae20f0",
+      "primary_name": "Tamim Ahmed",
       "segment": "Regular",
       "risk_score": 67.5,
       "risk_band": "Medium",
@@ -6482,8 +6491,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_03c169ae20f0",
-      "primary_name": "Tamim Ahmed",
+      "customer_id": "cust_250f3c5ebccd",
+      "primary_name": "Shakhawat Hossain",
       "segment": "Regular",
       "risk_score": 67.5,
       "risk_band": "Medium",
@@ -6563,8 +6572,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_741ad2398f61",
-      "primary_name": "Mashiul",
+      "customer_id": "cust_00d0b8f88705",
+      "primary_name": "Sakib",
       "segment": "Regular",
       "risk_score": 65.2,
       "risk_band": "Medium",
@@ -6572,8 +6581,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_00d0b8f88705",
-      "primary_name": "Sakib",
+      "customer_id": "cust_741ad2398f61",
+      "primary_name": "Mashiul",
       "segment": "Regular",
       "risk_score": 65.2,
       "risk_band": "Medium",
@@ -6590,8 +6599,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_0143e38397c6",
-      "primary_name": "Habibur Rahman",
+      "customer_id": "cust_e6c680095d37",
+      "primary_name": "Rakibul Hasan",
       "segment": "Regular",
       "risk_score": 65.1,
       "risk_band": "Medium",
@@ -6599,8 +6608,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_e6c680095d37",
-      "primary_name": "Rakibul Hasan",
+      "customer_id": "cust_0143e38397c6",
+      "primary_name": "Habibur Rahman",
       "segment": "Regular",
       "risk_score": 65.1,
       "risk_band": "Medium",
@@ -6662,8 +6671,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_e422cd34403d",
-      "primary_name": "Mithu",
+      "customer_id": "cust_b97a40b9a935",
+      "primary_name": "Md.Istiak Zaman Khan",
       "segment": "Regular",
       "risk_score": 65.0,
       "risk_band": "Medium",
@@ -6671,8 +6680,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_b97a40b9a935",
-      "primary_name": "Md.Istiak Zaman Khan",
+      "customer_id": "cust_e422cd34403d",
+      "primary_name": "Mithu",
       "segment": "Regular",
       "risk_score": 65.0,
       "risk_band": "Medium",
@@ -6716,8 +6725,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_131099cc29e0",
-      "primary_name": "Shahneem Asif",
+      "customer_id": "cust_a2334e52dd71",
+      "primary_name": "Major Monjurul",
       "segment": "Regular",
       "risk_score": 64.9,
       "risk_band": "Medium",
@@ -6725,8 +6734,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_a2334e52dd71",
-      "primary_name": "Major Monjurul",
+      "customer_id": "cust_131099cc29e0",
+      "primary_name": "Shahneem Asif",
       "segment": "Regular",
       "risk_score": 64.9,
       "risk_band": "Medium",
@@ -6968,15 +6977,6 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_d471a08556af",
-      "primary_name": "Samik",
-      "segment": "Regular",
-      "risk_score": 62.3,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_05127b4106ef",
       "primary_name": "Pulak",
       "segment": "Regular",
@@ -6988,6 +6988,15 @@
     {
       "customer_id": "cust_d289b60d4318",
       "primary_name": "Sharif",
+      "segment": "Regular",
+      "risk_score": 62.3,
+      "risk_band": "Medium",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Keep in regular retention flow and monitor for changes."
+    },
+    {
+      "customer_id": "cust_d471a08556af",
+      "primary_name": "Samik",
       "segment": "Regular",
       "risk_score": 62.3,
       "risk_band": "Medium",
@@ -7229,8 +7238,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_266588423601",
-      "primary_name": "Imran Shahed",
+      "customer_id": "cust_c96027e0e684",
+      "primary_name": "Ashis Braman",
       "segment": "Regular",
       "risk_score": 59.9,
       "risk_band": "Medium",
@@ -7238,8 +7247,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_c96027e0e684",
-      "primary_name": "Ashis Braman",
+      "customer_id": "cust_266588423601",
+      "primary_name": "Imran Shahed",
       "segment": "Regular",
       "risk_score": 59.9,
       "risk_band": "Medium",
@@ -7265,15 +7274,6 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_269c9abda23b",
-      "primary_name": "Tusar",
-      "segment": "Regular",
-      "risk_score": 59.7,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_4d6ae66f3522",
       "primary_name": "Sidat",
       "segment": "Regular",
@@ -7283,8 +7283,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_1e25843648e7",
-      "primary_name": "Mahabub Alam",
+      "customer_id": "cust_269c9abda23b",
+      "primary_name": "Tusar",
       "segment": "Regular",
       "risk_score": 59.7,
       "risk_band": "Medium",
@@ -7294,6 +7294,15 @@
     {
       "customer_id": "cust_7fa56cbaf645",
       "primary_name": "Piash",
+      "segment": "Regular",
+      "risk_score": 59.7,
+      "risk_band": "Medium",
+      "next_purchase_window_days": 21,
+      "recommended_action": "Keep in regular retention flow and monitor for changes."
+    },
+    {
+      "customer_id": "cust_1e25843648e7",
+      "primary_name": "Mahabub Alam",
       "segment": "Regular",
       "risk_score": 59.7,
       "risk_band": "Medium",
@@ -7319,8 +7328,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_1dd44f4bfab9",
-      "primary_name": "Sourov Hasan",
+      "customer_id": "cust_cf74bcd10d9a",
+      "primary_name": "Shadman Sampod",
       "segment": "Regular",
       "risk_score": 59.7,
       "risk_band": "Medium",
@@ -7328,8 +7337,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_cf74bcd10d9a",
-      "primary_name": "Shadman Sampod",
+      "customer_id": "cust_1dd44f4bfab9",
+      "primary_name": "Sourov Hasan",
       "segment": "Regular",
       "risk_score": 59.7,
       "risk_band": "Medium",
@@ -7625,8 +7634,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_ab026bae0c91",
-      "primary_name": "Tanvir",
+      "customer_id": "cust_4a478712e11e",
+      "primary_name": "Anisur",
       "segment": "Regular",
       "risk_score": 57.0,
       "risk_band": "Medium",
@@ -7634,8 +7643,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_4a478712e11e",
-      "primary_name": "Anisur",
+      "customer_id": "cust_ab026bae0c91",
+      "primary_name": "Tanvir",
       "segment": "Regular",
       "risk_score": 57.0,
       "risk_band": "Medium",
@@ -7985,8 +7994,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_5992f9dfbd98",
-      "primary_name": "Shaurav Saha",
+      "customer_id": "cust_1e9b91b7f7e8",
+      "primary_name": "Saymon",
       "segment": "Regular",
       "risk_score": 52.0,
       "risk_band": "Medium",
@@ -7994,8 +8003,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_1e9b91b7f7e8",
-      "primary_name": "Saymon",
+      "customer_id": "cust_5992f9dfbd98",
+      "primary_name": "Shaurav Saha",
       "segment": "Regular",
       "risk_score": 52.0,
       "risk_band": "Medium",
@@ -8075,8 +8084,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_e803a9213553",
-      "primary_name": "Mahmud Hossain",
+      "customer_id": "cust_b54eb8e94564",
+      "primary_name": "Kingshuk Chakraborty",
       "segment": "Regular",
       "risk_score": 51.8,
       "risk_band": "Medium",
@@ -8084,8 +8093,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_b54eb8e94564",
-      "primary_name": "Kingshuk Chakraborty",
+      "customer_id": "cust_e803a9213553",
+      "primary_name": "Mahmud Hossain",
       "segment": "Regular",
       "risk_score": 51.8,
       "risk_band": "Medium",
@@ -8183,8 +8192,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_1c8cdc1ead4c",
-      "primary_name": "Murad",
+      "customer_id": "cust_6d93018bd25c",
+      "primary_name": "Mokter Hossain",
       "segment": "Regular",
       "risk_score": 49.5,
       "risk_band": "Medium",
@@ -8192,8 +8201,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_6d93018bd25c",
-      "primary_name": "Mokter Hossain",
+      "customer_id": "cust_1c8cdc1ead4c",
+      "primary_name": "Murad",
       "segment": "Regular",
       "risk_score": 49.5,
       "risk_band": "Medium",
@@ -8228,8 +8237,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_25003c004cfb",
-      "primary_name": "জাকির হোসেন",
+      "customer_id": "cust_adff65189a60",
+      "primary_name": "Ullash Dewan",
       "segment": "Regular",
       "risk_score": 49.4,
       "risk_band": "Medium",
@@ -8237,8 +8246,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_adff65189a60",
-      "primary_name": "Ullash Dewan",
+      "customer_id": "cust_25003c004cfb",
+      "primary_name": "জাকির হোসেন",
       "segment": "Regular",
       "risk_score": 49.4,
       "risk_band": "Medium",
@@ -8273,8 +8282,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_8d74db424bab",
-      "primary_name": "Al Amin Munshi",
+      "customer_id": "cust_d055d22ffd9f",
+      "primary_name": "Arafat Islam Ayon",
       "segment": "Regular",
       "risk_score": 49.4,
       "risk_band": "Medium",
@@ -8282,8 +8291,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_d055d22ffd9f",
-      "primary_name": "Arafat Islam Ayon",
+      "customer_id": "cust_8d74db424bab",
+      "primary_name": "Al Amin Munshi",
       "segment": "Regular",
       "risk_score": 49.4,
       "risk_band": "Medium",
@@ -8327,8 +8336,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_784a84c141a9",
-      "primary_name": "মো: অলি উল্লাহ",
+      "customer_id": "cust_d233cf009142",
+      "primary_name": "Atikur Rahaman",
       "segment": "Regular",
       "risk_score": 49.2,
       "risk_band": "Medium",
@@ -8345,8 +8354,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_d233cf009142",
-      "primary_name": "Atikur Rahaman",
+      "customer_id": "cust_784a84c141a9",
+      "primary_name": "মো: অলি উল্লাহ",
       "segment": "Regular",
       "risk_score": 49.2,
       "risk_band": "Medium",
@@ -8498,8 +8507,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_95371c33bb26",
-      "primary_name": "Md Sani",
+      "customer_id": "cust_66c76bcce6d5",
+      "primary_name": "Toyba",
       "segment": "Regular",
       "risk_score": 46.8,
       "risk_band": "Medium",
@@ -8507,8 +8516,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_66c76bcce6d5",
-      "primary_name": "Toyba",
+      "customer_id": "cust_95371c33bb26",
+      "primary_name": "Md Sani",
       "segment": "Regular",
       "risk_score": 46.8,
       "risk_band": "Medium",
@@ -8579,8 +8588,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_54a737b1fc1f",
-      "primary_name": "Hemel Mahmud",
+      "customer_id": "cust_34e12bdd6fcb",
+      "primary_name": "Nadeem",
       "segment": "Regular",
       "risk_score": 46.7,
       "risk_band": "Medium",
@@ -8597,8 +8606,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_34e12bdd6fcb",
-      "primary_name": "Nadeem",
+      "customer_id": "cust_54a737b1fc1f",
+      "primary_name": "Hemel Mahmud",
       "segment": "Regular",
       "risk_score": 46.7,
       "risk_band": "Medium",
@@ -8660,8 +8669,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_b99fd81c3c6f",
-      "primary_name": "Emran",
+      "customer_id": "cust_8200e714c8b6",
+      "primary_name": "Shizar",
       "segment": "Regular",
       "risk_score": 46.6,
       "risk_band": "Medium",
@@ -8669,8 +8678,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_8200e714c8b6",
-      "primary_name": "Shizar",
+      "customer_id": "cust_b99fd81c3c6f",
+      "primary_name": "Emran",
       "segment": "Regular",
       "risk_score": 46.6,
       "risk_band": "Medium",
@@ -8687,8 +8696,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_a07031007e89",
-      "primary_name": "Md Alim Uddin",
+      "customer_id": "cust_7335d21e490a",
+      "primary_name": "Neloy",
       "segment": "Regular",
       "risk_score": 46.6,
       "risk_band": "Medium",
@@ -8696,8 +8705,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_7335d21e490a",
-      "primary_name": "Neloy",
+      "customer_id": "cust_a07031007e89",
+      "primary_name": "Md Alim Uddin",
       "segment": "Regular",
       "risk_score": 46.6,
       "risk_band": "Medium",
@@ -8885,15 +8894,6 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_9876110758cb",
-      "primary_name": "Shaon",
-      "segment": "Regular",
-      "risk_score": 44.2,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_25b2796157bc",
       "primary_name": "Md. Ekram Uddin",
       "segment": "Regular",
@@ -8948,53 +8948,8 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_f22f7ceec834",
-      "primary_name": "Ali",
-      "segment": "Regular",
-      "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_bb6c225d7942",
-      "primary_name": "Rafikul Alam",
-      "segment": "Regular",
-      "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_dbd343f62238",
       "primary_name": "Arpi",
-      "segment": "Regular",
-      "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_52978066cb35",
-      "primary_name": "Mahin Khan",
-      "segment": "Regular",
-      "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_03f3624dc333",
-      "primary_name": "Rajat",
-      "segment": "Regular",
-      "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_d938a0d78392",
-      "primary_name": "Habibur",
       "segment": "Regular",
       "risk_score": 44.0,
       "risk_band": "Medium",
@@ -9011,28 +8966,10 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_faf1dcb467f3",
-      "primary_name": "Ahamed",
-      "segment": "Regular",
-      "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_ba5f52c1012b",
       "primary_name": "Shafin",
       "segment": "Regular",
       "risk_score": 44.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_67faf1a8548f",
-      "primary_name": "Emran Al Mahmud",
-      "segment": "Regular",
-      "risk_score": 43.9,
       "risk_band": "Medium",
       "next_purchase_window_days": 21,
       "recommended_action": "Keep in regular retention flow and monitor for changes."
@@ -9074,15 +9011,6 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_f892c5a36cbf",
-      "primary_name": "Tanzil",
-      "segment": "Regular",
-      "risk_score": 43.9,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_bd32610980d8",
       "primary_name": "Nahid Islam",
       "segment": "Regular",
@@ -9101,102 +9029,12 @@
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
-      "customer_id": "cust_fa57447bc332",
-      "primary_name": "Md Sahadat",
-      "segment": "Regular",
-      "risk_score": 43.6,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_c513866d348c",
-      "primary_name": "Tapas",
-      "segment": "Regular",
-      "risk_score": 43.3,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_293ee7f5f741",
-      "primary_name": "Md.Shaheb",
-      "segment": "Regular",
-      "risk_score": 43.0,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
       "customer_id": "cust_aab5d3214027",
       "primary_name": "Nowrin Hoque",
       "segment": "Regular",
       "risk_score": 42.4,
       "risk_band": "Medium",
       "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_0781290131f7",
-      "primary_name": "Mahbub Hasan",
-      "segment": "Regular",
-      "risk_score": 41.6,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_df3fa0960af4",
-      "primary_name": "Khondoker Abul Hassan",
-      "segment": "Regular",
-      "risk_score": 41.6,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_c268c79b281a",
-      "primary_name": "Jamshed Islam",
-      "segment": "Regular",
-      "risk_score": 41.3,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_b9fe3ac66962",
-      "primary_name": "Rouf",
-      "segment": "Regular",
-      "risk_score": 41.3,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_a64699e2fc9c",
-      "primary_name": "Kamruzzaman",
-      "segment": "Regular",
-      "risk_score": 41.2,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_7dcfe0ef9fa1",
-      "primary_name": "Mahadi Ahmed",
-      "segment": "Regular",
-      "risk_score": 40.8,
-      "risk_band": "Medium",
-      "next_purchase_window_days": 21,
-      "recommended_action": "Keep in regular retention flow and monitor for changes."
-    },
-    {
-      "customer_id": "cust_4d6746e45b82",
-      "primary_name": "Test Order",
-      "segment": "Regular",
-      "risk_score": 39.6,
-      "risk_band": "Low",
-      "next_purchase_window_days": 29,
       "recommended_action": "Keep in regular retention flow and monitor for changes."
     },
     {
