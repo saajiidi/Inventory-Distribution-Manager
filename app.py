@@ -44,16 +44,7 @@ def _render_workspace_sidebar():
     with st.sidebar:
         ui.sidebar_branding()
 
-        # Workspace Context
-        st.markdown(
-            """
-            <div style="margin: 0.5rem 0.6rem; font-size: 0.8rem; color: #64748b; line-height: 1.4;">
-                Operating at the edge of WooCommerce sync. 
-                Manage data flow and visibility below.
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
+        st.caption("Active multi-workspace node connected to WooCommerce REST API. Navigation is managed via top-level context tabs.")
 
         with st.expander("🛠️ System Control", expanded=False):
             if st.button("Save Session State", use_container_width=True):
