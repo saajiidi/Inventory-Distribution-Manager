@@ -5,11 +5,13 @@ A premium, high-performance Business Intelligence dashboard for DEEN Commerce, f
 ## 🚀 Key Features
 
 - **Business Intelligence**: Real-time sales analytics, AOV tracking, and executive KPIs.
-- **Customer Intelligence**: Advanced RFM segmentation and customer lifetime value insights.
+- **Customer Intelligence**: Advanced RFM segmentation, Average Customer Lifetime Value (CLV), and historical purchase-cycle behavioral tracking.
 - **Operations Hub**: Unified logistics tools including Pathao bulk processing and WhatsApp verification.
 - **Business Cycles**: Operating performance tracking with automated 5:30 PM Bangladesh time-cycle cutoffs.
 - **ShopAI CRM**: Intelligent customer support analytics and an AI-driven agent lab.
-- **ML Insights**: Sales forecasting and anomaly detection powered by machine learning.
+- **ML Predictive Ensembles**: 7-day automated rolling forecasting overlaying ARIMA, SARIMA, Holt-Winters Exponential Smoothing, Linear Regression, Random Forest, and Naive baselines to automatically calculate the "Best Evaluated Fit".
+- **Deep-Dive Clusters**: Dynamic multi-tier cascading dropdowns (Category -> SKU -> Color -> Size) to dissect revenue streams without runtime exceptions.
+- **Full Historical Sync**: Seamless background asynchronous syncing allowing custom deep-date range querying directly spanning back to 2022.
 
 ## 🏗️ Restructured Architecture
 
