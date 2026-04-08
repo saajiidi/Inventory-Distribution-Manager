@@ -45,7 +45,7 @@ def _render_workspace_sidebar():
         ui.sidebar_branding()
         
         # 1. Timeline Control
-        st.session_state.time_window = st.select_slider(
+        st.select_slider(
             "Time Window",
             options=[
                 "Yesterday & Today", 
@@ -59,7 +59,8 @@ def _render_workspace_sidebar():
                 "YTD",
                 "Last Year"
             ],
-            value="Last 7 Days"
+            value="Last 7 Days",
+            key="time_window"
         )
 
         st.divider()

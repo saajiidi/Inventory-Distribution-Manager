@@ -129,7 +129,7 @@ def render_intelligence_hub_page():
     total_items = df_exec["qty"].sum()
     
     aov = (total_rev / order_count) if order_count else 0
-    avg_orders_per_day = (order_count / days_back) if days_back else 0
+    avg_orders_per_day = order_count / max(1, days_back)
     
     # --- Comparative Logic ---
     df_prev_exec = data["prev_exec"]

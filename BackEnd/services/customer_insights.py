@@ -21,6 +21,7 @@ CUSTOMER_BASE_COLUMNS = [
     "email",
     "item_name",
     "order_total",
+    "customer_key",
 ]
 
 
@@ -50,12 +51,23 @@ def clean_email(email: str) -> str:
 
 
 
-def generate_customer_id(email: str, phone: str, order_id: str = "") -> str:
-    clean_e = clean_email(email)
+def generate_customer_id(customer_key, email: str, phone: str, order_id: str = "") -> str:
+    # 1. Registered Customer priority
+    uid = str(customer_key).strip() if pd.notna(customer_key) else ""
+    if uid and uid not in ["0", "0.0", "nan", "None"]:
+        return f"reg_{uid}"
+        
+    # 2. Unregistered guests group by unique phone number first
     clean_p = clean_phone(phone)
-    seed = clean_e or clean_p or str(order_id) or "anonymous"
-    prefix = "anon_" if not (clean_e or clean_p) else "cust_"
-    return prefix + hashlib.md5(seed.encode()).hexdigest()[:12]
+    if clean_p:
+        return f"guest_p_{clean_p}"
+        
+    # 3. Fallback to email or order_id
+    clean_e = clean_email(email)
+    if clean_e:
+        return f"guest_e_{hashlib.md5(clean_e.encode()).hexdigest()[:8]}"
+        
+    return f"anon_{order_id}"
 
 
 @st.cache_data(ttl=1800)
@@ -201,7 +213,12 @@ def _prepare_customer_identity(df: pd.DataFrame) -> pd.DataFrame:
     prepared["clean_email"] = prepared["email"].apply(clean_email)
     prepared["clean_phone"] = prepared["phone"].apply(clean_phone)
     prepared["customer_id"] = prepared.apply(
-        lambda row: generate_customer_id(row.get("clean_email", ""), row.get("clean_phone", ""), row.get("order_id", "")),
+        lambda row: generate_customer_id(
+            row.get("customer_key"),
+            row.get("clean_email", ""), 
+            row.get("clean_phone", ""), 
+            row.get("order_id", "")
+        ),
         axis=1,
     )
     return prepared

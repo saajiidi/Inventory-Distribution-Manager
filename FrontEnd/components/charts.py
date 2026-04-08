@@ -138,7 +138,7 @@ def bar_chart(
         color=chart_color,
         orientation=orientation,
         title=title,
-        text_auto=text_auto,
+        text_auto=text_auto if text_auto is not None else False,
         color_continuous_scale=color_scale if chart_color in df.columns else None,
     )
     if orientation == "h":

@@ -14,3 +14,4 @@ scikit-learn==1.6.1
 statsmodels==0.14.4
 streamlit-elements==0.1.0
 streamlit-autorefresh==1.0.1
+WooCommerce==2025.1.31
