@@ -161,6 +161,52 @@ def render_market_overview_timeseries(df_sales: pd.DataFrame):
                           title="Average Order Value (AOV) Trend",
                           markers=True, line_shape="spline",
                           color_discrete_sequence=["#EC4899"])
-        fig_aov.update_layout(height=300, margin=dict(l=0, r=0, t=40, b=0), 
-                              hovermode="x unified", template="plotly_white")
         st.plotly_chart(fig_aov, use_container_width=True)
+
+    st.divider()
+    render_ml_forecast_charts(daily)
+
+def render_ml_forecast_charts(daily: pd.DataFrame):
+    st.markdown("#### 🤖 Predictive Market Forecasting (ML Pipeline)")
+    
+    try:
+        from BackEnd.services.ts_forecast import generate_forecasts
+    except ImportError:
+        st.warning("Time-series forecasting module not loaded.")
+        return
+        
+    with st.spinner("Training predictive models (ARIMA, SARIMA, Holt-Winters)..."):
+        res = generate_forecasts(daily, metric="revenue", horizon=7)
+        
+    if "error" in res:
+        st.info(f"⚠️ {res['error']}")
+        return
+        
+    y = res["history"]
+    forecasts = res["forecasts"]
+    best_model = res["best_model"]
+    
+    st.success(f"**ML Verdict Benchmark:** The `{best_model}` algorithm successfully evaluated as the most accurate architecture for this trend based on historical trailing-window evaluation.")
+    
+    c1, c2 = st.columns(2)
+    cols = [c1, c2, c1, c2]
+    
+    models_list = list(forecasts.keys())
+    for i, model_name in enumerate(models_list[:4]):
+        fc = forecasts[model_name]
+        
+        hist_df = pd.DataFrame({"Date": y.index, "Revenue": y.values, "Data Split": "Historical"})
+        fc_df = pd.DataFrame({"Date": fc.index, "Revenue": fc.values, "Data Split": "Prediction"})
+        plot_df = pd.concat([hist_df, fc_df])
+        
+        star = "⭐ Best Evaluated Fit: " if model_name == best_model else ""
+        title = f"{star}{model_name} Forecast (7 Days)"
+        
+        fig = px.line(plot_df, x="Date", y="Revenue", color="Data Split", title=title, 
+                      color_discrete_map={"Historical": "#4F46E5", "Prediction": "#F59E0B"})
+        
+        if model_name == best_model:
+             fig.update_traces(line=dict(width=3))
+             
+        fig.update_layout(height=320, margin=dict(l=0, r=0, t=40, b=0), hovermode="x unified", template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+        cols[i].plotly_chart(fig, use_container_width=True)
