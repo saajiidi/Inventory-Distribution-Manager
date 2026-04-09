@@ -2,27 +2,9 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 from FrontEnd.components import ui
-from BackEnd.core.categories import parse_sku_variants
+from BackEnd.core.categories import parse_sku_variants, get_clean_product_name, sort_categories
 
 def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
-    """Exhaustive Advanced Filtering for Deep-Dive Clusters."""
-    if df_sales.empty:
-        st.info("No data available for deep-dive analysis. Finalized orders (Completed/Shipped) are required.")
-        return
-
-    # PRE-PROCESSING: Parsing Product Variants & Local Trends
-    if "item_revenue" not in df_sales.columns:
-        df_sales["item_revenue"] = pd.to_numeric(df_sales.get("line_total", df_sales.get("order_total", 0)), errors="coerce").fillna(0)
-        
-    if "price" not in df_sales.columns:
-        df_sales["price"] = pd.to_numeric(df_sales["item_revenue"], errors="coerce") / pd.to_numeric(df_sales["qty"], errors="coerce").clip(lower=1)
-        df_sales["price"] = df_sales["price"].fillna(0)
-        
-    def get_clean_product_name(name):
-        parts = [p.strip() for p in str(name).split("-") if p.strip()]
-        if len(parts) >= 3: return "-".join(parts[:-2]).strip()
-        elif len(parts) == 2: return parts[0]
-        return str(name)
 
     if "_variant_parsed" not in df_sales.columns:
         df_sales[["_color", "_size"]] = df_sales["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
@@ -90,15 +72,17 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
     
     # FILTER CONTROL CENTER
     with st.expander("🛠️ Advanced Cluster Filters", expanded=True):
+        st.markdown("**📦 Category & Item**")
         f_c1, f_c2 = st.columns(2)
         
         with f_c1:
-            st.markdown("**📦 Category & Item**")
             # 1. Category
-            cat_list = sorted([str(c) for c in df_sales["Category"].dropna().unique() if str(c).strip()])
+            raw_cats = [str(c) for c in df_sales["Category"].dropna().unique() if str(c).strip()]
+            cat_list = sort_categories(raw_cats)
             sel_cats = st.multiselect("Categories", ["All"] + cat_list, default=["All"])
             active_cats = [] if "All" in sel_cats or not sel_cats else sel_cats
-            
+
+        with f_c2:
             # Combined Product Name & SKU selection
             sku_options = df_sales[df_sales["Category"].isin(active_cats)] if active_cats else df_sales
             # Create a display name for the multiselect (Clean Name + SKU)
@@ -109,14 +93,6 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
             sel_items = st.multiselect("Products (Name + SKU)", ["All"] + avail_items, default=["All"])
             active_items = [] if "All" in sel_items or not sel_items else sel_items
 
-        with f_c2:
-            st.markdown("**📏 Variants & Sizing**")
-            # Cascade for Sizes
-            size_options = sku_options[sku_options["_display_name"].isin(active_items)] if active_items else sku_options
-            avail_sizes = sorted([str(s) for s in size_options["_size"].unique() if str(s).strip() and s != "Unknown"])
-            sel_sizes = st.multiselect("Sizes", ["All"] + avail_sizes, default=["All"])
-            active_sizes = [] if "All" in sel_sizes or not sel_sizes else sel_sizes
-
     # APPLY COMPREHENSIVE FILTERING
     w_df = df_sales.copy()
     
@@ -125,7 +101,6 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
     if active_items: 
         w_df["_display_name"] = w_df["_clean_name"] + " [" + w_df["sku"].astype(str) + "]"
         w_df = w_df[w_df["_display_name"].isin(active_items)]
-    if active_sizes: w_df = w_df[w_df["_size"].isin(active_sizes)]
 
 
     # VISUALIZATION SUITE

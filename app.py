@@ -103,14 +103,14 @@ def _render_workspace_sidebar():
         # 2. Unified Navigation (Single Stack for Smooth Performance)
         st.markdown('<div class="sidebar-group-label">⚡ NAVIGATION HUB</div>', unsafe_allow_html=True)
         
-        inv_label = f"📦 Inventory Health [{stats['low']}!] " if stats['low'] > 0 else "📦 Inventory Health"
+        ins_label = f"📦 Stock Insight [{stats['low']}!] " if stats['low'] > 0 else "📦 Stock Insight"
         
         nav_map = {
             "💎 Sales Overview": "💎 Sales Overview",
             "🔍 Deep-Dive Clusters": "🔍 Deep-Dive Clusters",
             "📊 Traffic & Acquisition": "📊 Traffic & Acquisition",
             "👥 Customer Insight": "👥 Customer Insight",
-            inv_label: "📦 Inventory Health",
+            ins_label: "📦 Stock Insight",
             "🛡️ Data Trust": "🛡️ Data Trust"
         }
 

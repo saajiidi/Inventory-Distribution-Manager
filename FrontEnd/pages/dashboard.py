@@ -265,7 +265,7 @@ def render_intelligence_hub_page():
     elif selection == "🔍 Deep-Dive Clusters":
         render_deep_dive_tab(data["sales"], data["stock"])
         
-    elif selection == "📦 Inventory Health":
+    elif selection == "📦 Stock Insight":
         st.subheader("Operational Forecasting")
         render_inventory_health(data["stock"], data["ml"].get("forecast"), data["sales"])
         

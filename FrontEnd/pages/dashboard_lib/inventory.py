@@ -3,17 +3,10 @@ import streamlit as st
 import plotly.express as px
 from datetime import datetime
 from FrontEnd.components import ui
-from BackEnd.core.categories import get_category_for_sales
-
-def get_clean_product_name(name):
-    """Strips size/color segments from product name."""
-    parts = [p.strip() for p in str(name).split("-") if p.strip()]
-    if len(parts) >= 3: return "-".join(parts[:-2]).strip()
-    elif len(parts) == 2: return parts[0]
-    return str(name)
+from BackEnd.core.categories import get_category_for_sales, parse_sku_variants, get_clean_product_name, sort_categories
 
 def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, df_sales: pd.DataFrame = None):
-    st.subheader("Inventory Health")
+    st.subheader("Stock Insight")
     
     if stock_df is None or stock_df.empty:
         st.info("No live stock snapshot is available yet.")
@@ -21,63 +14,52 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         
     inventory = stock_df.copy()
     
-    # Pre-processing Clean Names & Categories
+    # Pre-processing Clean Names, Categories & Variants
     inventory["_clean_name"] = inventory["Name"].apply(get_clean_product_name)
+    inventory[["_color", "_size"]] = inventory["Name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
+    
     if "Category" not in inventory.columns:
         inventory["Category"] = inventory["Name"].apply(get_category_for_sales)
         
     # 0. Inventory Sniper (Structured Search)
     st.markdown("#### 🎯 Inventory Sniper")
-    st.caption("Select a Category and Product to see specific variant stock and sales performance.")
+    st.caption("Filter by Category and Size to locate a specific item SKU and view its current health.")
     
-    f_c1, f_c2, f_c3 = st.columns(3)
+    f_c1, f_c2 = st.columns(2)
     
     with f_c1:
-        cat_list = sorted([str(c) for c in inventory["Category"].dropna().unique() if str(c).strip()])
+        raw_cats = [str(c) for c in inventory["Category"].dropna().unique() if str(c).strip()]
+        cat_list = sort_categories(raw_cats)
         sel_cat = st.selectbox("Category", ["All"] + cat_list, index=0, key="sniper_cat_select")
         active_cat = None if sel_cat == "All" else sel_cat
 
     with f_c2:
         # Filter products by category
         prod_options = inventory[inventory["Category"] == active_cat] if active_cat else inventory
+        # Build unique Name + SKU display entries
         prod_options = prod_options.copy()
-        prod_options["_display_name"] = prod_options["_clean_name"] + " [" + prod_options["SKU"].astype(str).str.split("-").str[0] + "]"
+        prod_options["_display_name"] = prod_options["_clean_name"] + " [" + prod_options["SKU"].astype(str) + "]"
         
         avail_prods = sorted([str(p) for p in prod_options["_display_name"].unique() if str(p).strip()])
-        sel_prod = st.selectbox("Product (Name + Parent SKU)", ["All"] + avail_prods, index=0, key="sniper_prod_select")
+        sel_prod = st.selectbox("Products (Name + SKU)", ["All"] + avail_prods, index=0, key="sniper_prod_select")
         active_prod = None if sel_prod == "All" else sel_prod
-
-    with f_c3:
-        # Filter variations by product
-        var_options = prod_options[prod_options["_display_name"] == active_prod] if active_prod else prod_options
-        avail_skus = sorted([str(s) for s in var_options["SKU"].unique() if str(s).strip()])
-        sel_sku = st.selectbox("Variation (SKU)", ["All"] + avail_skus, index=0, key="sniper_sku_select")
-        active_sku = None if sel_sku == "All" else sel_sku
 
     # Determine Sniper Results
     sniper_results = inventory.copy()
     if active_cat: sniper_results = sniper_results[sniper_results["Category"] == active_cat]
     if active_prod:
-        # Map back from display name to cleaner filtering
-        target_clean = active_prod.split(" [")[0]
-        sniper_results = sniper_results[sniper_results["_clean_name"] == target_clean]
-    if active_sku: sniper_results = sniper_results[sniper_results["SKU"] == active_sku]
+        # Exact match on display name which contains unique SKU
+        sniper_results = prod_options[prod_options["_display_name"] == active_prod]
 
     # Only show sniper details if at least a product is selected
     if active_prod:
-        st.markdown(f"**Detailed Analysis for:** `{sel_prod}`" + (f" - Variation `{active_sku}`" if active_sku else ""))
+        st.markdown(f"**Detailed Analysis for:** `{active_prod}`")
         
         # Cross-reference with Sales Volume if available
         if df_sales is not None:
-            sales_match = df_sales.copy()
-            # Clean names for sales as well
-            if "_clean_name" not in sales_match.columns:
-                sales_match["_clean_name"] = sales_match["item_name"].apply(get_clean_product_name)
-            
-            # Apply same filtering logic to sales
-            sales_match = sales_match[sales_match["_clean_name"] == target_clean]
-            if active_sku:
-                sales_match = sales_match[sales_match["sku"].astype(str) == active_sku]
+            # We filter sales by the exact SKU in active_prod
+            target_sku = active_prod.split(" [")[-1].replace("]", "")
+            sales_match = df_sales[df_sales["sku"].astype(str) == target_sku]
             
             total_sold = sales_match["qty"].sum()
             total_rev = sales_match["item_revenue"].sum()
@@ -101,8 +83,11 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
             else:
                 st.success(f"✅ **Healthy Velocity**: **{int(days_left)} days** of stock available at current sales rate.")
 
-        st.markdown("**Variation-wise Stock Breakdown:**")
-        st.dataframe(sniper_results[["Name", "SKU", "Stock Status", "Stock Quantity", "Price"]], use_container_width=True, hide_index=True)
+        st.markdown("**Variation Details:**")
+        # Add actual Size to the breakdown table
+        display_results = sniper_results.copy()
+        display_results = display_results.rename(columns={"_size": "Actual Size"})
+        st.dataframe(display_results[["Name", "SKU", "Actual Size", "Stock Status", "Stock Quantity", "Price"]], use_container_width=True, hide_index=True)
         st.divider()
     elif active_cat:
         st.info(f"Selected category: `{active_cat}`. Select a product for a detailed sniper scan.")

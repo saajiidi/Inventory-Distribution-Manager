@@ -32,12 +32,6 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
     if not forecast.empty and "forecast_7d_revenue" in forecast.columns:
         next_week_rev = forecast["forecast_7d_revenue"].sum()
         narrative.append(f"The ML engine predicts a rolling 7-day revenue outlook of <b>TK {next_week_rev:,.0f}</b> based on current trajectories.")
-    anomalies = ml_bundle.get("anomalies", pd.DataFrame())
-    if not anomalies.empty:
-        spike_count = len(anomalies)
-        if spike_count > 0:
-            narrative.append(f"Detected <b>{spike_count} unexpected traffic/sales spikes</b> which should be cross-referenced with your marketing schedule.")
-
     # 4. VIP Churn Watch (Strategic)
     at_risk_vips = []
     if not df_customers.empty and "recency_days" in df_customers.columns:
@@ -67,16 +61,6 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
                     narrative.append(f"Growth Slot: Customers frequently buy <b>{top_pair[0]}</b> and <b>{top_pair[1]}</b> together. Consider a bundle.")
                     bundle_suggestions = [top_pair]
 
-    # 6. Dead Stock Detection (Efficiency)
-    # Note: In a real scenario, this matches against the full inventory list.
-    # We can highlight items with declining volume relative to the start of the window.
-    # For now, let's identify unique items that were significantly lower in volume than usual if we have enough data.
-    # Better: Identify items that appeared in previous 30 days but NOT in this window.
-    # Simplified version for storytelling impact:
-    dead_stock_found = []
-    # If using Executive data, check for items with 0 sales in this window but high stock in recent history
-    # For now, we'll flag any top category that is seeing a >50% drop.
-    
     combined_narrative = " ".join(narrative).replace("<b>", "").replace("</b>", "")
     import hashlib
     narrative_hash = hashlib.md5(combined_narrative.encode()).hexdigest()[:8]
@@ -132,21 +116,16 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
         unsafe_allow_html=True
     )
 
-    # 7. Anomaly & Discovery Calculations
-    daily_vol = df_sales.groupby(df_sales["order_date"].dt.date)["order_id"].nunique()
-    avg_vol = daily_vol.mean()
-    spikes = daily_vol[daily_vol > (avg_vol * 1.5)]
-    
     # 8. Interactive Discovery Tools (Icon Bar - Now on Next Line)
-    # Ensure icons appear if any insight is available (Spikes, VIP Churn, or Bundles)
-    has_insights = not spikes.empty or not at_risk_vips.empty or bool(bundle_suggestions)
+    # Ensure icons appear if any insight is available (VIP Churn or Bundles)
+    has_insights = not at_risk_vips.empty or bool(bundle_suggestions)
     
     if has_insights:
         # Create a row of icons below the typewriter
         btn_col, _ = st.columns([2, 5])
         with btn_col:
             # Use nested columns for horizontal buttons
-            ic1, ic2, ic3 = st.columns(3)
+            ic1, ic2 = st.columns(2)
             # Use a container with a delayed fade-in to match typing duration
             st.markdown(
                 f"""
@@ -173,31 +152,6 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
                 if not at_risk_vips.empty:
                     if st.button("👥", key="btn_vip_churn", help="View At-Risk VIPs"):
                         st.session_state.show_vip_churn = not st.session_state.get("show_vip_churn", False)
-
-            with ic3:
-                if not spikes.empty:
-                    if st.button("🔍", key="btn_spike_analysis", help="Deep-Dive Spike Analysis"):
-                        st.session_state.show_spike_analysis = not st.session_state.get("show_spike_analysis", False)
-            
-            if st.session_state.get("show_spike_analysis"):
-                st.markdown("---")
-                st.info(f"Anomaly Detection: Baseline identified at {avg_vol:.1f} orders/day.")
-                
-                # Visual Spike Analysis
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    spike_dates = [d.strftime("%Y-%m-%d") for d in spikes.index]
-                    st.write(f"**Anomaly Dates:** {', '.join(spike_dates)}")
-                    
-                    df_spikes = df_sales[df_sales["order_date"].dt.date.isin(spikes.index)]
-                    top_spike_items = df_spikes.groupby("item_name")["qty"].sum().sort_values(ascending=False).head(5)
-                    st.write("**Top Products during Spikes:**")
-                    st.dataframe(top_spike_items, use_container_width=True)
-                
-                with c2:
-                    st.write("**Impact Summary**")
-                    spike_rev = df_spikes["order_total"].sum()
-                    st.metric("Spike Revenue", f"৳{spike_rev:,.0f}")
 
             # VIP Churn Rescue View
             if st.session_state.get("show_vip_churn") and not at_risk_vips.empty:
