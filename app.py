@@ -111,6 +111,7 @@ def _render_workspace_sidebar():
             "📊 Traffic & Acquisition": "📊 Traffic & Acquisition",
             "👥 Customer Insight": "👥 Customer Insight",
             ins_label: "📦 Stock Insight",
+            "🚀 Data Pilot": "🚀 Data Pilot",
             "🛡️ Data Trust": "🛡️ Data Trust"
         }
 

@@ -54,11 +54,12 @@ def setup_theme():
             box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
             border: 1px solid rgba(128, 128, 128, 0.1) !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            backdrop-filter: blur(12px) !important;
         }
 
-        [data-testid="stMetricContainer"]:hover, .metric-card:hover {
+        .hub-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.12) !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
             border-color: var(--primary) !important;
         }
 
@@ -69,6 +70,52 @@ def setup_theme():
             color: var(--on-surface-variant) !important;
             letter-spacing: 0.05em !important;
             text-transform: uppercase !important;
+        }
+
+        /* Metric Highlight Styling */
+        .metric-highlight {
+            padding: 1.25rem !important;
+            min-height: 120px !important;
+            border-left: 4px solid var(--primary) !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .metric-highlight-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            opacity: 0.7;
+        }
+        
+        .metric-highlight-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--on-surface);
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        .metric-icon-card {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            min-height: 100px !important;
+        }
+        
+        .metric-icon-wrap {
+            font-size: 1.8rem;
+            background: rgba(var(--primary-rgb), 0.1);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
         }
 
         [data-testid="stMetricValue"], 
@@ -116,14 +163,30 @@ def setup_theme():
                 flex-wrap: wrap !important;
             }
             [data-testid="stColumn"] {
-                min-width: calc(50% - 1rem) !important;
-                flex: 1 1 calc(50% - 1rem) !important;
+                min-width: calc(50% - 0.5rem) !important;
+                flex: 1 1 calc(50% - 0.5rem) !important;
             }
-            [data-testid="stMetricValue"] {
-                font-size: 1.5rem !important;
+            .hub-card, [data-testid="stMetricContainer"] {
+                padding: 0.8rem !important;
+                min-height: 80px !important;
+                margin-bottom: 8px !important;
+            }
+            .metric-highlight-value, [data-testid="stMetricValue"] {
+                font-size: 1.25rem !important;
+            }
+            .metric-highlight-label, [data-testid="stMetricLabel"] {
+                font-size: 0.6rem !important;
+            }
+            .metric-icon-card {
+                gap: 0.5rem !important;
+            }
+            .metric-icon-wrap {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 1.2rem !important;
             }
             .hub-page_footer {
-                padding: 10px 0 20px 0 !important; /* Extra bottom for mobile nav bars */
+                padding: 10px 0 20px 0 !important;
             }
         }
 

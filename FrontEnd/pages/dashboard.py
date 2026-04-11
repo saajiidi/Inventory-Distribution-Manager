@@ -113,12 +113,20 @@ def render_intelligence_hub_page():
         df_sales_raw = prune_dataframe(df_sales_raw, DASHBOARD_SALES_COLUMNS)
     else:
         # Standard Live Logic
-        # Force a sync for current-day data requests
-        should_force = global_sync or (window == "Last Day") or needs_history
-        start_orders_background_refresh(start_date_str, end_date_str, force=should_force)
+        # Force a sync for current-day data requests OR first-time initialization
+        cache_empty = not orders_status.get("cache_exists", False)
+        should_force = global_sync or (window == "Last Day") or needs_history or cache_empty
         
-        sync_mode = "live" if (window == "Last Day" or global_sync) else "cache_only"
-        df_sales_raw = prune_dataframe(load_hybrid_data(start_date=start_date_str, end_date=end_date_str, woocommerce_mode=sync_mode), DASHBOARD_SALES_COLUMNS)
+        if cache_empty:
+             with st.spinner("🚀 Establishing first-time connection to WooCommerce..."):
+                 # Blocking sync for the very first hit to ensure the app isn't empty
+                 df_sales_raw = load_hybrid_data(start_date=start_date_str, end_date=end_date_str, woocommerce_mode="live")
+                 df_sales_raw = prune_dataframe(df_sales_raw, DASHBOARD_SALES_COLUMNS)
+        else:
+             # Regular background refresh for existing users
+             start_orders_background_refresh(start_date_str, end_date_str, force=should_force)
+             sync_mode = "live" if (window == "Last Day" or global_sync) else "cache_only"
+             df_sales_raw = prune_dataframe(load_hybrid_data(start_date=start_date_str, end_date=end_date_str, woocommerce_mode=sync_mode), DASHBOARD_SALES_COLUMNS)
     
     if "Category" not in df_sales_raw.columns:
         from BackEnd.core.categories import get_category_for_sales
@@ -164,6 +172,10 @@ def render_intelligence_hub_page():
             df_customers = generate_customer_insights_from_sales(df_sales_exec, include_rfm=True)
     
     stock_df = load_cached_woocommerce_stock_data()
+    if stock_df.empty and not active_snapshot_mode:
+        with st.spinner("📦 Syncing Inventory levels..."):
+             from BackEnd.services.hybrid_data_loader import load_woocommerce_stock_data
+             stock_df = load_woocommerce_stock_data()
         # Fetch Registered Customer Stats
     from BackEnd.services.hybrid_data_loader import load_woocommerce_customer_count
     customer_count = load_woocommerce_customer_count()
@@ -273,6 +285,9 @@ def render_intelligence_hub_page():
         st.subheader("System Reliability Audit")
         render_data_trust_panel(data["sales"])
         render_data_audit(data["sales"], data["customers"])
+        
+    elif selection == "🚀 Data Pilot":
+        render_data_pilot_page(data["sales"], data["stock"])
 
 
 # --- MERGED COMPONENT LOGIC ---
@@ -467,3 +482,39 @@ def render_customer_insight_tab(reg_rev: float, guest_rev: float, total_accounts
 
 
 # End of Dashboard controller logic
+
+def render_data_pilot_page(sales_df: pd.DataFrame, stock_df: pd.DataFrame):
+    """The AI-first command interface for natural language operations."""
+    st.markdown('<div class="live-indicator"><span class="live-dot" style="background:#4f46e5; box-shadow: 0 0 10px #4f46e5;"></span>AI Service Active | Data Pilot v10.0</div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    ### 🚀 Operations Data Pilot
+    Ask natural language questions about your e-commerce health, stockouts, or revenue trends.
+    """)
+    
+    from FrontEnd.components.insights import render_ai_pilot_chat
+    render_ai_pilot_chat()
+    
+    st.divider()
+    
+    st.markdown("#### 🔍 Automated Market Basket Intelligence")
+    from BackEnd.services.affinity_engine import MarketBasketEngine
+    engine = MarketBasketEngine(sales_df)
+    rules = engine.get_associations(min_lift=1.2)
+    
+    if not rules.empty:
+        st.markdown("##### Detected High-Lift Product Affinities")
+        st.dataframe(rules[["Antecedent", "Consequent", "Lift", "Confidence", "Frequency"]].head(10), use_container_width=True, hide_index=True)
+        
+        # Bundle Fulfillment
+        st.markdown("##### 📦 Bundle Fulfillment Analysis")
+        from BackEnd.services.inventory_intel import InventoryIntelligence
+        if stock_df.empty:
+            st.info("Stock data unavailable. Sync inventory to see fulfillment analysis.")
+        else:
+            inv_intel = InventoryIntelligence(sales_df, stock_df)
+            pairs = rules.head(5).apply(lambda x: {'A': x['Antecedent'], 'B': x['Consequent']}, axis=1).tolist()
+            bundles = inv_intel.calculate_bundle_fulfillment(pairs)
+            st.dataframe(bundles, use_container_width=True, hide_index=True)
+    else:
+        st.info("Insufficient transaction density to discover complex product associations. Check back after more orders.")

@@ -31,11 +31,11 @@ def icon_metric(label: str, value: str, icon: str = "📊", delta: str = "", del
     
     st.markdown(
         f"""
-        <div class="metric-card">
-          <div class="metric-icon">{icon}</div>
+        <div class="hub-card metric-icon-card">
+          <div class="metric-icon-wrap">{icon}</div>
           <div class="metric-content">
-            <div class="metric-label">{label}</div>
-            <div class="metric-value">{value}</div>
+            <div class="metric-highlight-label">{label}</div>
+            <div class="metric-highlight-value" style="font-size: 1.8rem;">{value}</div>
             {delta_html}
           </div>
         </div>
@@ -44,16 +44,27 @@ def icon_metric(label: str, value: str, icon: str = "📊", delta: str = "", del
     )
 
 
-def metric_highlight(label: str, value: str, help_text: str = ""):
-    if not label or value is None:
-        return
-    help_block = f'<div class="bi-highlight-help" style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">{help_text}</div>' if help_text else ""
+def metric_highlight(label: str, value: str, delta: str = "", delta_type: str = "up", help_text: str = ""):
+    """Premium Enterprise KPI card with glassmorphism and motion transitions."""
+    delta_class = "delta-up" if delta_type == "up" else "delta-down"
+    delta_icon = "↑" if delta_type == "up" else "↓"
+    delta_color = "#10b981" if delta_type == "up" else "#ef4444"
+    
+    delta_html = f"""
+    <div style="display: flex; align-items: center; gap: 4px; color: {delta_color}; font-size: 0.85rem; font-weight: 700; margin-top: 4px;">
+        <span>{delta_icon} {delta}</span>
+    </div>
+    """ if delta else ""
+    
+    help_block = f'<div style="color:var(--text-muted); font-size:0.75rem; margin-top:8px; font-weight:500;">{help_text}</div>' if help_text else ""
+    
     st.markdown(
         f"""
-        <div class="stMetricContainer" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.5rem; border-left:4px solid var(--primary); height:100%; min-height:120px; display:flex; flex-direction:column; justify-content:center;">
-          <div style="font-size:0.85rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">{label}</div>
-          <div style="font-size:2.2rem; font-weight:700; color:var(--text-strong); margin-top:8px;">{value}</div>
-          {help_block}
+        <div class="hub-card metric-highlight">
+            <div class="metric-highlight-label">{label}</div>
+            <div class="metric-highlight-value">{value}</div>
+            {delta_html}
+            {help_block}
         </div>
         """,
         unsafe_allow_html=True,
