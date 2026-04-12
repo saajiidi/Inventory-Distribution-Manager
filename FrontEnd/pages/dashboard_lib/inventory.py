@@ -71,8 +71,13 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     f_c1, f_c2, f_c3 = st.columns(3)
     
     with f_c1:
-        raw_cats = [str(c) for c in inventory["Category"].dropna().unique() if str(c).strip()]
-        cat_list = sort_categories(raw_cats)
+        raw_cats = list(inventory["Category"].dropna().unique())
+        # Ensure parent categories exist if children do
+        for parent in ["Jeans", "T-Shirt"]:
+            if any(str(c).startswith(f"{parent} - ") for c in raw_cats) and parent not in raw_cats:
+                raw_cats.append(parent)
+            
+        cat_list = sort_categories([str(c) for c in raw_cats if str(c).strip()])
         sel_cat = st.selectbox("Category", ["All"] + cat_list, index=0, key="sniper_cat_select", format_func=format_category_label)
         active_cat = None if sel_cat == "All" else sel_cat
 
@@ -84,7 +89,7 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     with f_c3:
         # Filter products by category & trend
         prod_options = inventory.copy()
-        if active_cat: prod_options = prod_options[prod_options["Category"] == active_cat]
+        if active_cat: prod_options = prod_options[prod_options["Category"].str.startswith(active_cat, na=False)]
         if active_trend: prod_options = prod_options[prod_options["Trend"] == active_trend]
         
         # Build unique Name + SKU display entries

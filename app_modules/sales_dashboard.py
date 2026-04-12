@@ -93,12 +93,16 @@ def render_category_intelligence(df_sales: pd.DataFrame):
         st.info("No categorical revenue identified.")
         return
 
+    # Handle Hierarchical Display for Charts
+    # If a sub-category exists (e.g. 'Jeans - Slim Fit'), we show only the sub-category in the graph
+    cat_df["DisplayCategory"] = cat_df["Category"].apply(lambda x: x.split(" - ")[1] if " - " in str(x) else x)
+
     from FrontEnd.components import ui
     
     c1, c2 = st.columns(2)
     with c1:
-        st.plotly_chart(ui.donut_chart(cat_df, values="Revenue", names="Category", title="Revenue Share"), use_container_width=True)
+        st.plotly_chart(ui.donut_chart(cat_df, values="Revenue", names="DisplayCategory", title="Revenue Share"), use_container_width=True)
     with c2:
         # Sort by volume for the bar chart
         vol_df = cat_df.sort_values("Volume", ascending=True) # Horizontal bars sorted asc to put largest at top
-        st.plotly_chart(ui.bar_chart(vol_df, x="Volume", y="Category", title="Units Sold", color_scale="Tealgrn", text_auto=".1s"), use_container_width=True)
+        st.plotly_chart(ui.bar_chart(vol_df, x="Volume", y="DisplayCategory", title="Units Sold", color_scale="Tealgrn", text_auto=".1s"), use_container_width=True)

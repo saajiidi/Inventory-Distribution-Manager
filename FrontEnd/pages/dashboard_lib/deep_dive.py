@@ -79,9 +79,10 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         with f_c1:
             # 1. Category
             raw_cats = list(df_sales["Category"].dropna().unique())
-            # Ensure parent categories like 'Jeans' exist if children do
-            if any(str(c).startswith("Jeans - ") for c in raw_cats) and "Jeans" not in raw_cats:
-                raw_cats.append("Jeans")
+            # Ensure parent categories exist if children do
+            for parent in ["Jeans", "T-Shirt"]:
+                if any(str(c).startswith(f"{parent} - ") for c in raw_cats) and parent not in raw_cats:
+                    raw_cats.append(parent)
                 
             cat_list = sort_categories([str(c) for c in raw_cats if str(c).strip()])
             sel_cats = st.multiselect("Categories", ["All"] + cat_list, default=["All"], format_func=format_category_label)
@@ -161,15 +162,53 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
 
     st.markdown(f"🚩 **Key Insight:** This segment appears in **{penetration:.1f}%** of all orders, primarily driven by **{top_platform}** customers in **{top_district}**.")
 
-    cluster_t1, cluster_t2, cluster_t3, cluster_t4 = st.tabs(["📊 Performance Mix", "🔍 Variant Analysis", "🛒 Basket Context", "📋 Cluster Data Ledger"])
+    # --- Strategic Visuals & Breakdown ---
+    st.divider()
+    rd1, rd2 = st.columns([3, 1])
+    with rd1:
+        st.markdown(f"#### 📊 Cluster Insights Report")
+        st.caption(f"Comprehensive analysis export for **{len(w_df):,}** line items in this cluster selection.")
+    with rd2:
+        from datetime import datetime
+        # Prepare filtered dataframe for export (dropping internal helper columns)
+        export_df = w_df.drop(columns=[col for col in w_df.columns if col.startswith("_")], errors="ignore")
+        report_bytes = ui.export_to_excel(export_df, "Sales Cluster Analysis")
+        st.download_button(
+            label="📥 Download Data Report",
+            data=report_bytes,
+            file_name=f"deen_sales_analysis_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
+    cluster_t1, cluster_t2, cluster_t3, cluster_t4 = st.tabs(["📈 Performance Mix", "🔍 Variant Analysis", "🛒 Basket Context", "📋 Cluster Data Ledger"])
     
     with cluster_t1:
-        # Leaderboard Chart (Volume vs Value)
-        leader_df = w_df.groupby("_clean_name").agg(
+        # Leaderboard Controls
+        lc1, lc2 = st.columns([2, 1])
+        with lc1:
+            leader_mode = st.radio("Focus Mode", ["💰 Top Performers", "📉 Underperformers", "⚙️ Custom Window"], 
+                                  index=0, horizontal=True, key="leader_mode_sel")
+        
+        limit = 20
+        if leader_mode == "⚙️ Custom Window":
+            limit = st.number_input("Display Limit", 5, 100, 20)
+        
+        # Prepare Data with SKU
+        w_df["_name_sku"] = w_df["_clean_name"] + " (" + w_df["sku"].astype(str) + ")"
+        
+        leader_df = w_df.groupby("_name_sku").agg(
             Units=("qty", "sum"),
             Revenue=("item_revenue", "sum")
-        ).reset_index().sort_values("Revenue", ascending=False).head(15)
+        ).reset_index()
         
+        if leader_mode == "📉 Underperformers":
+            leader_df = leader_df.sort_values("Revenue", ascending=True).head(limit)
+            sort_order = 'total descending' # Smallest at bottom for Bar chart orientation
+        else:
+            leader_df = leader_df.sort_values("Revenue", ascending=False).head(limit)
+            sort_order = 'total ascending' # Largest at bottom for Bar chart orientation (st.plotly_chart horizontal swaps it visually)
+
         # Calculate Share % safely
         total_cluster_rev = leader_df["Revenue"].sum()
         if total_cluster_rev > 0:
@@ -177,11 +216,13 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         else:
             leader_df["Revenue Share %"] = 0
         
-        fig = px.bar(leader_df, x="Revenue", y="_clean_name", title="Volume vs Value Leaderboard (Top 15)",
+        fig = px.bar(leader_df, x="Revenue", y="_name_sku", 
+                     title=f"Performance Leaderboard ({leader_mode} - {limit} Samples)",
                      orientation='h', color="Units", color_continuous_scale="Viridis",
                      hover_data=["Units", "Revenue Share %"],
-                     labels={"_clean_name": "Product", "Revenue": "Gross Revenue (৳)"})
-        fig.update_layout(yaxis={'categoryorder':'total ascending'})
+                     labels={"_name_sku": "Product (SKU)", "Revenue": "Gross Revenue (৳)"})
+        
+        fig.update_layout(yaxis={'categoryorder': sort_order}, height=max(400, limit*20))
         st.plotly_chart(fig, use_container_width=True)
         
         c1, c2 = st.columns(2)
@@ -208,16 +249,19 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
             Revenue=("item_revenue", "sum"),
             Units=("qty", "sum")
         ).reset_index().sort_values("Revenue", ascending=False)
+        
+        # Strip parent category for cleaner graph labels as requested
+        cat_intell["DisplayCategory"] = cat_intell["Category"].apply(lambda x: x.split(" - ")[1] if " - " in str(x) else x)
 
         with occ1:
             # Category Revenue Donut
-            fig_cat_donut = px.pie(cat_intell, values="Revenue", names="Category", title="Revenue Contribution by Category",
+            fig_cat_donut = px.pie(cat_intell, values="Revenue", names="DisplayCategory", title="Revenue Contribution by Category",
                                    hole=0.5, color_discrete_sequence=px.colors.qualitative.Pastel)
             st.plotly_chart(fig_cat_donut, use_container_width=True)
             
         with occ2:
             # Category Volume Bar
-            fig_cat_bar = px.bar(cat_intell, x="Category", y="Units", title="Unit Velocity by Category",
+            fig_cat_bar = px.bar(cat_intell, x="DisplayCategory", y="Units", title="Unit Velocity by Category",
                                  color="Units", color_continuous_scale="Agsunset")
             st.plotly_chart(fig_cat_bar, use_container_width=True)
 

@@ -55,19 +55,19 @@ def get_category_for_orders(name) -> str:
 
 # Master Category Priority (Determines the 'Flow' in UI Dropdowns)
 CATEGORIES_PRIORITY = [
-    "Tank Top", "Boxer", "Jeans", "Jeans - Slim Fit", "Jeans - Regular Fit", "Jeans - Straight Fit", "Denim Shirt", "Flannel Shirt", "Polo Shirt",
-    "Panjabi", "Trousers", "Joggers", "Twill Chino", "Mask", "Leather Bag",
-    "Water Bottle", "Contrast Shirt", "Turtleneck", "Drop Shoulder", "Wallet",
-    "Kaftan Shirt", "Active Wear", "Jersy", "Sweatshirt", "Jacket", "Belt",
-    "Sweater", "Passport Holder", "Card Holder", "Cap", "FS T-Shirt", "HS T-Shirt",
-    "FS Shirt", "HS Shirt", "Others"
+    "Boxer", "Jeans", "Jeans - Slim Fit", "Jeans - Regular Fit", "Jeans - Straight Fit",
+    "T-Shirt", "T-Shirt - HS", "T-Shirt - FS", "T-Shirt - Active Wear", "T-Shirt - Tank Top",
+    "Denim Shirt", "Flannel Shirt", "Polo Shirt", "Panjabi", "Trousers", "Joggers", 
+    "Twill Chino", "Mask", "Leather Bag", "Water Bottle", "Contrast Shirt", "Turtleneck", 
+    "Drop Shoulder", "Wallet", "Kaftan Shirt", "Jersy", "Sweatshirt", "Jacket", "Belt",
+    "Sweater", "Passport Holder", "Card Holder", "Cap", "FS Shirt", "HS Shirt", "Others"
 ]
 
 def format_category_label(cat: str) -> str:
     """Formats a category string for hierarchical display in UI dropdowns."""
     if not cat: return cat
-    if cat in ["Jeans - Slim Fit", "Jeans - Regular Fit", "Jeans - Straight Fit"]:
-        return f"   └─ {cat.split(' - ')[1]}"
+    if " - " in cat:
+        return f"   └─ {cat.split(' - ', 1)[1]}"
     return cat
 
 def sort_categories(cats):
@@ -86,7 +86,7 @@ def get_category_for_sales(name) -> str:
         return "Others"
 
     specific_cats = {
-        "Tank Top": ["tank top"],
+        "T-Shirt - Tank Top": ["tank top"],
         "Boxer": ["boxer"],
         "Jeans": ["jeans"],
         "Denim Shirt": ["denim"],
@@ -104,7 +104,7 @@ def get_category_for_sales(name) -> str:
         "Drop Shoulder": ["drop", "shoulder"],
         "Wallet": ["wallet"],
         "Kaftan Shirt": ["kaftan"],
-        "Active Wear": ["active wear"],
+        "T-Shirt - Active Wear": ["active wear"],
         "Jersy": ["jersy"],
         "Sweatshirt": ["sweatshirt", "hoodie", "pullover"],
         "Jacket": ["jacket", "outerwear", "coat"],
@@ -128,7 +128,7 @@ def get_category_for_sales(name) -> str:
 
     fs_keywords = ["full sleeve", "long sleeve", "fs", "l/s"]
     if _has_any(["t-shirt", "t shirt", "tee"], name_str):
-        return "FS T-Shirt" if _has_any(fs_keywords, name_str) else "HS T-Shirt"
+        return "T-Shirt - FS" if _has_any(fs_keywords, name_str) else "T-Shirt - HS"
 
     if _has_any(["shirt"], name_str):
         return "FS Shirt" if _has_any(fs_keywords, name_str) else "HS Shirt"

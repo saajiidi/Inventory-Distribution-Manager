@@ -81,6 +81,26 @@ def _render_workspace_sidebar():
                 
         st.divider()
 
+        # 1. Global Segment Filters
+        if "dashboard_data" in st.session_state and not st.session_state.dashboard_data["sales"].empty:
+            from FrontEnd.pages.dashboard_lib.data_helpers import get_available_filters
+            df_for_filters = st.session_state.dashboard_data["sales"]
+            available_cats, available_statuses = get_available_filters(df_for_filters)
+            
+            st.markdown('<div class="sidebar-group-label">🎯 Intelligence Filters</div>', unsafe_allow_html=True)
+            
+            # Category multiselect
+            if "global_categories" not in st.session_state:
+                st.session_state.global_categories = ["All"]
+            st.multiselect("Category Filter", ["All"] + available_cats, key="global_categories", help="Hierarchical filtering across all segments.")
+            
+            # Status multiselect
+            if "global_statuses" not in st.session_state:
+                st.session_state.global_statuses = ["All"]
+            st.multiselect("Status Filter", ["All"] + available_statuses, key="global_statuses", help="Select 'Completed' to match executive pillars.")
+            
+            st.divider()
+
         # 1. Fetch live metrics for Spark-Alerts
         stats = {"proc": 0, "low": 0}
         if "dashboard_data" in st.session_state:

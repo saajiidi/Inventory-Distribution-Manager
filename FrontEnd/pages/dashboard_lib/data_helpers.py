@@ -2,6 +2,45 @@ import pandas as pd
 import streamlit as st
 from BackEnd.utils.sales_schema import ensure_sales_schema
 
+def apply_global_filters(df: pd.DataFrame, categories: list[str] = None, statuses: list[str] = None) -> pd.DataFrame:
+    """Applies global filters with hierarchical matching for categories and strict matching for statuses."""
+    if df.empty:
+        return df
+    
+    filtered_df = df.copy()
+    
+    # 1. Category Filter (Hierarchical)
+    if categories and "All" not in categories:
+        mask = pd.Series(False, index=filtered_df.index)
+        for cat in categories:
+            # Hierarchical match (e.g., 'Jeans' matches 'Jeans - Slim Fit')
+            mask |= filtered_df["Category"].str.startswith(cat, na=False)
+        filtered_df = filtered_df[mask]
+        
+    # 2. Status Filter
+    if statuses and "All" not in statuses:
+        filtered_df = filtered_df[filtered_df["order_status"].str.lower().isin([s.lower() for s in statuses])]
+        
+    return filtered_df
+
+def get_available_filters(df: pd.DataFrame):
+    """Extracts unique categories and statuses for global filter controls."""
+    if df.empty:
+        return [], []
+    
+    # Categories
+    raw_cats = list(df["Category"].dropna().unique())
+    # Ensure parents exist if children do (e.g. Jeans)
+    if any(str(c).startswith("Jeans - ") for c in raw_cats) and "Jeans" not in raw_cats:
+        raw_cats.append("Jeans")
+    
+    unique_cats = sorted([str(c) for c in raw_cats if str(c).strip()])
+    
+    # Statuses
+    unique_statuses = sorted([str(s).title() for s in df["order_status"].dropna().unique()])
+    
+    return unique_cats, unique_statuses
+
 def prune_dataframe(df: pd.DataFrame, preferred_columns: list[str]) -> pd.DataFrame:
     sales = ensure_sales_schema(df)
     # Ensure all preferred columns exist, fill missing with pd.NA

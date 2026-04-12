@@ -18,7 +18,7 @@ from FrontEnd.components import ui
 from FrontEnd.utils.error_handler import log_error
 
 # Modular Library Imports
-from .dashboard_lib.data_helpers import prune_dataframe, build_order_level_dataset, sum_order_level_revenue
+from .dashboard_lib.data_helpers import prune_dataframe, build_order_level_dataset, sum_order_level_revenue, apply_global_filters
 from .dashboard_lib.story import render_dashboard_story
 from .dashboard_lib.bi_analytics import (
     render_today_vs_last_day_sales_chart,
@@ -128,10 +128,15 @@ def render_intelligence_hub_page():
              sync_mode = "live" if (window == "Last Day" or global_sync) else "cache_only"
              df_sales_raw = prune_dataframe(load_hybrid_data(start_date=start_date_str, end_date=end_date_str, woocommerce_mode=sync_mode), DASHBOARD_SALES_COLUMNS)
     
+    # 1. Map categories and apply global filters immediately
     if "Category" not in df_sales_raw.columns:
         from BackEnd.core.categories import get_category_for_sales
         df_sales_raw["Category"] = df_sales_raw["item_name"].apply(get_category_for_sales)
-        
+    
+    global_cats = st.session_state.get("global_categories", ["All"])
+    global_stats = st.session_state.get("global_statuses", ["All"])
+    df_sales_raw = apply_global_filters(df_sales_raw, global_cats, global_stats)
+
     # v10.2: Ensure robust item-level revenue estimation
     from .dashboard_lib.data_helpers import estimate_line_revenue
     df_sales_raw["item_revenue"] = estimate_line_revenue(df_sales_raw)
@@ -153,15 +158,19 @@ def render_intelligence_hub_page():
     else:
         ml_bundle = None # Will be built below
     
-    # Fetch Previous context (Unfiltered)
+    # Fetch Previous context (Unfiltered by date, but filtered by Category/Status)
     df_prev_raw = load_hybrid_data(start_date=prev_start_date_str, end_date=prev_end_date_str, woocommerce_mode="cache_only")
     df_prev_raw = prune_dataframe(df_prev_raw, DASHBOARD_SALES_COLUMNS)
     from BackEnd.core.categories import get_category_for_sales
     df_prev_raw["Category"] = df_prev_raw["item_name"].apply(get_category_for_sales)
+    df_prev_raw = apply_global_filters(df_prev_raw, global_cats, global_stats)
 
     # SECURE ANALYTICS: Create filtered versions for high-level pillars
-    # Only "Completed" or "Shipped" are counted for the 6 Executive Pillars
-    valid_statuses = ["completed", "shipped"]
+    if "All" in global_stats:
+        valid_statuses = ["completed", "shipped"]
+    else:
+        valid_statuses = [s.lower() for s in global_stats]
+
     df_sales_exec = df_sales_raw[df_sales_raw["order_status"].str.lower().isin(valid_statuses)].copy()
     df_prev_exec = df_prev_raw[df_prev_raw["order_status"].str.lower().isin(valid_statuses)].copy()
     
@@ -264,6 +273,35 @@ def render_intelligence_hub_page():
     if selection == "💎 Sales Overview":
         # Global Narrative & Summary
         render_dashboard_story(data["sales_exec"], data["customers"], data["ml"], window)
+        
+        # 🧾 Performance Report Download
+        st.markdown("---")
+        ex1, ex2 = st.columns([3, 1])
+        with ex1:
+            st.markdown("#### 🧾 Executive Performance Summary")
+            st.caption("Download a high-level performance matrix including category-wise revenue and volume distribution.")
+        with ex2:
+            from datetime import datetime
+            # Build Performance Matrix
+            perf_df = data["sales_exec"].groupby("Category").agg(
+                Revenue=("item_revenue", "sum"),
+                Orders=("order_id", "nunique"),
+                Units=("qty", "sum")
+            ).reset_index().sort_values("Revenue", ascending=False)
+            perf_df["AOV"] = (perf_df["Revenue"] / perf_df["Orders"]).round(2)
+            
+            # Clean Labels for Report as requested
+            perf_df["Category"] = perf_df["Category"].apply(lambda x: str(x).split(" - ")[1] if " - " in str(x) else x)
+            
+            perf_bytes = ui.export_to_excel(perf_df, "Performance Matrix")
+            st.download_button(
+                label="📊 Download Performance Matrix",
+                data=perf_bytes,
+                file_name=f"deen_performance_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+
         st.divider()
         render_sales_overview_timeseries(data["sales_exec"], ml_bundle=data["ml"])
 
