@@ -150,9 +150,9 @@ def get_category_for_sales(name) -> str:
 
     # Jeans
     if _has_any(["jeans"], name_str):
-        if _has_any(["regular"], name_str): return "Jeans - Regular Fit"
-        if _has_any(["slim"], name_str): return "Jeans - Slim Fit"
-        if _has_any(["straight"], name_str): return "Jeans - Straight Fit"
+        if _has_any(["regular"], name_str): return "Jeans - Regular Fit Jeans"
+        if _has_any(["slim"], name_str): return "Jeans - Slim Fit Jeans"
+        if _has_any(["straight"], name_str): return "Jeans - Straight Fit Jeans"
         return "Jeans"
 
     # T-Shirt

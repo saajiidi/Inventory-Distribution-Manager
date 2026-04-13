@@ -94,29 +94,6 @@ def _render_workspace_sidebar():
             if not stock.empty:
                 stats["low"] = len(stock[stock["Stock Quantity"] <= 5])
 
-        # 1.5 Category & Operations Control
-        if "dashboard_data" in st.session_state:
-            from BackEnd.core.categories import sort_categories, format_category_label, get_subcategory_name
-            from FrontEnd.pages.dashboard_lib.data_helpers import get_available_filters
-            
-            st.markdown('<div class="sidebar-group-label">📊 CATEGORY & OPERATIONS</div>', unsafe_allow_html=True)
-            df_raw = st.session_state.dashboard_data.get("sales", pd.DataFrame())
-            unique_cats, unique_stats = get_available_filters(df_raw)
-            
-            # Filter 1: Performance Cluster
-            sorted_cats = sort_categories(unique_cats)
-            st.multiselect("Performance Cluster", ["All"] + sorted_cats, default=["All"], 
-                           format_func=format_category_label, 
-                           key="global_categories")
-            
-            # Filter 2: Operational Focus
-            exclude_statuses = ["cancelled", "failed", "trash"]
-            clean_stats = [s for s in unique_stats if s.lower() not in exclude_statuses]
-            st.multiselect("Operations Focus", ["All"] + clean_stats, default=["All"],
-                           key="global_statuses")
-            
-            st.divider()
-            
         # 2. Unified Navigation (Single Stack for Smooth Performance)
         st.markdown('<div class="sidebar-group-label">⚡ NAVIGATION HUB</div>', unsafe_allow_html=True)
         

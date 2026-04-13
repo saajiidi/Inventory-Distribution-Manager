@@ -231,9 +231,9 @@ def render_intelligence_hub_page():
 
     data = st.session_state.dashboard_data
     
-    # Pull filters from sidebar session state
-    segment_filter = st.session_state.get("global_categories", ["All"])
-    status_filter = st.session_state.get("global_statuses", ["All"])
+    # Dashboard analyzes full cleansed dataset (Sidebar filters removed)
+    segment_filter = ["All"]
+    status_filter = ["All"]
 
     # Strictly remove Cancelled/Failed from raw data pool
     exclude_statuses = ["cancelled", "failed", "trash"]
@@ -288,20 +288,13 @@ def render_intelligence_hub_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    selection = st.session_state.get("active_section", "💎 Sales Overview")
-
-    if selection == "💎 Sales Overview":
-        # Global Narrative & Summary
-        render_dashboard_story(df_exec, data["customers"], data["ml"], window)
-
-    st.markdown("<br>", unsafe_allow_html=True)
 
     # Routing based on sidebar selection
     selection = st.session_state.get("active_section", "💎 Sales Overview")
 
     if selection == "💎 Sales Overview":
         # Global Narrative & Summary
-        render_dashboard_story(data["sales_exec"], data["customers"], data["ml"], window)
+        render_dashboard_story(data["sales_exec"], data["customers"], data["ml"], window, df_prev_sales=data["prev_sales_exec"])
         
         # 🧾 Performance Report Download
         st.markdown("---")
