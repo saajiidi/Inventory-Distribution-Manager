@@ -110,32 +110,22 @@ def _render_data_sync_panel() -> None:
 # ═══════════════════════════════════════════════════════════════════
 
 def _render_date_filter(df: pd.DataFrame) -> pd.DataFrame:
-    """Render date range filter and return filtered DataFrame."""
-    c1, c2, c3 = st.columns([1, 1, 2])
-
-    min_date = df["date"].min().date() if not df["date"].isna().all() else date(2025, 8, 1)
-    max_date = df["date"].max().date() if not df["date"].isna().all() else date.today()
-
-    with c1:
-        start = st.date_input(
-            "From", value=max(min_date, date(2025, 8, 1)),
-            min_value=min_date, max_value=max_date,
-            key="returns_start_date"
-        )
-    with c2:
-        end = st.date_input(
-            "To", value=max_date,
-            min_value=min_date, max_value=max_date,
-            key="returns_end_date"
-        )
-    with c3:
-        # Issue type filter
-        all_types = sorted(df["issue_type"].unique().tolist())
-        selected_types = st.multiselect(
-            "Issue Types", all_types,
-            default=all_types,
-            key="returns_type_filter"
-        )
+    """Apply global date range filter and issue type filter."""
+    # Use global date range from sidebar
+    today = date.today()
+    start = st.session_state.get("wc_sync_start_date", today - timedelta(days=30))
+    end = st.session_state.get("wc_sync_end_date", today)
+    
+    # Issue type filter
+    all_types = sorted(df["issue_type"].unique().tolist())
+    selected_types = st.multiselect(
+        "Issue Types", all_types,
+        default=all_types,
+        key="returns_type_filter"
+    )
+    
+    # Show current date range
+    st.caption(f"📅 Using global date range: {start} to {end} (set in Business Intelligence sidebar)")
 
     mask = (df["date"].dt.date >= start) & (df["date"].dt.date <= end)
     if selected_types:
@@ -169,18 +159,25 @@ def _render_kpi_cards(metrics: dict) -> None:
     st.markdown("#### 📦 Operational Returns Metrics")
     cols = st.columns(4)
 
+    t_ord = metrics.get('total_orders', 0)
+    
+    def format_pct(val):
+        if t_ord > 0:
+            return f"{val:,}  <span style='font-size:0.5em; opacity:0.8;'>({(val / t_ord * 100):.1f}%)</span>"
+        return f"{val:,}"
+
     with cols[0]:
         st.markdown(_kpi_card(
             "📦 TOTAL ISSUES",
-            f"{metrics['total_issues']:,}",
-            "All tracked delivery issues",
+            format_pct(metrics['total_issues']),
+            f"Of {t_ord:,} Total Orders" if t_ord > 0 else "All tracked delivery issues",
             "#3b82f6"
         ), unsafe_allow_html=True)
 
     with cols[1]:
         st.markdown(_kpi_card(
             "🔴 RETURNS",
-            f"{metrics['return_count']:,}",
+            format_pct(metrics['return_count']),
             f"Paid: {metrics.get('paid_return_count', 0)} | "
             f"Non-Paid: {metrics.get('non_paid_return_count', 0)}",
             "#ef4444"
@@ -189,7 +186,7 @@ def _render_kpi_cards(metrics: dict) -> None:
     with cols[2]:
         st.markdown(_kpi_card(
             "🟡 PARTIALS",
-            f"{metrics['partial_count']:,}",
+            format_pct(metrics['partial_count']),
             f"৳{metrics['partial_amounts']:,.0f} extracted",
             "#eab308"
         ), unsafe_allow_html=True)
@@ -197,7 +194,7 @@ def _render_kpi_cards(metrics: dict) -> None:
     with cols[3]:
         st.markdown(_kpi_card(
             "🟣 EXCHANGES",
-            f"{metrics['exchange_count']:,}",
+            format_pct(metrics['exchange_count']),
             "Size/Product changes",
             "#8b5cf6"
         ), unsafe_allow_html=True)
