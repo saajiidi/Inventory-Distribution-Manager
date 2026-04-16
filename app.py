@@ -168,8 +168,32 @@ def _render_workspace_sidebar():
                 st_autorefresh(interval=15 * 60 * 1000, key="global_refresh")
                 
             if "dashboard_data" in st.session_state:
+                st.markdown("**🔌 Power BI Connector**", help="Generates an optimized Star Schema (Facts & Dimensions) for DAX modeling.")
+                
+                if "pbi_export_bytes" not in st.session_state:
+                    if st.button("Generate Power BI Matrix", use_container_width=True):
+                        with st.spinner("Extracting Facts & Dimensions..."):
+                            from BackEnd.services.powerbi_export import build_star_schema
+                            returns_df = st.session_state.get("returns_data", None)
+                            excel_bytes, _ = build_star_schema(st.session_state.dashboard_data, returns_df=returns_df)
+                            st.session_state.pbi_export_bytes = excel_bytes
+                            st.rerun()
+                else:
+                    st.download_button(
+                        label="📥 Download Star Schema (.xlsx)",
+                        data=st.session_state.pbi_export_bytes,
+                        file_name=f"deen_powerbi_schema_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True,
+                        type="primary"
+                    )
+                    if st.button("🔄 Clear Schema Cache", use_container_width=True):
+                        del st.session_state.pbi_export_bytes
+                        st.rerun()
+
+                st.divider()
                 csv = st.session_state.dashboard_data["sales"].to_csv(index=False)
-                st.download_button("📥 Download Analysis (CSV)", csv, "deen_analysis_export.csv", "text/csv", use_container_width=True)
+                st.download_button("📥 Raw Dashboard Export (CSV)", csv, "deen_analysis_export.csv", "text/csv", use_container_width=True)
 
         # 5. Anomaly Detection (Toasts)
         if "dashboard_data" in st.session_state:
