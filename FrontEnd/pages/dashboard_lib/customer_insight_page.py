@@ -23,6 +23,7 @@ from src.components.customer_insight.customer_selector import (
     render_customer_selector,
 )
 from src.components.customer_insight.customer_report import render_customer_report
+from FrontEnd.components.ui import export_to_excel
 
 # Use EXISTING working services (inherits from working dashboard data)
 from BackEnd.services.customer_insights import generate_customer_insights_from_sales
@@ -130,6 +131,32 @@ def _render_main_content(filters: Dict[str, Any]) -> None:
     with col4:
         avg_aov = customers_df["avg_order_value"].mean() if "avg_order_value" in customers_df.columns else 0
         st.metric("Avg AOV", f"৳{avg_aov:,.0f}")
+    
+    # Export button
+    export_col1, export_col2 = st.columns([1, 3])
+    with export_col1:
+        # Prepare export data with key customer info
+        export_df = customers_df.copy()
+        # Select relevant columns for export
+        export_columns = [
+            "customer_key", "name", "primary_name", "all_emails", "all_phones",
+            "total_orders", "total_value", "avg_order_value", 
+            "first_order", "last_order", "segment"
+        ]
+        # Only include columns that exist
+        available_cols = [c for c in export_columns if c in export_df.columns]
+        export_df = export_df[available_cols]
+        
+        excel_data = export_to_excel(export_df, "filtered_customers")
+        st.download_button(
+            label="📥 Export Report",
+            data=excel_data,
+            file_name=f"filtered_customers_{len(customers_df)}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+        )
+    with export_col2:
+        st.caption(f"Exporting {len(customers_df)} unique customers with their details")
     
     st.markdown("---")
     
@@ -328,6 +355,31 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
     with col3:
         orders = customers_df["total_orders"].sum() if "total_orders" in customers_df.columns else 0
         st.metric("Orders", f"{int(orders):,}")
+    
+    # Export button for tab view
+    export_col1, export_col2 = st.columns([1, 3])
+    with export_col1:
+        # Prepare export data
+        export_df = customers_df.copy()
+        export_columns = [
+            "customer_key", "name", "primary_name", "all_emails", "all_phones",
+            "total_orders", "total_value", "avg_order_value",
+            "first_order", "last_order", "segment"
+        ]
+        available_cols = [c for c in export_columns if c in export_df.columns]
+        export_df = export_df[available_cols]
+        
+        excel_data = export_to_excel(export_df, "filtered_customers")
+        st.download_button(
+            label="📥 Export",
+            data=excel_data,
+            file_name=f"filtered_customers_{len(customers_df)}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+            key="ci_tab_export",
+        )
+    with export_col2:
+        st.caption(f"Export {len(customers_df)} customers")
     
     st.markdown("---")
     
