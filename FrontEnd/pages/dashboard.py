@@ -316,10 +316,15 @@ def render_intelligence_hub_page():
     net_metrics = calculate_net_sales_metrics(st.session_state.returns_data, sales_df=df_exec)
     
     st.markdown('<div class="sidebar-group-label" style="font-size:0.85rem; letter-spacing:1px;">💰 TRUE REVENUE & FINANCIAL IMPACT</div>', unsafe_allow_html=True)
-    nc1, nc2, nc3 = st.columns(3)
-    with nc1: ui.icon_metric("Gross Verified Revenue", f"৳{net_metrics.get('gross_sales', 0):,.0f}", icon="💎", delta="Active", delta_val=net_metrics.get('gross_sales', 0))
+    gross = net_metrics.get('gross_sales', 0)
+    net_sales = net_metrics.get('net_sales', 0)
+    net_yield_pct = (net_sales / gross * 100) if gross > 0 else 0.0
+
+    nc1, nc2, nc3, nc4 = st.columns(4)
+    with nc1: ui.icon_metric("Gross Verified Revenue", f"৳{gross:,.0f}", icon="💎", delta="Active", delta_val=gross)
     with nc2: ui.icon_metric("Loss (Returns + Partials)", f"৳{(net_metrics.get('return_value_extracted', 0) + net_metrics.get('partial_amounts', 0)):,.0f}", icon="📉", delta="Lost", delta_val=-(net_metrics.get('return_value_extracted', 0) + net_metrics.get('partial_amounts', 0)))
-    with nc3: ui.icon_metric("Net Settled Sales", f"৳{net_metrics.get('net_sales', 0):,.0f}", icon="🌟", delta="Net", delta_val=net_metrics.get('net_sales', 0))
+    with nc3: ui.icon_metric("Net Settled Sales", f"৳{net_sales:,.0f}", icon="🌟", delta="Net", delta_val=net_sales)
+    with nc4: ui.icon_metric("Net Yield %", f"{net_yield_pct:.1f}%", icon="📊", delta="Efficiency", delta_val=net_yield_pct)
 
     st.markdown("<br>", unsafe_allow_html=True)
     
