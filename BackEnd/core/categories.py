@@ -55,17 +55,17 @@ def get_category_for_orders(name) -> str:
 
 # Master Category Priority (Determines the 'Flow' in UI Dropdowns)
 CATEGORIES_PRIORITY = [
-    "Boxer", 
     "Jeans", "Jeans - Regular Fit", "Jeans - Slim Fit", "Jeans - Straight Fit",
-    "T-Shirt", "T-Shirt - HS T-Shirt", "T-Shirt - FS T-Shirt", "T-Shirt - Drop Shoulder", "T-Shirt - Tank Top", "T-Shirt - Active Wear", "T-Shirt - Jersy",
+    "T-Shirt", "T-Shirt - HS T-Shirt", "T-Shirt - FS T-Shirt", "T-Shirt - Drop Shoulder", "T-Shirt - Tank Top", "T-Shirt - Active Wear", "T-Shirt - Jersey",
     "FS Shirt", "FS Shirt - Flannel Shirt", "FS Shirt - Denim Shirt", "FS Shirt - Oxford Shirt", "FS Shirt - Kaftan Shirt", "FS Shirt - FS Casual Shirt",
     "HS Shirt", "HS Shirt - Contrast Stitch Shirt", "HS Shirt - HS Casual Shirt",
     "Wallet", "Wallet - Passport Holder", "Wallet - Card Holder", "Wallet - Long Wallet", "Wallet - Bifold Wallet", "Wallet - Trifold Wallet",
     "Panjabi", "Panjabi - Panjabi", "Panjabi - Old Panjabi",
+    "Sweatshirt", "Sweatshirt - Cotton Terry Sweatshirt", "Sweatshirt - French Terry Sweatshirt",
+    "Polo Shirt", "Turtle-Neck",
     "Twill Chino", "Twill Chino - Twill Chino Pant", "Twill Chino - Twill Joggers", "Twill Chino - Five Pockets",
     "Trousers", "Trousers - Trousers", "Trousers - Joggers", "Trousers - Cotton Trousers",
-    "Sweatshirt", "Sweatshirt - Cotton Terry Sweatshirt", "Sweatshirt - French Terry Sweatshirt",
-    "Polo Shirt", "Turtle-Neck", "Leather Bag", "Belt", "Mask", "Water Bottle", "Bundles", "Others"
+    "Boxer", "Leather Bag", "Belt", "Mask", "Water Bottle", "Bundles", "Others"
 ]
 
 def format_category_label(cat: str) -> str:
@@ -115,52 +115,42 @@ def get_display_category(full_cat: str, selected_cats: list[str]) -> str:
     return full_cat.split(" - ")[0] if " - " in full_cat else full_cat
 
 def get_category_for_sales(name) -> str:
-    """Categorizes products based on keywords in their names (v15.0 Category -> Sub-Category)."""
+    """Categorizes products based on keywords in their names (v16.0 Comprehensive Mapping)."""
     name_str = _normalize(name)
     if not name_str:
         return "Others"
 
-    # 1. High-Priority Exceptions (Single Unique Categories - Prevent 'Shirt' overlap)
+    # 1. HIGH PRIORITY SPECIAL CATEGORIES (Check before 'Shirt' overlap)
     
-    # Sweatshirt (Must be before Shirt)
+    # Sweatshirt 
     if _has_any(["sweatshirt", "hoodie", "pullover"], name_str):
         if _has_any(["cotton terry"], name_str): return "Sweatshirt - Cotton Terry Sweatshirt"
         if _has_any(["french terry"], name_str): return "Sweatshirt - French Terry Sweatshirt"
         return "Sweatshirt"
 
-    # Polo Shirt (Must be before Shirt)
+    # Polo Shirt 
     if _has_any(["polo"], name_str):
         return "Polo Shirt"
 
-    # Turtle-Neck (Must be before T-Shirt)
+    # Turtle-Neck 
     if _has_any(["turtleneck", "mock neck", "turtle-neck"], name_str):
         return "Turtle-Neck"
 
-    # Bundles
-    if "bundle" in name_str:
-        detected = []
-        if _has_any(["t-shirt", "t shirt", "tee"], name_str): detected.append("T-Shirt")
-        if _has_any(["jeans", "denim"], name_str): detected.append("Jeans")
-        if _has_any(["boxer"], name_str): detected.append("Boxer")
-        if detected:
-            return f"Bundles - {' + '.join(detected)}"
-        return "Bundles"
-
-    # 2. Main Clusters
+    # 2. MAIN CLUSTERS
 
     # Jeans
     if _has_any(["jeans"], name_str):
-        if _has_any(["regular"], name_str): return "Jeans - Regular Fit Jeans"
-        if _has_any(["slim"], name_str): return "Jeans - Slim Fit Jeans"
-        if _has_any(["straight"], name_str): return "Jeans - Straight Fit Jeans"
+        if _has_any(["regular"], name_str): return "Jeans - Regular Fit"
+        if _has_any(["slim"], name_str): return "Jeans - Slim Fit"
+        if _has_any(["straight"], name_str): return "Jeans - Straight Fit"
         return "Jeans"
 
-    # T-Shirt
+    # T-Shirt (Must be before general Shirt)
     if _has_any(["t-shirt", "t shirt", "tee"], name_str):
         if _has_any(["drop shoulder"], name_str): return "T-Shirt - Drop Shoulder"
         if _has_any(["tank top"], name_str): return "T-Shirt - Tank Top"
-        if _has_any(["active wear"], name_str): return "T-Shirt - Active Wear"
-        if _has_any(["jersy", "jersey"], name_str): return "T-Shirt - Jersy"
+        if _has_any(["active wear", "activewear"], name_str): return "T-Shirt - Active Wear"
+        if _has_any(["jersey", "jersy"], name_str): return "T-Shirt - Jersey"
         
         fs_keywords = ["full sleeve", "long sleeve", "fs", "l/s"]
         if _has_any(fs_keywords, name_str): return "T-Shirt - FS T-Shirt"
@@ -176,7 +166,7 @@ def get_category_for_sales(name) -> str:
         if _has_any(["casual"], name_str): return "FS Shirt - FS Casual Shirt"
         return "FS Shirt"
 
-    # HS Shirt (default if not FS)
+    # HS Shirt
     if _has_any(["shirt"], name_str):
         if _has_any(["contrast", "stitch"], name_str): return "HS Shirt - Contrast Stitch Shirt"
         if _has_any(["casual"], name_str): return "HS Shirt - HS Casual Shirt"
@@ -199,7 +189,7 @@ def get_category_for_sales(name) -> str:
     # Twill Chino
     if _has_any(["twill", "chino"], name_str):
         if _has_any(["jogger"], name_str): return "Twill Chino - Twill Joggers"
-        if _has_any(["five pocket", "5 pocket"], name_str): return "Twill Chino - Five Pockets"
+        if _has_any(["five pocket", "5 pocket", "5-pocket"], name_str): return "Twill Chino - Five Pockets"
         return "Twill Chino - Twill Chino Pant"
 
     # Trousers
@@ -208,10 +198,17 @@ def get_category_for_sales(name) -> str:
         if _has_any(["jogger"], name_str): return "Trousers - Joggers"
         return "Trousers - Trousers"
 
-    # 3. Specific Static Categories
+    # 3. STATIC / BUNDLES
+    if "bundle" in name_str:
+        detected = []
+        if _has_any(["t-shirt", "t shirt", "tee"], name_str): detected.append("T-Shirt")
+        if _has_any(["jeans", "denim"], name_str): detected.append("Jeans")
+        if _has_any(["boxer"], name_str): detected.append("Boxer")
+        return f"Bundles - {' + '.join(detected)}" if detected else "Bundles"
+
     specific_cats = {
         "Boxer": ["boxer"],
-        "Leather Bag": ["bag", "backpack"],
+        "Leather Bag": ["bag", "backpack", "tote"],
         "Mask": ["mask"],
         "Water Bottle": ["bottle"],
         "Belt": ["belt"],

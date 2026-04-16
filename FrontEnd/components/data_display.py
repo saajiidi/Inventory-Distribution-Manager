@@ -77,41 +77,56 @@ def file_summary(uploaded_file, df: pd.DataFrame | None, required_columns: list[
 
 
 
-def export_to_excel(df: pd.DataFrame, sheet_name: str = "Analysis Report") -> bytes:
-    """High-fidelity Excel export with professional styling (borders, headers, auto-width)."""
+def export_to_excel(df: pd.DataFrame, sheet_name: str = "Analysis Report", additional_sheets: dict[str, pd.DataFrame] = None) -> bytes:
+    """High-fidelity Excel export with professional styling and multi-sheet support."""
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     output = BytesIO()
     
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        # Main Data Sheet
         df.to_excel(writer, index=False, sheet_name=sheet_name)
-        wb = writer.book
-        ws = wb[sheet_name]
         
-        # Styles
+        # Additional Sheets (e.g. Summary, Stats)
+        if additional_sheets:
+            for s_name, s_df in additional_sheets.items():
+                s_df.to_excel(writer, index=False, sheet_name=s_name)
+        
+        wb = writer.book
+        
+        # Consistent Styling for all sheets
         header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
         header_font = Font(bold=True, color='FFFFFF')
         thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), 
                            top=Side(style='thin'), bottom=Side(style='thin'))
         
-        # Header Styling
-        for cell in ws[1]:
-            cell.fill = header_fill
-            cell.font = header_font
-            cell.alignment = Alignment(horizontal='center', vertical='center')
-            cell.border = thin_border
+        for ws in wb.worksheets:
+            # Header Styling
+            for cell in ws[1]:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+                cell.border = thin_border
             
-        # Freeze Header
-        ws.freeze_panes = 'A2'
-        
-        # Auto-adjust column widths
-        for i, col_name in enumerate(df.columns):
-            col_letter = ws.cell(row=1, column=i+1).column_letter
-            max_len = max(df[col_name].astype(str).str.len().max(), len(str(col_name))) + 2
-            ws.column_dimensions[col_letter].width = min(max_len, 50)
+            # Freeze Header
+            ws.freeze_panes = 'A2'
             
-            # Row Styling
-            for row in range(2, ws.max_row + 1):
-                ws.cell(row=row, column=i+1).border = thin_border
+            # Auto-adjust column widths
+            # We need the dataframe associated with this sheet to calculate widths
+            # This is a bit tricky with worksheets, but we can iterate cells
+            for col in ws.columns:
+                max_length = 0
+                column = col[0].column_letter # Get the column name
+                for cell in col:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                ws.column_dimensions[column].width = max(min(max_length + 2, 50), 10)
+                
+                # Row Styling
+                for cell in col:
+                    cell.border = thin_border
 
     output.seek(0)
     return output.read()

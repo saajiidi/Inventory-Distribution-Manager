@@ -56,6 +56,23 @@ DASHBOARD_SALES_COLUMNS = [
 def render_intelligence_hub_page():
     st.markdown('<div class="live-indicator"><span class="live-dot"></span>System Online | Intelligence Hub Active</div>', unsafe_allow_html=True)
     
+    # 0. Global Strategy Filters (Sidebar)
+    with st.sidebar:
+        st.markdown('<div class="sidebar-group-label">🎯 Strategy Filters</div>', unsafe_allow_html=True)
+        
+        # Load available filters from session data if exists, else defaults
+        avail_cats = ["All"]
+        avail_stats = ["All"]
+        if "dashboard_data" in st.session_state:
+            from .dashboard_lib.data_helpers import get_available_filters
+            avail_cats_raw, avail_stats_raw = get_available_filters(st.session_state.dashboard_data["sales"])
+            avail_cats = ["All"] + avail_cats_raw
+            avail_stats = ["All"] + avail_stats_raw
+        
+        st.multiselect("Categories", avail_cats, default=["All"], key="global_categories", format_func=format_category_label)
+        st.multiselect("Order Status", avail_stats, default=["All"], key="global_statuses")
+        st.divider()
+
     global_sync = st.session_state.get("global_sync_request", False)
     if global_sync:
         st.session_state["global_sync_request"] = False # Reset
@@ -139,22 +156,38 @@ def render_intelligence_hub_page():
              sync_mode = "live" if (window == "Last Day" or global_sync) else "cache_only"
              df_sales_raw = prune_dataframe(load_hybrid_data(start_date=start_date_str, end_date=end_date_str, woocommerce_mode=sync_mode), DASHBOARD_SALES_COLUMNS)
     
-    # 1. Map categories and apply global filters immediately
+    # 1. Map categories and apply global filters immediately for UI context
+    from BackEnd.core.categories import get_category_for_sales
+    
     if "Category" not in df_sales_raw.columns:
-        from BackEnd.core.categories import get_category_for_sales
         df_sales_raw["Category"] = df_sales_raw["item_name"].apply(get_category_for_sales)
+    
+    # Load Previous Context (Archival comparison range)
+    df_prev_raw = load_hybrid_data(start_date=prev_start_date_str, end_date=prev_end_date_str, woocommerce_mode="cache_only")
+    df_prev_raw = prune_dataframe(df_prev_raw, DASHBOARD_SALES_COLUMNS)
+    df_prev_raw["Category"] = df_prev_raw["item_name"].apply(get_category_for_sales)
     
     global_cats = st.session_state.get("global_categories", ["All"])
     global_stats = st.session_state.get("global_statuses", ["All"])
-    df_sales_raw = apply_global_filters(df_sales_raw, global_cats, global_stats)
-
+    
+    # Store Raw Date-Ranged Data before global category/status filtering
+    df_sales_full = df_sales_raw.copy() 
+    df_prev_full = df_prev_raw.copy()
+    
     # v10.2: Ensure robust item-level revenue estimation
     from .dashboard_lib.data_helpers import estimate_line_revenue
-    df_sales_raw["item_revenue"] = estimate_line_revenue(df_sales_raw)
+    # Apply estimation to full datasets so it persists
+    df_sales_full["item_revenue"] = estimate_line_revenue(df_sales_full)
+    df_prev_full["item_revenue"] = estimate_line_revenue(df_prev_full)
     
+    # Update current filtered sets with calculated revenue
+    df_sales_filtered = apply_global_filters(df_sales_full, global_cats, global_stats)
+    df_prev_filtered = apply_global_filters(df_prev_full, global_cats, global_stats)
+
     # 1.5 Geographic Intelligence (District Code Resolution)
     from BackEnd.core.geo import get_region_display
-    df_sales_raw["_region_display"] = df_sales_raw.apply(lambda x: get_region_display(x.get("city", ""), x.get("state", "")), axis=1)
+    df_sales_full["_region_display"] = df_sales_full.apply(lambda x: get_region_display(x.get("city", ""), x.get("state", "")), axis=1)
+    df_prev_full["_region_display"] = df_prev_full.apply(lambda x: get_region_display(x.get("city", ""), x.get("state", "")), axis=1)
         
     # --- HYBRID MAP DATA: The map ALWAYS uses a clean snapshot to save memory ---
     if MAP_FORCE_SNAPSHOT:
@@ -164,7 +197,7 @@ def render_intelligence_hub_page():
             from BackEnd.core.categories import get_category_for_sales
             df_sales_map["Category"] = df_sales_map["item_name"].apply(get_category_for_sales)
     else:
-        df_sales_map = df_sales_raw
+        df_sales_map = df_sales_filtered
 
     # Fetch pre-calculated ML bundle if in snapshot mode, else build it
     if active_snapshot_mode:
@@ -173,29 +206,30 @@ def render_intelligence_hub_page():
     else:
         ml_bundle = None # Will be built below
     
-    # Fetch Previous context (Unfiltered by date, but filtered by Category/Status)
-    df_prev_raw = load_hybrid_data(start_date=prev_start_date_str, end_date=prev_end_date_str, woocommerce_mode="cache_only")
-    df_prev_raw = prune_dataframe(df_prev_raw, DASHBOARD_SALES_COLUMNS)
-    from BackEnd.core.categories import get_category_for_sales
-    from BackEnd.core.geo import get_region_display
-    df_prev_raw["Category"] = df_prev_raw["item_name"].apply(get_category_for_sales)
-    df_prev_raw["_region_display"] = df_prev_raw.apply(lambda x: get_region_display(x.get("city", ""), x.get("state", "")), axis=1)
-    df_prev_raw = apply_global_filters(df_prev_raw, global_cats, global_stats)
-
-    # SECURE ANALYTICS: Force Analysis to Shipped and Completed only
+    # 2. Status Filtering Layers (Derived from Sidebar Filtered Sets)
+    # - Strict: For financial/secure analytics (Completed/Shipped)
+    # - Active: For operational overview (Excluding Cancelled/Failed)
     valid_statuses = ["completed", "shipped"]
-    df_sales_exec = df_sales_raw[df_sales_raw["order_status"].str.lower().isin(valid_statuses)].copy()
-    df_prev_exec = df_prev_raw[df_prev_raw["order_status"].str.lower().isin(valid_statuses)].copy()
+    exclude_statuses = ["cancelled", "failed", "trash"]
     
+    # Define Datasets (Using _filtered to respect sidebar)
+    # a) Secure Set (Strict)
+    df_sales_strict = df_sales_filtered[df_sales_filtered["order_status"].str.lower().isin(valid_statuses)].copy()
+    df_prev_strict = df_prev_filtered[df_prev_filtered["order_status"].str.lower().isin(valid_statuses)].copy()
+    
+    # b) Active Set (Loose - Used for overall revenue/volume reporting)
+    df_sales_active = df_sales_filtered[~df_sales_filtered["order_status"].str.lower().isin(exclude_statuses)].copy()
+    df_prev_active = df_prev_filtered[~df_prev_filtered["order_status"].str.lower().isin(exclude_statuses)].copy()
+
     if not active_snapshot_mode:
-        df_customers = generate_customer_insights_from_sales(df_sales_exec, include_rfm=True)
-        ml_bundle = build_ml_insight_bundle(df_sales_exec, df_customers, horizon_days=7)
+        df_customers = generate_customer_insights_from_sales(df_sales_strict, include_rfm=True)
+        ml_bundle = build_ml_insight_bundle(df_sales_strict, df_customers, horizon_days=7)
     else:
         # Snapshot mode provides these
         if ml_bundle and "customers" in ml_bundle: # if bundle includes it
             df_customers = ml_bundle["customers"]
         else:
-            df_customers = generate_customer_insights_from_sales(df_sales_exec, include_rfm=True)
+            df_customers = generate_customer_insights_from_sales(df_sales_strict, include_rfm=True)
     
     stock_df = load_cached_woocommerce_stock_data()
     if stock_df.empty and not active_snapshot_mode:
@@ -221,9 +255,10 @@ def render_intelligence_hub_page():
     st.session_state.dashboard_data = {
         "sales": df_sales_raw,
         "sales_map": df_sales_map,       # Dedicated map dataset
-        "sales_exec": df_sales_exec,
-        "prev_sales": df_prev_raw,
-        "prev_sales_exec": df_prev_exec,
+        "sales_active": df_sales_active,  # Operational dataset
+        "sales_strict": df_sales_strict,  # Financial dataset
+        "prev_sales_active": df_prev_active,
+        "prev_sales_strict": df_prev_strict,
         "customers": df_customers,
         "customer_count": customer_count,
         "ml": ml_bundle,
@@ -239,32 +274,28 @@ def render_intelligence_hub_page():
     segment_filter = ["All"]
     status_filter = ["All"]
 
-    # Strictly remove Cancelled/Failed from raw data pool
-    exclude_statuses = ["cancelled", "failed", "trash"]
-    df_sales_raw = df_sales_raw[~df_sales_raw["order_status"].str.lower().isin(exclude_statuses)]
-    
-    # Apply user-selected filters
-    df_exec = apply_global_filters(df_sales_raw, segment_filter, status_filter)
+    # Apply user-selected global filters (already handled but ensuring scope)
+    df_exec = data["sales_active"]
     
     # Re-calculate core dataset metrics
     exec_orders = build_order_level_dataset(df_exec)
     total_rev = sum_order_level_revenue(df_exec, order_df=exec_orders)
     order_count = exec_orders["order_id"].nunique() if not exec_orders.empty else 0
     cust_count = df_exec["customer_key"].nunique()
-    total_items = df_exec["qty"].sum()
+    total_items = int(df_exec["qty"].sum())
     aov = (total_rev / order_count) if order_count else 0
     avg_orders_per_day = order_count / max(1, days_back)
     
     # --- Comparative Logic ---
-    df_prev_exec = data["prev_sales_exec"]
-    prev_orders_level = build_order_level_dataset(df_prev_exec)
+    df_prev_comp = data["prev_sales_active"] # Compare Active vs Active
+    prev_orders_level = build_order_level_dataset(df_prev_comp)
     
-    prev_items_val = df_prev_exec["qty"].sum() if not df_prev_exec.empty else 0
-    prev_rev_val = sum_order_level_revenue(df_prev_exec, order_df=prev_orders_level)
+    prev_items_val = df_prev_comp["qty"].sum() if not df_prev_comp.empty else 0
+    prev_rev_val = sum_order_level_revenue(df_prev_comp, order_df=prev_orders_level)
     
     prev_orders_val = prev_orders_level["order_id"].nunique() if not prev_orders_level.empty else 0
     prev_aov_val = (prev_rev_val / prev_orders_val) if prev_orders_val else 0
-    prev_cust_val = df_prev_exec["customer_key"].nunique() if not df_prev_exec.empty else 0
+    prev_cust_val = df_prev_comp["customer_key"].nunique() if not df_prev_comp.empty else 0
     prev_avg_orders_val = (prev_orders_val / days_back) if days_back else 0
     
     def calc_delta(curr, prev):
@@ -283,7 +314,7 @@ def render_intelligence_hub_page():
 
     # 1. Executive Summary Pillars (Global Across Tabs)
     c1, c2, c3, c4, c5, c6 = st.columns(6)
-    with c1: ui.icon_metric("Total Item Sold", f"{total_items:,}", icon="📦", delta=d_items_label, delta_val=d_items_val)
+    with c1: ui.icon_metric("Total Items Sold", f"{total_items:,}", icon="📦", delta=d_items_label, delta_val=d_items_val)
     with c2: ui.icon_metric("Revenue", f"৳{total_rev:,.0f}", icon="💰", delta=d_rev_label, delta_val=d_rev_val)
     with c3: ui.icon_metric("Orders", f"{order_count:,}", icon="🛒", delta=d_orders_label, delta_val=d_orders_val)
     with c4: ui.icon_metric("Avg. Orders / Day", f"{avg_orders_per_day:,.0f}", icon="📅", delta=d_avg_label, delta_val=d_avg_val)
@@ -298,7 +329,7 @@ def render_intelligence_hub_page():
 
     if selection == "💎 Sales Overview":
         # Global Narrative & Summary
-        render_dashboard_story(data["sales_exec"], data["customers"], data["ml"], window, df_prev_sales=data["prev_sales_exec"])
+        render_dashboard_story(data["sales_active"], data["customers"], data["ml"], window, df_prev_sales=data["prev_sales_active"])
         
         # 🧾 Performance Report Download
         st.markdown("---")
@@ -310,7 +341,7 @@ def render_intelligence_hub_page():
             from datetime import datetime
             # Build Performance Matrix
             from BackEnd.core.categories import get_display_category
-            perf_df = data["sales_exec"].groupby("Category").agg(
+            perf_df = data["sales_active"].groupby("Category").agg(
                 Revenue=("item_revenue", "sum"),
                 Orders=("order_id", "nunique"),
                 Units=("qty", "sum")
@@ -331,18 +362,18 @@ def render_intelligence_hub_page():
             )
 
         st.divider()
-        render_sales_overview_timeseries(data["sales_exec"], ml_bundle=data["ml"])
+        render_sales_overview_timeseries(data["sales_active"], ml_bundle=data["ml"])
 
         
 
     
     elif selection == "📊 Traffic & Acquisition":
-        render_acquisition_analytics(data["sales_exec"])
+        render_acquisition_analytics(data["sales_active"])
         
     elif selection == "👥 Customer Insight":
         st.subheader("Customer Insight")
         # Calculate registered vs guest revenue
-        df_exec = data["sales_exec"]
+        df_exec = data["sales_active"]
         if "customer_key" in df_exec.columns:
             is_registered = df_exec["customer_key"].str.startswith("reg_", na=False)
             reg_val = df_exec[is_registered]["item_revenue"].sum() if is_registered.any() else 0
@@ -351,10 +382,10 @@ def render_intelligence_hub_page():
             reg_val = 0
             guest_val = 0
         # Pass executive sales for analysis consistency
-        render_customer_insight_tab(reg_val, guest_val, data["customer_count"], data["sales_exec"])
+        render_customer_insight_tab(reg_val, guest_val, data["customer_count"], data["sales_active"])
         
     elif selection == "📥 Sales Data Ingestion":
-        render_deep_dive_tab(data["sales_exec"], data["stock"], data["prev_sales_exec"])
+        render_deep_dive_tab(data["sales_active"], data["stock"], data["prev_sales_active"], window_label=data["window_label"])
         
     elif selection == "📦 Stock Insight":
         st.subheader("Operational Forecasting")

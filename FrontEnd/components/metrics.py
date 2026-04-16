@@ -117,9 +117,10 @@ def operational_card(title: str, order_count: int, item_count: int, revenue: flo
     """Premium multi-line operational metric card with optional alert pulse."""
     delta_class = "delta-up" if delta_val >= 0 else "delta-down"
     delta_icon = "↑" if delta_val >= 0 else "↓"
-    delta_html = f'<div class="metric-delta {delta_class}" style="margin-top:10px; font-size:0.85rem;">{delta_icon} {delta_text}</div>' if delta_text else ""
+    delta_html = f'<div class="{delta_class}" style="margin-top:10px; font-size:0.85rem; font-weight:700;">{delta_icon} {delta_text}</div>' if delta_text else ""
     
     pulse_css = "animation: pulse-amber 2s infinite;" if is_alert else ""
+    border_style = "2px solid #F59E0B" if is_alert else "1px solid var(--outline)"
     
     st.markdown(
         f"""
@@ -129,16 +130,33 @@ def operational_card(title: str, order_count: int, item_count: int, revenue: flo
             70% {{ box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }}
             100% {{ box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }}
         }}
+        .op-card {{
+            padding: 1.5rem;
+            min-height: 160px;
+            background: var(--surface);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }}
+        .op-card:hover {{
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }}
         </style>
-        <div class="metric-card" style="padding: 1.2rem; min-height: 180px; {pulse_css} border: { '2px solid #F59E0B' if is_alert else '1px solid var(--border)' };">
-            <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div style="font-size: 1.1rem; font-weight: 700; color: var(--on-surface);">{title}</div>
-                <div style="font-size: 1.5rem;">{icon}</div>
+        <div class="op-card" style="{pulse_css} border: {border_style};">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="font-size: 1rem; font-weight: 700; color: var(--on-surface); line-height: 1.2; letter-spacing: -0.01em;">{title}</div>
+                <div style="font-size: 1.5rem; opacity: 0.9;">{icon}</div>
             </div>
-            <div style="margin-top: 15px;">
-                <div style="font-size: 0.85rem; color: var(--on-surface-variant); font-weight: 500;">Orders: <b>{order_count:,}</b></div>
-                <div style="font-size: 0.85rem; color: var(--on-surface-variant); font-weight: 500;">{item_label}: <b>{item_count:,}</b></div>
-                <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-top: 8px;">৳ {revenue:,.0f}</div>
+            <div style="margin-top: 12px;">
+                <div style="display: flex; gap: 12px; margin-bottom: 6px;">
+                    <div style="font-size: 0.8rem; color: var(--on-surface-variant); font-weight: 600;">Orders: <span style="color: var(--on-surface);">{order_count:,}</span></div>
+                    <div style="font-size: 0.8rem; color: var(--on-surface-variant); font-weight: 600;">{item_label}: <span style="color: var(--on-surface);">{item_count:,}</span></div>
+                </div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary); letter-spacing: -0.03em;">TK {revenue:,.0f}</div>
                 {delta_html}
             </div>
         </div>

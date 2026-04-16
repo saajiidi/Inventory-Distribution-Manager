@@ -4,16 +4,34 @@ import plotly.express as px
 from FrontEnd.components import ui
 from BackEnd.core.categories import parse_sku_variants, get_clean_product_name, sort_categories, format_category_label
 
-def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev: pd.DataFrame = None):
+def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev: pd.DataFrame = None, window_label: str = "period"):
 
     if "_variant_parsed" not in df_sales.columns:
         df_sales[["_color", "_size"]] = df_sales["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
         df_sales["_clean_name"] = df_sales["item_name"].apply(get_clean_product_name)
+        
+        # --- Robust Densed Name Logic ---
+        def get_densed_name(name, category):
+             name_str = str(name).strip()
+             cat_str = str(category).strip()
+             if len(name_str) > 22 and " - " in cat_str:
+                 main, sub = cat_str.split(" - ", 1)
+                 # Exclude main category (case-insensitive word match)
+                 import re
+                 densed = re.sub(rf"\b{re.escape(main)}\b", "", name_str, flags=re.IGNORECASE).strip("- ")
+                 # Include sub-category if not already present
+                 if sub.lower() not in densed.lower():
+                     return f"{sub} {densed}".strip()
+                 return densed
+             return name_str
+
+        df_sales["_densed_name"] = df_sales.apply(lambda x: get_densed_name(x["_clean_name"], x["Category"]), axis=1)
         df_sales["_variant_parsed"] = True
         
     if df_prev is not None and not df_prev.empty and "_variant_parsed" not in df_prev.columns:
         df_prev[["_color", "_size"]] = df_prev["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
         df_prev["_clean_name"] = df_prev["item_name"].apply(get_clean_product_name)
+        df_prev["_densed_name"] = df_prev.apply(lambda x: get_densed_name(x["_clean_name"], x["Category"]), axis=1)
         df_prev["_variant_parsed"] = True
 
     # --- Trend Type Logic ---
@@ -83,13 +101,16 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         
         with f_c1:
             # 1. Category
-            raw_cats = list(df_sales["Category"].dropna().unique())
-            # Ensure parent categories exist if children do
-            for parent in ["Jeans", "T-Shirt"]:
-                if any(str(c).startswith(f"{parent} - ") for c in raw_cats) and parent not in raw_cats:
-                    raw_cats.append(parent)
-                
-            cat_list = sort_categories([str(c) for c in raw_cats if str(c).strip()])
+            raw_cats = set([str(c) for c in df_sales["Category"].dropna().unique() if str(c).strip()])
+            # Ensure parent categories exist if children do (Dynamic Detection)
+            parents_to_add = set()
+            for cat in raw_cats:
+                if " - " in cat:
+                    parent = cat.split(" - ")[0]
+                    if parent not in raw_cats:
+                        parents_to_add.add(parent)
+            
+            cat_list = sort_categories(list(raw_cats.union(parents_to_add)))
             sel_cats = st.multiselect("Categories", ["All"] + cat_list, default=["All"], format_func=format_category_label)
             active_cats = [] if "All" in sel_cats or not sel_cats else sel_cats
 
@@ -169,7 +190,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         if prev <= 0: return "", 0
         diff = curr - prev
         pct = (diff / prev) * 100
-        return f"{pct:+.1f}% vs last period", diff
+        return f"{pct:+.1f}% vs last {window_label}", diff
 
     d_items_label, d_items_val = get_delta_data(total_items_sold, prev_items)
     d_rev_label, d_rev_val = get_delta_data(total_revenue, prev_revenue)
@@ -232,19 +253,39 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
     st.divider()
     rd1, rd2 = st.columns([3, 1])
     with rd1:
-        st.markdown(f"#### 📊 Cluster Insights Report")
-        st.caption(f"Comprehensive analysis export for **{len(w_df):,}** line items in this cluster selection.")
+        st.markdown(f"#### 📊 Strategic Analytics Export")
+        st.caption(f"Generate a professional multi-sheet intelligence report for the **{len(w_df):,}** items in this selection.")
     with rd2:
         from datetime import datetime
-        # Prepare filtered dataframe for export (dropping internal helper columns)
+        # 1. Prepare Strategic Summary Sheet
+        summary_data = {
+            "Metric": ["Gross Revenue", "Total Units", "Unique Buyers", "Avg Item Price", "Single Piece Propensity", "Bulk Propensity (3+)"],
+            "Value": [
+                f"৳{total_revenue:,.0f}", 
+                total_items_sold, 
+                unique_customers, 
+                f"৳{avg_item_price:,.0f}",
+                f"{p_single:.1f}%" if 'p_single' in locals() else "N/A",
+                f"{p_bulk:.1f}%" if 'p_bulk' in locals() else "N/A"
+            ]
+        }
+        summary_df = pd.DataFrame(summary_data)
+        
+        # 2. Prepare Data Sheet
         export_df = w_df.drop(columns=[col for col in w_df.columns if col.startswith("_")], errors="ignore")
-        report_bytes = ui.export_to_excel(export_df, "Sales Cluster Analysis")
+        
+        # 3. Enhanced Multi-Sheet Export
+        from FrontEnd.components.data_display import export_to_excel
+        # We'll use a local helper for multi-sheet if needed, but let's see if we can just use the existing one or expand it
+        report_bytes = ui.export_to_excel(export_df, "Cluster Data", additional_sheets={"Summary": summary_df})
+        
         st.download_button(
-            label="📥 Download Data Report",
+            label="📊 Export Strategic Analysis",
             data=report_bytes,
-            file_name=f"deen_sales_analysis_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            file_name=f"deen_strategic_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
+            use_container_width=True,
+            key="btn_export_strategic"
         )
 
     cluster_t1, cluster_t2, cluster_t3, cluster_t4 = st.tabs(["📈 Performance Mix", "🔍 Variant Analysis", "🛒 Basket Context", "📋 Cluster Data Ledger"])
@@ -256,7 +297,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             leader_mode = st.radio("Spotlight Strategy", ["💰 Top 10", "💰 Top 20", "📉 Underperformers", "⚙️ Custom Window"], 
                                   index=0, horizontal=True, key="leader_mode_sel")
         with lc2:
-            granularity = st.radio("Granularity", ["📦 Master Product", "🆔 SKU Variant"], index=0, horizontal=True)
+            granularity = st.radio("Granularity", ["📦 Master Product", "🆔 Variant"], index=0, horizontal=True)
             
         limit = 10
         if leader_mode == "💰 Top 20": limit = 20
@@ -265,8 +306,9 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             limit = st.number_input("Display Limit", 5, 100, 20)
         
         # Prepare Data based on selected granularity
-        group_col = "_clean_name" if granularity == "📦 Master Product" else "_name_sku"
-        w_df["_name_sku"] = w_df["_clean_name"] + " [" + w_df["sku"].astype(str) + "]"
+        group_col = "_master_label" if granularity == "📦 Master Product" else "_variant_label"
+        w_df["_master_label"] = w_df["_densed_name"] + " [" + w_df["sku"].astype(str) + "]"
+        w_df["_variant_label"] = w_df["_densed_name"] + " with Size " + w_df["_size"].astype(str) + " [" + w_df["sku"].astype(str) + "]"
         
         leader_df = w_df.groupby([group_col, "Category"]).agg(
             Units=("qty", "sum"),
@@ -356,12 +398,48 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             st.plotly_chart(fig, use_container_width=True)
 
     with cluster_t3:
+        # --- ML Analytics: Bulk Purchase Dynamics ---
+        st.markdown("##### 🧠 Bulk Purchase Dynamics (ML Analysis)")
+        st.caption("Analyzing the propensity for bulk purchasing within this cluster. (Single Piece vs 3+ Units)")
+        
+        # Calculate Propensity
+        # Use order_total and line items to determine if they bought 1 or 3+ of THIS CATEGORY items
+        order_basket = w_df.groupby("order_id")["qty"].sum().reset_index()
+        total_orders_in_cluster = len(order_basket)
+        
+        if total_orders_in_cluster > 0:
+            single_piece = len(order_basket[order_basket["qty"] == 1])
+            bulk_pieces = len(order_basket[order_basket["qty"] >= 3])
+            mid_piece = total_orders_in_cluster - single_piece - bulk_pieces # Usually 2 items
+            
+            p_single = (single_piece / total_orders_in_cluster) * 100
+            p_bulk = (bulk_pieces / total_orders_in_cluster) * 100
+            p_other = (mid_piece / total_orders_in_cluster) * 100
+            
+            # Optimized Columns for readability
+            bm1, bm2, bm3 = st.columns(3)
+            with bm1: ui.metric_highlight("SINGLE PIECE PROPENSITY", f"{p_single:.1f}%", f"Orders: {single_piece}", icon="🛍️")
+            with bm2: ui.metric_highlight("BULK PROPENSITY (3+)", f"{p_bulk:.1f}%", f"Orders: {bulk_pieces}", icon="📦")
+            with bm3: ui.metric_highlight("MID-TIER (2 ITEMS)", f"{p_other:.1f}%", f"Balance", icon="✨")
+            
+            # Distribution Pie
+            prop_df = pd.DataFrame({
+                "Propensity": ["Single Piece (1)", "Bulk (3+)", "Mid-Tier (2)"],
+                "Count": [single_piece, bulk_pieces, mid_piece]
+            })
+            fig_prop = px.pie(prop_df, values="Count", names="Propensity", hole=0.5, 
+                             color_discrete_map={"Single Piece (1)": "#6366f1", "Bulk (3+)": "#10b981", "Mid-Tier (2)": "#f59e0b"},
+                             title=f"Basket Size Propensity: {sel_cats[0] if sel_cats and 'All' not in sel_cats else 'Filtered Cluster'}")
+            fig_prop.update_layout(height=350, margin=dict(t=30, b=0, l=0, r=0))
+            st.plotly_chart(fig_prop, use_container_width=True)
+        
+        st.divider()
         b_c1, b_c2 = st.columns(2)
         with b_c1:
             # Quantity Distribution (Basket logic)
             q_dist = w_df.groupby("qty")["order_id"].nunique().reset_index()
             q_dist.columns = ["Items in Line", "Orders"]
-            fig = px.bar(q_dist, x="Items in Line", y="Orders", title="Bulk Purchase Propensity",
+            fig = px.bar(q_dist, x="Items in Line", y="Orders", title="Distribution of Units per Line Item",
                          text_auto=True, color_discrete_sequence=["#F59E0B"])
             st.plotly_chart(fig, use_container_width=True)
         with b_c2:
@@ -373,6 +451,32 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             st.plotly_chart(fig, use_container_width=True)
 
     with cluster_t4:
+        # Categorization Health Diagnostic
+        others_df = w_df[w_df["Category"] == "Others"].copy()
+        others_count = len(others_df)
+        total_count = len(w_df)
+        others_pct = (others_count / total_count * 100) if total_count > 0 else 0
+        
+        st.markdown("##### 🛠️ Categorization Health Audit")
+        ac1, ac2 = st.columns([1.2, 2])
+        with ac1:
+            ui.metric_highlight(
+                "Uncategorized Rate", 
+                f"{others_pct:.1f}%", 
+                f"{others_count} items", 
+                delta_type="down" if others_pct > 0 else "up",
+                icon="🛡️"
+            )
+        with ac2:
+            if others_count > 0:
+                st.warning("Found items in 'Others'. See Top Uncategorized below to refine keyword rules.")
+                top_others = others_df.groupby("item_name")["qty"].sum().reset_index().sort_values("qty", ascending=False).head(10)
+                st.write("**Top Uncategorized Items (Others):**")
+                st.dataframe(top_others, use_container_width=True, hide_index=True)
+            else:
+                st.success("✅ Perfection: 100% of items in this cluster are successfully categorized!")
+
+        st.divider()
         # Show clean ledger
         ledger_df = w_df[["order_id", "order_date", "item_name", "sku", "qty", "item_revenue", "Trend", "Coupons", "source", "_region_display"]].copy()
         ledger_df = ledger_df.rename(columns={"_region_display": "Location", "item_revenue": "Revenue", "qty": "Units", "item_name": "Product"})
