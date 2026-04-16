@@ -695,16 +695,8 @@ def sidebar_branding():
 
 def page_header():
     """Minimal page_header for the main page content area."""
-    st.markdown(
-        f"""
-        <div class="hub-title-row" style="margin-bottom:0;">
-            <div>
-                <h1 class="hub-title" style="margin-bottom:0;">{APP_TITLE}</h1>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Title is shown in the hero banner - no need to duplicate here
+    pass
 
 
 
