@@ -2,9 +2,9 @@ import pandas as pd
 import streamlit as st
 from .data_helpers import sum_order_level_revenue, build_order_level_dataset
 
-def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, ml_bundle: dict, time_window: str = "this period", df_prev_sales: pd.DataFrame = None):
+def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, ml_bundle: dict, time_window: str = "this period", df_prev_sales: pd.DataFrame = None, return_raw: bool = False):
     if df_sales.empty:
-        return
+        return [] if return_raw else None
     total_revenue = sum_order_level_revenue(df_sales)
     order_df = build_order_level_dataset(df_sales)
     total_orders = order_df["order_id"].nunique()
@@ -24,12 +24,14 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
             period_prefix = f"In {time_window.lower()}"
             
         narrative.append(f"{period_prefix}, your store has generated <b>TK {total_revenue:,.0f}</b> in revenue, averaging <b>TK {avg_daily:,.0f}</b> per day.")
+    
+    # ... (skipping some logic for brevity in replacement, but keeping it in the file)
+    # [Actually, I must include the logic I want to keep]
+    
     if not df_customers.empty and "segment" in df_customers.columns and "total_revenue" in df_customers.columns:
         vips = df_customers[df_customers["segment"] == "VIP"]
         if not vips.empty:
             narrative.append(f"Your <b>{len(vips)} VIP customers</b> represent your most stable growth lever.")
-            
-            # Revenue at Risk (New Insight)
             if "recency_days" in df_customers.columns:
                 at_risk = vips[vips["recency_days"] > 21].copy()
                 if not at_risk.empty:
@@ -37,23 +39,21 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
                     risk_value = len(at_risk) * avg_vip_val
                     narrative.append(f"<b>TK {risk_value:,.0f} at Risk:</b> {len(at_risk)} VIPs show churning signs. Re-engagement is prioritized.")
 
-    # 2. Rising Stars (Velocity Engine)
     if df_prev_sales is not None and not df_prev_sales.empty:
         curr_vol = df_sales.groupby("item_name")["qty"].sum()
         prev_vol = df_prev_sales.groupby("item_name")["qty"].sum()
-        
         velocity = pd.DataFrame({"curr": curr_vol, "prev": prev_vol}).fillna(0)
-        # Select items with at least 5 sales and 100%+ growth
         rising = velocity[(velocity["curr"] >= 5) & (velocity["curr"] > velocity["prev"] * 2)].copy()
         if not rising.empty:
             star_item = (rising["curr"] - rising["prev"]).idxmax()
             star_growth = ((rising.loc[star_item, "curr"] - rising.loc[star_item, "prev"]) / max(1, rising.loc[star_item, "prev"]) * 100)
             narrative.append(f"<b>Rising Star:</b> {star_item} velocity up <b>{star_growth:.0f}%</b> vs last period.")
+
     forecast = ml_bundle.get("forecast", pd.DataFrame())
     if not forecast.empty and "forecast_7d_revenue" in forecast.columns:
         next_week_rev = forecast["forecast_7d_revenue"].sum()
-        narrative.append(f"The ML engine predicts a rolling 7-day revenue outlook of <b>TK {next_week_rev:,.0f}</b> based on current trajectories.")
-    # 5. Top Category Insight (Operational)
+        narrative.append(f"The ML engine predicts a rolling 7-day revenue outlook of <b>TK {next_week_rev:,.0f}</b>.")
+
     top_cat_agg = df_sales.groupby("Category")["item_revenue"].sum().sort_values(ascending=False)
     if not top_cat_agg.empty:
         top_cat = top_cat_agg.index[0]
@@ -62,16 +62,13 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
         cat_pct = (top_cat_agg.iloc[0] / total_revenue * 100) if total_revenue else 0
         narrative.append(f"<b>{clean_cat}</b> is your leading performance cluster, contributing <b>{cat_pct:.1f}%</b> of total revenue.")
 
-    # 6. Peak Performance Day
     daily_rev = df_sales.groupby("order_date")["item_revenue"].sum()
     if not daily_rev.empty:
         peak_day = daily_rev.idxmax()
         peak_val = daily_rev.max()
         narrative.append(f"Business peaked on <b>{peak_day.strftime('%b %d')}</b> with a single-day high of <b>TK {peak_val:,.0f}</b>.")
 
-    # 7. Bundle Discovery (Growth)
     if not df_sales.empty:
-        # Find orders with > 1 item
         multi_item_orders = df_sales.groupby("order_id").filter(lambda x: x["item_name"].nunique() > 1)
         if not multi_item_orders.empty:
             from itertools import combinations
@@ -79,12 +76,14 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
             pairs = []
             for items in order_items:
                 pairs.extend(combinations(sorted(items), 2))
-            
             if pairs:
                 pair_counts = pd.Series(pairs).value_counts()
                 if not pair_counts.empty and pair_counts.iloc[0] > 1:
                     top_pair = pair_counts.index[0]
                     narrative.append(f"Growth Slot: Customers frequently buy <b>{top_pair[0]}</b> and <b>{top_pair[1]}</b> together. Consider a bundle.")
+
+    if return_raw:
+        return [n.replace("<b>", "").replace("</b>", "") for n in narrative]
 
     combined_narrative = " ".join(narrative).replace("<b>", "").replace("</b>", "")
     import hashlib

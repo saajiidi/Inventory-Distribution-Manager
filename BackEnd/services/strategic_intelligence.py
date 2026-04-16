@@ -71,15 +71,20 @@ def detect_business_anomalies(sales_df: pd.DataFrame, returns_df: pd.DataFrame) 
 
     return anomalies
 
-def generate_executive_narrative(sales_df: pd.DataFrame, returns_df: pd.DataFrame, daily_delta: float) -> List[str]:
+def generate_executive_narrative(sales_df: pd.DataFrame, returns_df: pd.DataFrame, current_rev: float, prev_rev: float) -> List[str]:
     """Generates strategy-focused bullet points for the CEO briefing."""
     narrative = []
     
     # 1. Growth Context
-    if daily_delta > 0:
-        narrative.append(f"📈 **Momentum:** Revenue is trending **{daily_delta:.1f}% higher** than the prior period. Growth is stable.")
+    delta_pct = ((current_rev - prev_rev) / prev_rev * 100) if prev_rev > 0 else 0
+    
+    if delta_pct > 0:
+        phrase = "trending **higher**" if delta_pct < 100 else "**surging**"
+        narrative.append(f"📈 **Momentum:** Revenue is {phrase} by **{delta_pct:.1f}%** compared to the prior period.")
+    elif delta_pct < 0:
+        narrative.append(f"📉 **Alert:** Revenue has dipped by **{abs(delta_pct):.1f}%**. Suggest reviewing recent marketing spend.")
     else:
-        narrative.append(f"📉 **Alert:** Daily revenue has dipped by **{abs(daily_delta):.1f}%**. Immediate volume push suggested.")
+        narrative.append(f"⚖️ **Stablity:** Revenue is holding steady with 0% variance from the previous window.")
 
     # 2. Category Intelligence
     if 'Category' in sales_df.columns:

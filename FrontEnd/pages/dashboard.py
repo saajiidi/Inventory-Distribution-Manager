@@ -365,19 +365,38 @@ def render_intelligence_hub_page():
     selection = st.session_state.get("active_section", "💎 Sales Overview")
 
     if selection == "💎 Sales Overview":
-        # Global Narrative & Summary
-        render_dashboard_story(data["sales_active"], data["customers"], data["ml"], window, df_prev_sales=data["prev_sales_active"])
-        
-        # --- FEATURE 1: AI EXECUTIVE BRIEFING ---
+        # --- MERGED STRATEGIC INTELLIGENCE HUB ---
         from BackEnd.services.strategic_intelligence import generate_executive_narrative
-        briefing = generate_executive_narrative(data["sales_active"], st.session_state.get("returns_data", pd.DataFrame()), d_rev_val)
+        from .dashboard_lib.story import render_dashboard_story
+        
+        # 1. Fetch Narrative Components
+        story_points = render_dashboard_story(
+            data["sales_active"], data["customers"], data["ml"], 
+            window, df_prev_sales=data["prev_sales_active"], return_raw=True
+        )
+        
+        briefing_points = generate_executive_narrative(
+            data["sales_active"], 
+            st.session_state.get("returns_data", pd.DataFrame()), 
+            total_rev, prev_rev_val
+        )
+        
+        # 2. Combine & Render
+        all_points = story_points + briefing_points
         
         with st.container():
             st.markdown(f"""
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <div style="font-weight: 800; color: #3b82f6; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">🎙️ AI EXECUTIVE BRIEFING</div>
-                <div style="font-size: 0.95rem; line-height: 1.6;">
-                    {"<br>".join([f"• {point}" for point in briefing])}
+            <div style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.08) 0%, rgba(30, 27, 75, 0.05) 100%); 
+                        border-left: 5px solid #3b82f6; border-radius: 12px; padding: 24px; margin: 20px 0;
+                        border: 1px solid rgba(59, 130, 246, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <div style="font-size: 1.2rem; margin-right: 12px;">💎</div>
+                    <div style="font-weight: 800; color: #3b82f6; font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase;">
+                        Strategic Executive Intelligence
+                    </div>
+                </div>
+                <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-color);">
+                    {"<div style='margin-bottom:10px;'>" + "</div><div style='margin-bottom:10px;'>".join([f"• {point}" for point in all_points]) + "</div>"}
                 </div>
             </div>
             """, unsafe_allow_html=True)
