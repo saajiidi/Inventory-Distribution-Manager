@@ -57,9 +57,20 @@ def render_intelligence_hub_page():
     st.markdown('<div class="live-indicator"><span class="live-dot"></span>System Online | Intelligence Hub Active</div>', unsafe_allow_html=True)
     
     import os
+    import base64
     banner_path = os.path.join("FrontEnd", "assets", "data_analytics_banner.png")
     if os.path.exists(banner_path):
-        st.image(banner_path, use_container_width=True)
+        with open(banner_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+        st.markdown(
+            f'''
+            <div style="margin-top: 10px; margin-bottom: 25px;">
+                <img src="data:image/png;base64,{encoded_string}" 
+                     style="width: 100%; height: 140px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.3);">
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
     global_sync = st.session_state.get("global_sync_request", False)
     if global_sync:
         st.session_state["global_sync_request"] = False # Reset
