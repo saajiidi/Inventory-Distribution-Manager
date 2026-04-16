@@ -104,6 +104,7 @@ def _render_workspace_sidebar():
             "📥 Sales Data Ingestion": "📥 Sales Data Ingestion",
             "📊 Traffic & Acquisition": "📊 Traffic & Acquisition",
             "👥 Customer Insight": "👥 Customer Insight",
+            "🔄 Returns & Net Sales": "🔄 Returns & Net Sales",
             ins_label: "📦 Stock Insight",
             "🚀 Data Pilot": "🚀 Data Pilot",
             "🛡️ Data Trust": "🛡️ Data Trust"

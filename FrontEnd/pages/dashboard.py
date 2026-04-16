@@ -384,6 +384,10 @@ def render_intelligence_hub_page():
         # Pass executive sales for analysis consistency
         render_customer_insight_tab(reg_val, guest_val, data["customer_count"], data["sales_active"])
         
+    elif selection == "🔄 Returns & Net Sales":
+        from .dashboard_lib.returns_tracker import render_returns_tracker_page
+        render_returns_tracker_page()
+
     elif selection == "📥 Sales Data Ingestion":
         render_deep_dive_tab(data["sales_active"], data["stock"], data["prev_sales_active"], window_label=data["window_label"])
         
