@@ -56,6 +56,10 @@ DASHBOARD_SALES_COLUMNS = [
 def render_intelligence_hub_page():
     st.markdown('<div class="live-indicator"><span class="live-dot"></span>System Online | Intelligence Hub Active</div>', unsafe_allow_html=True)
     
+    import os
+    banner_path = os.path.join("FrontEnd", "assets", "data_analytics_banner.png")
+    if os.path.exists(banner_path):
+        st.image(banner_path, use_container_width=True)
     global_sync = st.session_state.get("global_sync_request", False)
     if global_sync:
         st.session_state["global_sync_request"] = False # Reset
