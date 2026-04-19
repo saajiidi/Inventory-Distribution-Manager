@@ -45,7 +45,12 @@ def ensure_sales_schema(df: pd.DataFrame) -> pd.DataFrame:
     """Add canonical e-commerce analytics columns without dropping original source columns."""
     if df is None or df.empty:
         cols = list(CANONICAL_ALIASES.keys()) + ["customer_key", "order_item_key", "Category"]
-        return pd.DataFrame(columns=cols)
+        out = pd.DataFrame(columns=cols)
+        # Ensure critical types for empty DF to avoid .dt errors
+        out["order_date"] = pd.to_datetime(out["order_date"])
+        out["qty"] = pd.to_numeric(out["qty"])
+        out["order_total"] = pd.to_numeric(out["order_total"])
+        return out
 
     out = df.copy()
 
@@ -62,22 +67,15 @@ def ensure_sales_schema(df: pd.DataFrame) -> pd.DataFrame:
     out["qty"] = pd.to_numeric(out["qty"], errors="coerce").fillna(0)
     out["order_total"] = pd.to_numeric(out["order_total"], errors="coerce").fillna(0)
 
+    # Memory-efficient string cleaning for text columns
     for text_col in [
-        "order_id",
-        "customer_name",
-        "phone",
-        "email",
-        "state",
-        "city",
-        "item_name",
-        "order_status",
-        "tracking",
-        "shipped_date",
-        "payment_method",
-        "sku",
-        "source",
+        "order_id", "customer_name", "phone", "email", "state", "city",
+        "item_name", "order_status", "tracking", "shipped_date",
+        "payment_method", "sku", "source",
     ]:
-        out[text_col] = out[text_col].fillna("").astype(str).str.strip()
+        if text_col in out.columns:
+            # fillna("") and astype(str) can be heavy; we use a more direct approach
+            out[text_col] = out[text_col].fillna("").astype(str).str.strip()
 
     if out["year"].isna().all() and out["order_date"].notna().any():
         out["year"] = out["order_date"].dt.year.astype("Int64")

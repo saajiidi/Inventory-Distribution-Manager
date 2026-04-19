@@ -12,6 +12,7 @@ import streamlit as st
 from BackEnd.services.hybrid_data_loader import load_full_woocommerce_history, load_hybrid_data
 from BackEnd.utils.sales_schema import ensure_sales_schema
 from FrontEnd.utils.error_handler import log_error
+from BackEnd.services.customer_manager import load_customer_mapping
 
 CUSTOMER_BASE_COLUMNS = [
     "order_id",
@@ -89,13 +90,20 @@ def generate_customer_insights_from_sales(
     include_favorites: bool = True,
 ) -> pd.DataFrame:
     if df.empty:
-        return pd.DataFrame(columns=[
+        res = pd.DataFrame(columns=[
             "customer_id", "primary_name", "all_emails", "all_phones", 
             "total_orders", "total_revenue", "avg_order_value", "first_order", 
             "last_order", "customer_lifespan_days", "recency_days", 
             "purchase_cycle_days", "clv", "segment", "r_score", "f_score", 
             "m_score", "rfm_score", "rfm_avg", "favorite_product"
         ])
+        # Type enforcement for empty result
+        res["first_order"] = pd.to_datetime(res["first_order"])
+        res["last_order"] = pd.to_datetime(res["last_order"])
+        res["total_revenue"] = pd.to_numeric(res["total_revenue"])
+        res["total_orders"] = pd.to_numeric(res["total_orders"])
+        res["recency_days"] = pd.to_numeric(res["recency_days"])
+        return res
 
     df = _prepare_customer_identity(df)
 
@@ -218,15 +226,38 @@ def _prepare_customer_identity(df: pd.DataFrame) -> pd.DataFrame:
     prepared["normalized_name"] = prepared["customer_name"].apply(normalize_name)
     prepared["clean_email"] = prepared["email"].apply(clean_email)
     prepared["clean_phone"] = prepared["phone"].apply(clean_phone)
-    prepared["customer_id"] = prepared.apply(
-        lambda row: generate_customer_id(
-            row.get("customer_key"),
-            row.get("clean_email", ""), 
-            row.get("clean_phone", ""), 
-            row.get("order_id", "")
-        ),
-        axis=1,
-    )
+    
+    # Try to use pre-computed mapping for stable customer IDs
+    mapping_df = load_customer_mapping()
+    if not mapping_df.empty:
+        # Create lookup maps
+        phone_to_id = {}
+        email_to_id = {}
+        for _, row in mapping_df.iterrows():
+            cid = row["customer_id"]
+            for p in str(row["phones"]).split(", "):
+                if p: phone_to_id[p] = cid
+            for e in str(row["emails"]).split(", "):
+                if e: email_to_id[e] = cid
+        
+        def get_mapped_id(row):
+            p = row["clean_phone"]
+            e = row["clean_email"]
+            return phone_to_id.get(p) or email_to_id.get(e) or generate_customer_id(
+                row.get("customer_key"), e, p, row.get("order_id", "")
+            )
+            
+        prepared["customer_id"] = prepared.apply(get_mapped_id, axis=1)
+    else:
+        prepared["customer_id"] = prepared.apply(
+            lambda row: generate_customer_id(
+                row.get("customer_key"),
+                row.get("clean_email", ""), 
+                row.get("clean_phone", ""), 
+                row.get("order_id", "")
+            ),
+            axis=1,
+        )
     return prepared
 
 
@@ -243,7 +274,9 @@ def _build_customer_first_order_history(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=["customer_id", "first_order"])
     prepared = _prepare_customer_identity(df)
     if prepared.empty:
-        return pd.DataFrame(columns=["customer_id", "first_order"])
+        res = pd.DataFrame(columns=["customer_id", "first_order"])
+        res["first_order"] = pd.to_datetime(res["first_order"])
+        return res
     history = (
         prepared.groupby("customer_id", dropna=False)
         .agg(first_order=("order_date", "min"))
@@ -396,7 +429,12 @@ def generate_cohort_matrix(df: pd.DataFrame, period: str = 'M') -> pd.DataFrame:
         # Fallback to customer_key or hashing phone
         df['customer_id'] = df.apply(lambda row: row.get('customer_key', row.get('phone', 'anon')), axis=1)
 
-    df['cohort'] = df.groupby('customer_id')['order_date'].transform('min').dt.to_period(period)
+    # Ensure order_date is datetimelike before using .dt
+    df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce')
+    
+    # Calculate cohort using transform, then ensure result is datetimelike
+    min_dates = df.groupby('customer_id')['order_date'].transform('min')
+    df['cohort'] = pd.to_datetime(min_dates, errors='coerce').dt.to_period(period)
     df['order_period'] = df['order_date'].dt.to_period(period)
     
     cohort_group = df.groupby(['cohort', 'order_period']).agg(n_customers=('customer_id', 'nunique')).reset_index()

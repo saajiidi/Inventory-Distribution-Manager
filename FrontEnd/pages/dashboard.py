@@ -344,8 +344,17 @@ def render_intelligence_hub_page():
     if "returns_data" not in st.session_state or st.session_state.get("last_returns_sync") != sync_window:
         st.session_state.returns_data = load_returns_data(sync_window=sync_window)
         st.session_state.last_returns_sync = sync_window
-        
-    net_metrics = calculate_net_sales_metrics(st.session_state.returns_data, sales_df=df_exec)
+    
+    # Filter returns data to match the global time window
+    df_returns_all = st.session_state.returns_data.copy()
+    if not df_returns_all.empty:
+        # start_dt and end_dt were calculated at the top of the function
+        mask = (df_returns_all["date"].dt.date >= start_dt) & (df_returns_all["date"].dt.date <= end_dt)
+        df_returns_filtered = df_returns_all[mask]
+    else:
+        df_returns_filtered = df_returns_all
+
+    net_metrics = calculate_net_sales_metrics(df_returns_filtered, sales_df=df_exec)
     
     st.markdown('<div class="sidebar-group-label" style="font-size:0.85rem; letter-spacing:1px;">💰 TRUE REVENUE & FINANCIAL IMPACT</div>', unsafe_allow_html=True)
     gross = net_metrics.get('gross_sales', 0)
@@ -358,10 +367,13 @@ def render_intelligence_hub_page():
     with nc3: ui.icon_metric("Net Settled Sales", f"৳{net_sales:,.0f}", icon="🌟", delta="Net", delta_val=net_sales)
     with nc4: ui.icon_metric("Net Yield %", f"{net_yield_pct:.1f}%", icon="📊", delta="Efficiency", delta_val=net_yield_pct)
     
-    # Calculate recovery potential (e.g., 20% of losses retrieved)
-    total_loss = net_metrics.get('return_value_extracted', 0) + net_metrics.get('partial_amounts', 0)
-    recovery_lift = total_loss * 0.20
-    with nc5: ui.icon_metric("Recovery Lift", f"৳{recovery_lift:,.0f}", icon="⚡", delta="Potential", delta_val=recovery_lift)
+    # Total returned items and their value
+    total_ret_items = net_metrics.get('total_returned_items', 0)
+    total_ret_value = net_metrics.get('return_value_extracted', 0)
+    # Calculate return rate relative to total items sold in the same period
+    ret_rate_items = (total_ret_items / total_items * 100) if total_items > 0 else 0.0
+    
+    with nc5: ui.icon_metric("Total Returned Items", f"{total_ret_items} Units", icon="📦", delta=f"{ret_rate_items:.1f}% Return Rate", delta_val=-total_ret_value)
 
     # --- RESTORED FINANCIAL INTEGRITY CHART ---
     # Prepare Daily Financial Gap Data

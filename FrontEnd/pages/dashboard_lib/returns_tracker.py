@@ -19,6 +19,9 @@ from BackEnd.services.returns_tracker import (
     calculate_net_sales_metrics,
     get_issue_type_color,
     DEFAULT_SHEET_URL,
+    map_items_to_skus,
+    get_order_items_breakdown,
+    track_reordering_customers,
 )
 from BackEnd.core.logging_config import get_logger
 
@@ -67,11 +70,11 @@ def render_returns_tracker_page() -> None:
 
     # ── Charts ──
     st.markdown("---")
-    _render_charts(df, metrics)
+    _render_charts(df, metrics, sales_df)
 
     # ── Detailed Table ──
     st.markdown("---")
-    _render_details_table(df)
+    _render_details_table(df, sales_df)
 
     # ── Export ──
     st.markdown("---")
@@ -162,14 +165,20 @@ def _render_date_filter(df: pd.DataFrame) -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════
 
 def _get_gross_sales_context():
-    """Try to pull active sales df from the existing dashboard data."""
-    sales_df = pd.DataFrame()
+    """Try to pull sales data for mapping. Prefers full cache for better coverage."""
+    from BackEnd.services.hybrid_data_loader import load_cached_woocommerce_history
+    
+    # 1. Try to load full history from cache first for maximum mapping coverage
+    full_cache = load_cached_woocommerce_history()
+    if not full_cache.empty:
+        return full_cache
 
+    # 2. Fallback to active dashboard data if cache is unavailable
     if "dashboard_data" in st.session_state:
         data = st.session_state.dashboard_data
-        sales_df = data.get("sales_active", pd.DataFrame())
+        return data.get("sales_active", pd.DataFrame())
 
-    return sales_df
+    return pd.DataFrame()
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -254,13 +263,15 @@ def _kpi_card(label: str, value: str, subtitle: str, color: str) -> str:
 # CHARTS
 # ═══════════════════════════════════════════════════════════════════
 
-def _render_charts(df: pd.DataFrame, metrics: dict) -> None:
+def _render_charts(df: pd.DataFrame, metrics: dict, sales_df: pd.DataFrame) -> None:
     """Render the analytics charts."""
 
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📈 Monthly Trends",
         "🥧 Return Reasons",
         "📦 Product Heatmap",
+        "🛡️ Customer Recovery",
+        "📋 Return Inventory",
     ])
 
     with tab1:
@@ -271,6 +282,12 @@ def _render_charts(df: pd.DataFrame, metrics: dict) -> None:
 
     with tab3:
         _render_product_heatmap(df)
+        
+    with tab4:
+        _render_customer_recovery(df, sales_df)
+
+    with tab5:
+        _render_return_inventory(df, sales_df)
 
 
 def _render_monthly_trend(df: pd.DataFrame) -> None:
@@ -497,30 +514,206 @@ def _extract_product_category(details: str) -> str:
     return "Other"
 
 
+def _render_customer_recovery(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
+    """Analyze and display customers who reordered after issues."""
+    st.markdown("#### 🛡️ Customer Loyalty & Recovery Analysis")
+    st.caption("Tracking customers who returned/exchanged products but stayed loyal and ordered again.")
+    
+    reorders = track_reordering_customers(df, sales_df)
+    
+    if reorders.empty:
+        st.info("No reordering events detected for the selected group of customers yet.")
+        return
+        
+    # Stats
+    total_reordered = len(reorders)
+    avg_days = reorders["Days to Reorder"].mean()
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        ui_metric_small("Successfully Recovered", f"{total_reordered}", "🛡️")
+    with c2:
+        ui_metric_small("Avg. Recovery Days", f"{avg_days:.1f} days", "⏳")
+        
+    st.markdown("##### 📋 Recovery Ledger")
+    st.dataframe(
+        reorders,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Days to Reorder": st.column_config.NumberColumn(format="%d days"),
+        }
+    )
+
+
+def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
+    """Explode order-level returns into an item-centric inventory view."""
+    st.markdown("#### 📋 Return Item Inventory")
+    st.caption("A granular list of every individual product returned, including size and category.")
+
+    # 1. Prepare exploded item list
+    item_rows = []
+    
+    # Filter for returns only
+    return_mask = df["issue_type"].isin(["Paid Return", "Non Paid Return", "Partial", "Exchange"])
+    return_df = df[return_mask].copy()
+
+    for _, row in return_df.iterrows():
+        items = row.get("returned_items", [])
+        if not isinstance(items, list): continue
+        
+        for item in items:
+            if not isinstance(item, dict): continue
+            
+            # Map SKU if missing
+            sku = item.get("sku", "N/A")
+            if sku == "N/A":
+                # Try to resolve SKU now
+                name = item.get("name", "")
+                order_sales = sales_df[sales_df["order_id"].astype(str) == str(row["order_id"])]
+                match = order_sales[order_sales["item_name"].str.contains(name, case=False, na=False, regex=False)]
+                if not match.empty:
+                    sku = match.iloc[0].get("sku", "N/A")
+
+            item_rows.append({
+                "Date": row["date"].strftime("%Y-%m-%d") if pd.notnull(row["date"]) else "N/A",
+                "Order ID": row["order_id_raw"],
+                "Type": row["issue_type"],
+                "Product": item.get("name", "Unknown"),
+                "SKU": sku,
+                "Size": item.get("size", "N/A"),
+                "Qty": item.get("qty", 1),
+                "Category": item.get("category", "General"),
+                "Reason": row.get("return_reason", "N/A")
+            })
+
+    if not item_rows:
+        st.info("No individual returned items found in the current selection.")
+        return
+
+    item_df = pd.DataFrame(item_rows)
+
+    # 2. Filters for the Inventory
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        cat_filter = st.multiselect("Filter Category", options=sorted(item_df["Category"].unique()))
+    with c2:
+        type_filter = st.multiselect("Filter Issue Type", options=sorted(item_df["Type"].unique()))
+    with c3:
+        search_query = st.text_input("🔍 Search Product/SKU", placeholder="Enter name or SKU...")
+
+    # Apply filters
+    if cat_filter:
+        item_df = item_df[item_df["Category"].isin(cat_filter)]
+    if type_filter:
+        item_df = item_df[item_df["Type"].isin(type_filter)]
+    if search_query:
+        item_df = item_df[
+            item_df["Product"].str.contains(search_query, case=False, na=False) |
+            item_df["SKU"].str.contains(search_query, case=False, na=False)
+        ]
+
+    # 3. Render
+    st.dataframe(
+        item_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Order ID": st.column_config.TextColumn("Order ID"),
+            "Date": st.column_config.DateColumn("Date"),
+            "Qty": st.column_config.NumberColumn("Qty", format="%d"),
+        }
+    )
+
+    # 4. Export Small
+    csv = item_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Return Inventory CSV",
+        data=csv,
+        file_name=f"return_inventory_{datetime.now().strftime('%Y%m%d')}.csv",
+        mime='text/csv',
+    )
+
+
+def ui_metric_small(label: str, value: str, icon: str):
+    """Small metric helper."""
+    st.markdown(f"""
+        <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); 
+                    border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 10px;">
+            <div style="font-size: 1.2rem; margin-bottom: 4px;">{icon}</div>
+            <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 700;">{label}</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: var(--text-color);">{value}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+
 # ═══════════════════════════════════════════════════════════════════
 # DETAILS TABLE
 # ═══════════════════════════════════════════════════════════════════
 
-def _render_details_table(df: pd.DataFrame) -> None:
+def _render_details_table(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
     """Render the detailed issue ledger."""
     st.markdown("### 📋 Issue Ledger")
 
     # Prepare display df
+    display_df = df.copy()
+
+    # Apply SKU mapping and item breakdown
+    with st.spinner("Resolving Order Items..."):
+        display_df["Item Breakdown"] = display_df.apply(
+            lambda row: get_order_items_breakdown(row["order_id"], row["returned_items"], sales_df),
+            axis=1
+        )
+    
+    # Format the items list for display
+    def format_item_list(items):
+        if not items: return "N/A"
+        if not isinstance(items, list): return str(items)
+        
+        formatted = []
+        for i in items:
+            if isinstance(i, dict):
+                name = i.get("name", "Unknown")
+                sku = i.get("sku", "N/A")
+                size = i.get("size", "N/A")
+                qty = i.get("qty", 1)
+                cat = i.get("category", "N/A")
+            else:
+                # Fallback for old string format
+                name = str(i)
+                sku = "N/A"; size = "N/A"; qty = 1; cat = "N/A"
+            
+            # Format: Name (SKU) [Size] xQty {Cat}
+            line = f"**{name}** ({sku})"
+            if size != "N/A": line += f" | Size: {size}"
+            if qty > 1: line += f" | x{qty}"
+            if cat != "General" and cat != "N/A": line += f" | {cat}"
+            formatted.append(line)
+            
+        return "  \n".join(formatted)
+
+    display_df["Returned Items (Details)"] = display_df["Item Breakdown"].apply(lambda x: format_item_list(x.get("returned", [])))
+    display_df["Delivered Items (Details)"] = display_df.apply(
+        lambda x: format_item_list(x["Item Breakdown"].get("delivered", [])) if x["issue_type"] == "Partial" else "-", 
+        axis=1
+    )
+
     display_cols = [
         "date", "order_id_raw", "issue_type", "return_reason",
-        "product_details", "customer_reason", "courier_reason",
+        "Returned Items (Details)", "Delivered Items (Details)", 
+        "customer_reason", "courier_reason",
         "fu_status", "inventory_updated", "partial_amount",
     ]
-    available_cols = [c for c in display_cols if c in df.columns]
-    display_df = df[available_cols].copy()
+    # Filter only available columns that exist in our prepared display_df
+    available_cols = [c for c in display_cols if c in display_df.columns]
+    display_df = display_df[available_cols].copy()
 
-    # Format
+    # Format for UI
     col_rename = {
         "date": "Date",
         "order_id_raw": "Order ID",
         "issue_type": "Type",
         "return_reason": "Reason",
-        "product_details": "Product Details",
         "customer_reason": "Customer Reason",
         "courier_reason": "Courier Reason",
         "fu_status": "Follow-Up",

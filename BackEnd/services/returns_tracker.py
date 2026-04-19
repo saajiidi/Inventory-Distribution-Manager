@@ -145,6 +145,11 @@ def load_returns_data(
     # ── Extract partial amount (if embedded in product_details) ──
     df["partial_amount"] = df["product_details"].apply(_extract_partial_amount)
 
+    # ── Normalize & Extract Returned Products ──
+    # We'll do this later when we have sales_df for SKU mapping,
+    # or just extract names for now.
+    df["returned_items"] = df["product_details"].apply(_normalize_product_names)
+
     # ── Keep ONLY Paid Return, Non Paid Return, Partial, Exchange ──
     allowed_types = ["Paid Return", "Non Paid Return", "Partial", "Exchange"]
     df = df[df["issue_type"].isin(allowed_types)].copy()
@@ -221,7 +226,11 @@ def _classify_issue_type(row: pd.Series) -> str:
         if kw in combined:
             return "Partial"
 
-    # 5. Default
+    # 5. Pure Return keywords
+    if "return" in di:
+        return "Paid Return" if "paid" in di else "Non Paid Return"
+
+    # 6. Default
     if di:
         return di.title()
     return "Unknown"
@@ -278,6 +287,156 @@ def _extract_partial_amount(details: str) -> float:
     return 0.0
 
 
+def _normalize_product_names(details: str) -> list[dict[str, Any]]:
+    """Granular extraction of product details (Name, Size, Qty, Category)."""
+    if not details or details.lower() == "nan":
+        return []
+
+    # 1. Clean prefix
+    clean = re.sub(r'^\s*(\d+)\s*(?:tk|=)[^:]*:?', '', details, flags=re.IGNORECASE).strip()
+    clean = re.sub(r'^(?:Get Return|Return|Exchange|Partial|Issue)\s*:?\s*', '', clean, flags=re.IGNORECASE).strip()
+
+    if not clean:
+        return []
+
+    # 2. Split items
+    raw_items = re.split(r'[,+;]', clean)
+    processed = []
+
+    for item in raw_items:
+        item = item.strip()
+        if not item: continue
+
+        # --- Extract Qty (e.g., x2, *2, 2pcs) ---
+        qty = 1
+        qty_match = re.search(r'\s*[x*]\s*(\d+)\s*$', item, re.IGNORECASE)
+        if qty_match:
+            qty = int(qty_match.group(1))
+            item = item[:qty_match.start()].strip()
+        
+        # --- Extract Size (e.g., (32), (L), [XL], size 34) ---
+        size = "N/A"
+        size_match = re.search(r'[\(\[\{](.*?)[\)\]\}]', item)
+        if size_match:
+            size = size_match.group(1).strip()
+            item = item[:size_match.start()].strip()
+        else:
+            # Try finding size without brackets at the end
+            size_match_alt = re.search(r'\s+([SLM]|[XL]{1,2}|3\d|4\d|2\d)\s*$', item, re.IGNORECASE)
+            if size_match_alt:
+                size = size_match_alt.group(1).strip()
+                item = item[:size_match_alt.start()].strip()
+
+        # --- Clean Name ---
+        name = item.strip()
+        
+        # --- Infer Category ---
+        category = "General"
+        cat_keywords = {
+            "Jeans": ["jeans", "denim", "pant"],
+            "Shirt": ["shirt", "flannel", "polo", "tshirt", "t-shirt"],
+            "Jacket": ["jacket", "hoodie", "sweater", "blazer"],
+            "Accessories": ["belt", "wallet", "socks", "cap"],
+        }
+        for cat, keywords in cat_keywords.items():
+            if any(k in name.lower() for k in keywords):
+                category = cat
+                break
+        
+        if len(name) > 2:
+            processed.append({
+                "name": name,
+                "size": size,
+                "qty": qty,
+                "category": category
+            })
+            
+    return processed
+
+
+def map_items_to_skus(order_id: str, items: list[dict[str, Any]], sales_df: pd.DataFrame) -> list[dict[str, Any]]:
+    """Map granular item details to SKUs."""
+    if not items or sales_df is None or sales_df.empty:
+        for item in items: item["sku"] = "N/A"
+        return items
+
+    results = []
+    for item in items:
+        # Safety for old string format
+        if isinstance(item, dict):
+            name = item.get("name", "Unknown")
+            item_copy = item.copy()
+        else:
+            name = str(item)
+            item_copy = {"name": name, "sku": "N/A", "size": "N/A", "qty": 1, "category": "N/A"}
+        
+        # Filter sales for this specific order
+        order_sales = sales_df[sales_df["order_id"].astype(str) == str(order_id)]
+        
+        # Match - using regex=False
+        match = pd.DataFrame()
+        if not order_sales.empty:
+            match = order_sales[order_sales["item_name"].str.contains(name, case=False, na=False, regex=False)]
+        
+        if match.empty:
+            # Global fallback
+            match = sales_df[sales_df["item_name"].str.contains(name, case=False, na=False, regex=False)]
+            
+        if not match.empty:
+            item_copy["sku"] = match.iloc[0].get("sku", "N/A")
+        else:
+            item_copy["sku"] = "N/A"
+            
+        results.append(item_copy)
+                
+    return results
+
+
+def get_order_items_breakdown(order_id: str, returned_items: list[dict[str, Any]], sales_df: pd.DataFrame) -> dict[str, list[dict[str, Any]]]:
+    """Categorize items with granular details."""
+    # Safety for old string format in input
+    returned_names = []
+    for i in returned_items:
+        if isinstance(i, dict):
+            returned_names.append(i.get("name", "Unknown"))
+        else:
+            returned_names.append(str(i))
+    
+    # Use existing helper to find SKUs for returned items
+    returned_with_skus = map_items_to_skus(order_id, returned_items, sales_df)
+    
+    if sales_df is None or sales_df.empty:
+        return {"returned": returned_with_skus, "delivered": []}
+
+    order_sales = sales_df[sales_df["order_id"].astype(str) == str(order_id)].copy()
+    if order_sales.empty:
+        return {"returned": returned_with_skus, "delivered": []}
+
+    delivered_records = []
+    remaining_sales = order_sales.copy()
+    
+    # Remove matched returned items from remaining
+    for item in returned_with_skus:
+        name = item["name"]
+        match_idx = remaining_sales[remaining_sales["item_name"].str.contains(name, case=False, na=False, regex=False)].index
+        if not match_idx.empty:
+            remaining_sales = remaining_sales.drop(match_idx[0])
+            
+    for _, row in remaining_sales.iterrows():
+        delivered_records.append({
+            "name": row["item_name"],
+            "sku": row.get("sku", "N/A"),
+            "size": "N/A", # Size info might not be parsed in sales_df similarly
+            "qty": row.get("qty", 1),
+            "category": "N/A"
+        })
+        
+    return {
+        "returned": returned_with_skus,
+        "delivered": delivered_records
+    }
+
+
 def calculate_net_sales_metrics(
     returns_df: pd.DataFrame,
     sales_df: Optional[pd.DataFrame] = None,
@@ -291,18 +450,6 @@ def calculate_net_sales_metrics(
     Returns:
         Dictionary of computed KPIs.
     """
-    if returns_df.empty:
-        return {
-            "total_issues": 0,
-            "return_count": 0, "return_partial_amounts": 0,
-            "partial_count": 0, "partial_amounts": 0,
-            "exchange_count": 0,
-            "gross_sales": 0.0,
-            "total_orders": 0,
-            "return_value_extracted": 0.0,
-            "net_sales": 0.0,
-        }
-
     gross_sales = 0.0
     total_orders = 0
     return_value = 0.0
@@ -312,7 +459,22 @@ def calculate_net_sales_metrics(
             gross_sales = pd.to_numeric(sales_df["item_revenue"], errors="coerce").sum()
         if "order_id" in sales_df.columns:
             total_orders = sales_df["order_id"].nunique()
-            
+
+    if returns_df.empty:
+        return {
+            "total_issues": 0,
+            "return_count": 0, "total_returned_items": 0,
+            "partial_count": 0, "partial_amounts": 0,
+            "exchange_count": 0,
+            "gross_sales": gross_sales,
+            "total_orders": total_orders,
+            "return_value_extracted": 0.0,
+            "net_sales": gross_sales, # If no returns, net = gross
+            "return_rate": 0.0,
+        }
+
+    if sales_df is not None and not sales_df.empty:
+        if "order_id" in sales_df.columns:
             # Map returns to WooCommerce to extract full return value
             return_orders = returns_df[returns_df["issue_type"].isin(["Paid Return", "Non Paid Return"])]["order_id"].unique()
             sales_unique = sales_df.drop_duplicates(subset=["order_id"]).copy()
@@ -372,9 +534,23 @@ def calculate_net_sales_metrics(
         .reset_index(name="count")
     )
 
+    # ── Total Items in Returns ──
+    # sum of qty for all returned items
+    total_returned_items = 0
+    for items in returns_df[returns_df["issue_type"].isin(["Paid Return", "Non Paid Return"])]["returned_items"]:
+        if isinstance(items, list):
+            for i in items:
+                if isinstance(i, dict):
+                    total_returned_items += i.get("qty", 1)
+                else:
+                    total_returned_items += 1
+        else:
+            total_returned_items += 1
+
     metrics = {
         "total_issues": len(unique_orders),
         "return_count": int(return_count),
+        "total_returned_items": int(total_returned_items),
         "paid_return_count": int(paid_return_count),
         "non_paid_return_count": int(non_paid_return_count),
         "partial_count": int(partial_count),
@@ -415,3 +591,56 @@ def get_issue_type_color(issue_type: str) -> str:
         "Unknown": "#9ca3af",
     }
     return colors.get(issue_type, "#6b7280")
+
+
+def track_reordering_customers(returns_df: pd.DataFrame, sales_df: pd.DataFrame) -> pd.DataFrame:
+    """Identify customers who ordered again after a return/partial issue.
+    
+    Returns a dataframe of reordering events.
+    """
+    if returns_df.empty or sales_df.empty:
+        return pd.DataFrame()
+
+    # 1. Map returns to customers using sales_df
+    # Ensure ID types match
+    returns_local = returns_df.copy()
+    returns_local["order_id_str"] = returns_local["order_id"].astype(str)
+    
+    sales_local = sales_df.copy()
+    sales_local["order_id_str"] = sales_local["order_id"].astype(str)
+    sales_local["order_date"] = pd.to_datetime(sales_local["order_date"])
+    
+    # Get unique order-customer mapping
+    order_cust = sales_local.drop_duplicates(subset=["order_id_str"])[["order_id_str", "customer_key", "customer_name", "order_date"]]
+    
+    # Merge returns with customer info
+    returned_customers = pd.merge(returns_local, order_cust, on="order_id_str", how="inner")
+    
+    if returned_customers.empty:
+        return pd.DataFrame()
+
+    reorder_events = []
+    
+    for _, ret in returned_customers.iterrows():
+        cust_key = ret["customer_key"]
+        return_date = ret["order_date"]
+        
+        # Find subsequent orders for this customer
+        future_orders = order_cust[
+            (order_cust["customer_key"] == cust_key) & 
+            (order_cust["order_date"] > return_date)
+        ].sort_values("order_date")
+        
+        if not future_orders.empty:
+            next_order = future_orders.iloc[0]
+            reorder_events.append({
+                "Customer": ret["customer_name"],
+                "Issue Date": return_date.strftime("%Y-%m-%d"),
+                "Issue Order": ret["order_id_raw"],
+                "Issue Type": ret["issue_type"],
+                "Next Order": next_order["order_id_str"],
+                "Next Order Date": next_order["order_date"].strftime("%Y-%m-%d"),
+                "Days to Reorder": (next_order["order_date"] - return_date).days
+            })
+            
+    return pd.DataFrame(reorder_events)

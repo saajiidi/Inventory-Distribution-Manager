@@ -49,13 +49,22 @@ def render_ai_pilot_chat(sales_df: pd.DataFrame):
         </style>
     """, unsafe_allow_html=True)
     
+    # AI Configuration Bar
+    c1, c2, c3 = st.columns([1, 1, 2])
+    with c1:
+        agent_type = st.selectbox("🤖 Brain Type", ["Standard", "Local AI Agent"], help="Standard is fast/rule-based. AI Agent uses local LLMs.")
+    with c2:
+        model_name = st.text_input("📦 Model Name", value="gemma", help="Model name (e.g., gemma, llama3, mistral)")
+    with c3:
+        base_url = st.text_input("🔗 API Base URL", value="http://localhost:11434", help="Ollama: http://localhost:11434 | LM Studio: http://localhost:1234")
+
     query = st.text_input("💬 Ask Data Pilot (e.g., 'What is my top category this month?' or 'revenue yesterday')", 
                          placeholder="Type your command here...",
                          key="nlp_query_input")
     
     if query:
-        with st.spinner("🧠 AI Pilot is querying the data streams..."):
-            response = get_nlp_response(query, sales_df)
+        with st.spinner(f"🧠 {agent_type} is querying the data streams..."):
+            response = get_nlp_response(query, sales_df, agent_type=agent_type, model_name=model_name, base_url=base_url)
             st.markdown(f"""
             <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%); 
                         padding: 20px; border-radius: 12px; border: 1px solid rgba(79, 70, 229, 0.2); 
