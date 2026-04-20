@@ -39,8 +39,14 @@ def render_returns_tracker_page() -> None:
     # ── Auto Data Sync ──
     sync_window = get_current_sync_window()
     if "returns_data" not in st.session_state or st.session_state.get("last_returns_sync") != sync_window:
-        with st.spinner("Syncing delivery-issue data (Scheduled)..."):
-            st.session_state.returns_data = load_returns_data(sync_window=sync_window)
+        try:
+            with st.spinner("Syncing delivery-issue data (Scheduled)..."):
+                df_returns = load_returns_data(sync_window=sync_window)
+                st.session_state.returns_data = df_returns
+                st.session_state.last_returns_sync = sync_window
+        except Exception as e:
+            logger.error(f"Failed to load returns data: {e}")
+            st.session_state.returns_data = pd.DataFrame()
             st.session_state.last_returns_sync = sync_window
 
     _render_data_sync_panel()
@@ -141,22 +147,27 @@ def _render_date_filter(df: pd.DataFrame) -> pd.DataFrame:
         days_back = window_map.get(window, 30)
         start_dt = today - timedelta(days=days_back)
 
-    # Issue type filter
-    all_types = sorted(df["issue_type"].unique().tolist())
-    selected_types = st.multiselect(
-        "Issue Types", all_types,
-        default=all_types,
-        key="returns_type_filter"
-    )
-    
+    # Issue type filter - only if column exists
+    if "issue_type" in df.columns:
+        all_types = sorted(df["issue_type"].unique().tolist())
+        selected_types = st.multiselect(
+            "Issue Types", all_types,
+            default=all_types,
+            key="returns_type_filter"
+        )
+    else:
+        selected_types = []
+
     st.caption(f"📅 Using synchronized date range: **{start_dt}** to **{end_dt}** ({window})")
 
-    # Filter dataframe
-    mask = (df["date"].dt.date >= start_dt) & (df["date"].dt.date <= end_dt)
-    if selected_types:
-        mask &= df["issue_type"].isin(selected_types)
+    # Filter dataframe - only if date column exists
+    if "date" in df.columns and not df.empty:
+        mask = (df["date"].dt.date >= start_dt) & (df["date"].dt.date <= end_dt)
+        if selected_types:
+            mask &= df["issue_type"].isin(selected_types)
+        return df[mask]
 
-    return df[mask]
+    return df
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -276,6 +287,10 @@ def _kpi_card(label: str, value: str, subtitle: str, color: str) -> str:
 def _render_charts(df: pd.DataFrame, metrics: dict, sales_df: pd.DataFrame) -> None:
     """Render the analytics charts."""
 
+    if df.empty or "date" not in df.columns:
+        st.info("📊 Charts will appear once return data is loaded.")
+        return
+
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📈 Monthly Trends",
         "🥧 Return Reasons",
@@ -306,6 +321,10 @@ def _render_charts(df: pd.DataFrame, metrics: dict, sales_df: pd.DataFrame) -> N
 
 def _render_monthly_trend(df: pd.DataFrame) -> None:
     """Monthly issue count trend with type breakdown."""
+    if "date" not in df.columns or df.empty:
+        st.info("Not enough data for monthly trends.")
+        return
+
     monthly = (
         df.groupby([pd.Grouper(key="date", freq="ME"), "issue_type"])
         .agg(count=("order_id", "nunique"))
@@ -565,9 +584,14 @@ def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
     st.markdown("#### 📋 Return Item Inventory")
     st.caption("A granular list of every individual product returned, including size and category.")
 
+    # Guard: Check required columns exist
+    if "date" not in df.columns:
+        st.info("📊 Return data is loading... Date information not yet available.")
+        return
+
     # 1. Prepare exploded item list
     item_rows = []
-    
+
     # Filter for returns only
     return_mask = df["issue_type"].isin(["Paid Return", "Non Paid Return", "Partial", "Exchange"])
     return_df = df[return_mask].copy()
@@ -663,6 +687,11 @@ def _render_returned_items_list(df: pd.DataFrame) -> None:
     """
     st.markdown("#### 📦 Returned Items Detail List")
     st.caption("Individual items from ALL RETURNS (Paid, Non Paid, Partial). Data extracted from 'Issue Or Product Details' column.")
+
+    # Guard: Check required columns exist
+    if "date" not in df.columns:
+        st.info("📊 Return data is loading... Date information not yet available.")
+        return
 
     # Debug info
     with st.expander("🔍 Debug Data Info", expanded=False):
@@ -870,6 +899,11 @@ def ui_metric_small(label: str, value: str, icon: str):
 def _render_details_table(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
     """Render the detailed issue ledger."""
     st.markdown("### 📋 Issue Ledger")
+
+    # Guard: Check required columns exist
+    if "date" not in df.columns:
+        st.info("📊 Return data is loading... Date information not yet available.")
+        return
 
     # Prepare display df
     display_df = df.copy()
