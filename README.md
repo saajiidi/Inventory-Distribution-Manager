@@ -6,6 +6,8 @@
 
 "Most dashboards visualize. This terminal explains, predicts, and recommends."
 
+> 🤖 **AI Agents**: See [`agents.md`](agents.md) for comprehensive codebase blueprint, architecture patterns, and extension guidelines.
+
 ---
 
 ## 🔴 The Problem

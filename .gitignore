@@ -76,3 +76,9 @@ streamlit_out.log
 bike_log.txt
 feedback/
 incoming/
+
+# Error prompts (not for git)
+FrontEnd/data/error_prompts/
+
+# AI auto-update state (generated)
+.ai/agents_state.json

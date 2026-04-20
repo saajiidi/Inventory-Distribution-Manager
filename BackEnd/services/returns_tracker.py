@@ -408,19 +408,27 @@ def cross_reference_return_items(
 
 
 def _normalize_order_id(raw_id: str) -> str:
-    """Remove w/c/s suffixes and D- prefix markers for grouping.
+    """Extract 6-digit order number by removing all non-numeric characters.
+
+    Handles various formats: '194829', '194829 RI', 'D-194829', '194829w', 'DD194829'
 
     Examples:
-        '12345w' → '12345'
-        '12345c' → '12345'
-        'D-12345' → '12345'  (but flagged as exchange)
+        '194829' → '194829'
+        '194829 RI' → '194829'
+        'D-194829' → '194829'
+        '194829w' → '194829'
+        'DD194829' → '194829'
+        '194829-' → '194829'
     """
     clean = str(raw_id).strip()
-    # Remove trailing w, c, s (case-insensitive)
-    clean = re.sub(r'[wcsWCS]$', '', clean)
-    # Remove D- prefix (exchange marker) for grouping
-    clean = re.sub(r'^D-', '', clean, flags=re.IGNORECASE)
-    return clean
+    # Extract only digits (0-9)
+    digits_only = re.sub(r'\D', '', clean)  # \D matches any non-digit character
+    
+    # Ensure it's exactly 6 digits (or return what we have if not)
+    if len(digits_only) >= 6:
+        # If longer than 6, take the last 6 (order numbers are typically at the end)
+        return digits_only[-6:]
+    return digits_only
 
 
 def _classify_issue_type(row: pd.Series) -> str:
