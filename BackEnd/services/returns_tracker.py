@@ -141,8 +141,12 @@ def get_current_sync_window() -> str:
     else:
         return f"{now.date().isoformat()}_16:30"
 
-def _process_returns_chunk(df: pd.DataFrame, sales_df: Optional[pd.DataFrame] = None) -> pd.DataFrame:
-    """Process a chunk of returns data (standardize, classify, cross-reference)."""
+def _process_returns_chunk(
+    df: pd.DataFrame,
+    sales_df: Optional[pd.DataFrame] = None,
+    stock_df: Optional[pd.DataFrame] = None
+) -> pd.DataFrame:
+    """Process a chunk of returns data (standardize, classify, cross-reference, verify with stock)."""
     if df.empty:
         return df
 
@@ -205,6 +209,12 @@ def _process_returns_chunk(df: pd.DataFrame, sales_df: Optional[pd.DataFrame] = 
 
     # ── Normalize & Extract Returned Products ──
     df["returned_items"] = df["product_details"].apply(_normalize_product_names)
+
+    # ── Verify & Correct extracted items against WooCommerce stock ──
+    if stock_df is not None and not stock_df.empty:
+        df["returned_items"] = df["returned_items"].apply(
+            lambda items: _verify_products_with_stock(items, stock_df)
+        )
 
     # ── Keep ONLY allowed types ──
     allowed_types = ["Paid Return", "Non Paid Return", "Partial", "Exchange"]
@@ -284,12 +294,22 @@ def load_returns_data(
     if "_parsed_date" in new_rows.columns:
         new_rows = new_rows.drop(columns=["_parsed_date"])
 
+    # ── Load WooCommerce stock data for product verification ──
+    stock_df = pd.DataFrame()
+    try:
+        from BackEnd.services.hybrid_data_loader import load_cached_woocommerce_stock_data
+        stock_df = load_cached_woocommerce_stock_data()
+        if not stock_df.empty:
+            logger.info(f"Loaded {len(stock_df)} stock items for product verification")
+    except Exception as e:
+        logger.warning(f"Could not load stock data for verification: {e}")
+
     # ── Process ONLY the new rows ──
     if new_rows.empty:
         logger.info("No new returns data to process")
         return cached_df if not cached_df.empty else pd.DataFrame()
 
-    processed_new = _process_returns_chunk(new_rows, sales_df)
+    processed_new = _process_returns_chunk(new_rows, sales_df, stock_df)
     logger.info(
         f"Processed {len(processed_new)} new entries: "
         f"{processed_new['is_return'].sum()} returns, "
@@ -774,6 +794,196 @@ def _normalize_product_names(details: str) -> list[dict[str, Any]]:
             })
 
     return processed
+
+
+def _verify_and_correct_product(
+    extracted_item: dict[str, Any],
+    stock_df: Optional[pd.DataFrame] = None
+) -> dict[str, Any]:
+    """Verify and correct extracted product details against WooCommerce stock data.
+
+    Example issue: "Navy Polka Dot Full Sleeve Shirt - XL - 102" 
+    gets size=XL, sku=102, but actual SKU is 102-0302-006 (with variant codes)
+
+    This function looks up WooCommerce stock data and handles partial SKU matching
+    to get the full correct SKU.
+    """
+    if stock_df is None or stock_df.empty:
+        return extracted_item
+
+    item = extracted_item.copy()
+    name = item.get("name", "")
+    extracted_size = item.get("size", "N/A")
+    extracted_sku = item.get("sku", "N/A")
+
+    if not name:
+        return item
+
+    # Build a lookup index from stock data
+    # Index by: cleaned name, SKU, and partial SKU prefixes
+    stock_lookup = {}
+    sku_lookup = {}
+    partial_sku_index = {}  # Maps partial SKUs to full SKUs
+
+    for _, row in stock_df.iterrows():
+        stock_name = str(row.get("Name", "")).strip()
+        stock_sku = str(row.get("SKU", "")).strip()
+
+        if stock_name:
+            # Index by cleaned name (remove common size patterns)
+            clean_name = re.sub(r'\s*-\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*$', '', stock_name, flags=re.IGNORECASE)
+            clean_name = re.sub(r'\s*\(\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*\)', '', clean_name, flags=re.IGNORECASE)
+            clean_name = clean_name.strip().lower()
+
+            stock_lookup[clean_name] = {
+                "name": stock_name,
+                "sku": stock_sku,
+                "size": _extract_size_from_name(stock_name),
+                "category": row.get("Category", "General")
+            }
+
+        if stock_sku and stock_sku != "nan":
+            sku_lookup[stock_sku.lower()] = stock_name
+
+            # Build partial SKU index (e.g., "102-0302-006" → "102", "102-0302")
+            sku_parts = stock_sku.split('-')
+            for i in range(1, len(sku_parts) + 1):
+                partial = '-'.join(sku_parts[:i]).lower()
+                if partial not in partial_sku_index:
+                    partial_sku_index[partial] = []
+                partial_sku_index[partial].append({
+                    "full_sku": stock_sku,
+                    "name": stock_name,
+                    "size": _extract_size_from_name(stock_name),
+                    "category": row.get("Category", "General")
+                })
+
+    # Try to match extracted name to stock
+    # Clean the extracted name same way
+    clean_extracted = re.sub(r'\s*-\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*$', '', name, flags=re.IGNORECASE)
+    clean_extracted = re.sub(r'\s*\(\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*\)', '', clean_extracted, flags=re.IGNORECASE)
+    clean_extracted = clean_extracted.strip().lower()
+
+    matched = False
+
+    # 1. Direct match by cleaned name
+    if clean_extracted in stock_lookup:
+        stock_info = stock_lookup[clean_extracted]
+        matched = True
+
+        # Only update if extracted values look wrong
+        # Size: if extracted is numeric (like "0302") but stock has proper size
+        if extracted_size.isdigit() or extracted_size in ["N/A", ""]:
+            stock_size = stock_info.get("size")
+            if stock_size and stock_size != "N/A":
+                item["size"] = stock_size
+                logger.debug(f"Corrected size from '{extracted_size}' to '{stock_size}' for {name}")
+
+        # SKU: if extracted looks wrong (numeric only) or is a partial match
+        extracted_sku_lower = extracted_sku.lower()
+        stock_sku = stock_info.get("sku", "")
+
+        # Check if extracted is a partial SKU prefix of the full SKU
+        if (extracted_sku.isdigit() or extracted_sku in ["N/A", ""] or
+            (stock_sku and stock_sku.lower().startswith(extracted_sku_lower + '-')) or
+            (extracted_sku_lower in partial_sku_index and len(partial_sku_index[extracted_sku_lower]) == 1)):
+
+            if stock_sku and stock_sku != extracted_sku:
+                item["sku"] = stock_sku
+                logger.debug(f"Corrected SKU from '{extracted_sku}' to '{stock_sku}' for {name}")
+
+        # Category from stock if we have it
+        stock_cat = stock_info.get("category")
+        if stock_cat and stock_cat != "":
+            item["category"] = stock_cat
+
+    # 2. Fuzzy match if no direct match
+    if not matched:
+        best_match = None
+        best_score = 0
+
+        for clean_stock_name, stock_info in stock_lookup.items():
+            # Simple word overlap score
+            extracted_words = set(clean_extracted.split())
+            stock_words = set(clean_stock_name.split())
+            if extracted_words and stock_words:
+                overlap = len(extracted_words & stock_words)
+                score = overlap / max(len(extracted_words), len(stock_words))
+
+                if score > best_score and score > 0.6:  # 60% word overlap threshold
+                    best_score = score
+                    best_match = stock_info
+
+        if best_match:
+            stock_size = best_match.get("size")
+            stock_sku = best_match.get("sku")
+
+            # Update size if extracted looks wrong
+            if extracted_size.isdigit() or extracted_size in ["N/A", ""]:
+                if stock_size and stock_size != "N/A":
+                    item["size"] = stock_size
+
+            # Update SKU if extracted looks wrong or is partial
+            extracted_sku_lower = extracted_sku.lower()
+            if (extracted_sku.isdigit() or extracted_sku in ["N/A", ""] or
+                (stock_sku and stock_sku.lower().startswith(extracted_sku_lower + '-'))):
+                if stock_sku and stock_sku != extracted_sku:
+                    item["sku"] = stock_sku
+
+    # 3. Direct partial SKU match (e.g., "102" → "102-0302-006")
+    if not matched and extracted_sku not in ["N/A", ""]:
+        extracted_sku_lower = extracted_sku.lower()
+        if extracted_sku_lower in partial_sku_index:
+            candidates = partial_sku_index[extracted_sku_lower]
+            # If only one match, use it
+            if len(candidates) == 1:
+                stock_info = candidates[0]
+                item["sku"] = stock_info["full_sku"]
+                logger.debug(f"Matched partial SKU '{extracted_sku}' to full SKU '{stock_info['full_sku']}'")
+
+                # Also update size if available
+                stock_size = stock_info.get("size")
+                if stock_size and stock_size != "N/A" and (extracted_size.isdigit() or extracted_size in ["N/A", ""]):
+                    item["size"] = stock_size
+
+    return item
+
+
+def _extract_size_from_name(name: str) -> str:
+    """Extract size from product name using common patterns."""
+    if not name:
+        return "N/A"
+
+    # Pattern: "Product Name - Size" or "Product Name (Size)"
+    size_patterns = [
+        r'\s*-\s*(XS|S|M|L|XL|XXL|3XL|4XL)\s*$',  # Dash before size at end
+        r'\s*\(\s*(XS|S|M|L|XL|XXL|3XL|4XL)\s*\)',  # Size in parentheses
+        r'\s+(XS|S|M|L|XL|XXL|3XL|4XL)\s*$',  # Size at end without dash
+        r'\s*-\s*([0-9]{2,3})\s*$',  # Numeric size like 30, 32, 38
+    ]
+
+    for pattern in size_patterns:
+        match = re.search(pattern, name, re.IGNORECASE)
+        if match:
+            return match.group(1).strip().upper()
+
+    return "N/A"
+
+
+def _verify_products_with_stock(
+    items: list[dict[str, Any]],
+    stock_df: Optional[pd.DataFrame] = None
+) -> list[dict[str, Any]]:
+    """Verify all extracted items against WooCommerce stock data."""
+    if not items or stock_df is None or stock_df.empty:
+        return items
+
+    verified = []
+    for item in items:
+        verified_item = _verify_and_correct_product(item, stock_df)
+        verified.append(verified_item)
+
+    return verified
 
 
 def map_items_to_skus(order_id: str, items: list[dict[str, Any]], sales_df: pd.DataFrame) -> list[dict[str, Any]]:
