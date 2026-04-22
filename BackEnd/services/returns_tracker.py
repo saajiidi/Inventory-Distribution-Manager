@@ -1213,7 +1213,9 @@ def _estimate_sales_line_revenue(sales_df: pd.DataFrame) -> pd.Series:
 
 def _normalize_match_text(value: Any) -> str:
     """Normalize free text for loose item matching."""
-    text = str(value or "").strip().lower()
+    if value is None or pd.isna(value):
+        return ""
+    text = str(value).strip().lower()
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return " ".join(text.split())
 
@@ -1286,13 +1288,14 @@ def _match_returned_items_to_sales(row: pd.Series, order_sales: pd.DataFrame) ->
         sku = _normalize_match_text(item.get("sku", ""))
 
         candidates = pd.DataFrame()
-        if sku and sku != "n a":
+        if sku and str(sku) != "n a":
             candidates = available[available["_sku_norm"] == sku]
 
         if candidates.empty and item_name:
+            item_name_str = str(item_name)
             candidates = available[
-                available["_item_name_norm"].str.contains(item_name, na=False, regex=False)
-                | available["_item_name_norm"].apply(lambda text: item_name in text if text else False)
+                available["_item_name_norm"].str.contains(item_name_str, na=False, regex=False)
+                | available["_item_name_norm"].apply(lambda text: item_name_str in text if text else False)
             ]
 
         if candidates.empty:

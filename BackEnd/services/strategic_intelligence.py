@@ -92,12 +92,14 @@ def generate_executive_narrative(sales_df: pd.DataFrame, returns_df: pd.DataFram
         narrative.append(f"⚖️ **Stablity:** Revenue is holding steady with 0% variance from the previous window.")
 
     # 2. Category Intelligence
-    if 'Category' in sales_df.columns:
-        top_cat = sales_df.groupby('Category')['item_revenue'].sum().idxmax()
-        narrative.append(f"💎 **Hero Category:** **{top_cat}** continues to anchor your net sales, contributing the highest volume.")
+    if 'Category' in sales_df.columns and not sales_df.empty:
+        cat_sums = sales_df.groupby('Category')['item_revenue'].sum()
+        if not cat_sums.empty:
+            top_cat = cat_sums.idxmax()
+            narrative.append(f"💎 **Hero Category:** **{top_cat}** continues to anchor your net sales, contributing the highest volume.")
 
     # 3. Efficiency Tip
-    if not returns_df.empty:
+    if not returns_df.empty and 'issue_type' in returns_df.columns:
         total_ret = len(returns_df)
         partial_ret = len(returns_df[returns_df['issue_type'] == 'Partial'])
         pct_partial = (partial_ret / total_ret * 100) if total_ret > 0 else 0

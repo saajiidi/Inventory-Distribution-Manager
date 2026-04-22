@@ -740,27 +740,34 @@ def load_hybrid_data(
     if (USE_STATIC_SNAPSHOT or use_snapshot) and not force_off:
         snapshot_file = STATIC_SNAPSHOT_DIR / "sales.parquet"
         if snapshot_file.exists():
-            df_static = _read_parquet(snapshot_file)
-            return ensure_sales_schema(df_static)
+            merged = ensure_sales_schema(_read_parquet(snapshot_file))
+        else:
+            return pd.DataFrame()
+    else:
+        if not include_woocommerce:
+            return pd.DataFrame()
 
-    if not include_woocommerce:
-        return pd.DataFrame()
+        df_woo = (
+            load_cached_woocommerce_live_data(start_date=start_date, end_date=end_date)
+            if woocommerce_mode == "cache_only"
+            else load_woocommerce_live_data(start_date=start_date, end_date=end_date)
+        )
+        if df_woo.empty:
+            return pd.DataFrame()
 
-    df_woo = (
-        load_cached_woocommerce_live_data(start_date=start_date, end_date=end_date)
-        if woocommerce_mode == "cache_only"
-        else load_woocommerce_live_data(start_date=start_date, end_date=end_date)
-    )
-    if df_woo.empty:
-        return pd.DataFrame()
-
-    merged = ensure_sales_schema(df_woo)
-    merged = _dedupe_orders(merged)
+        merged = ensure_sales_schema(df_woo)
+        merged = _dedupe_orders(merged)
 
     if start_date:
-        merged = merged[merged["order_date"] >= pd.to_datetime(start_date, errors="coerce")]
+        start_ts = pd.to_datetime(start_date, errors="coerce")
+        if pd.notna(start_ts):
+            merged = merged[merged["order_date"] >= start_ts]
+            
     if end_date:
-        merged = merged[merged["order_date"] <= pd.to_datetime(end_date, errors="coerce") + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)]
+        end_ts = pd.to_datetime(end_date, errors="coerce")
+        if pd.notna(end_ts):
+            # End of day buffer
+            merged = merged[merged["order_date"] <= end_ts + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)]
 
     merged = merged.sort_values("order_date", ascending=False, na_position="last")
     merged = merged.reset_index(drop=True)

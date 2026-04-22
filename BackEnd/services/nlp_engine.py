@@ -49,21 +49,27 @@ class DataNLPInterpreter:
             return f"🛒 You had **{val:,}** unique orders **{time_label}**."
 
         if "top category" in query or "best category" in query:
-             if 'Category' in filtered_df.columns:
-                 top = filtered_df.groupby('Category')['item_revenue'].sum().idxmax()
-                 val = filtered_df.groupby('Category')['item_revenue'].sum().max()
-                 return f"🏆 Your top performing category **{time_label}** is **{top}** with ৳{val:,.2f} in revenue."
+             if 'Category' in filtered_df.columns and not filtered_df.empty:
+                 cat_sums = filtered_df.groupby('Category')['item_revenue'].sum()
+                 if not cat_sums.empty:
+                     top = cat_sums.idxmax()
+                     val = cat_sums.max()
+                     return f"🏆 Your top performing category **{time_label}** is **{top}** with ৳{val:,.2f} in revenue."
 
         if "best selling" in query or "top product" in query:
-             if 'item_name' in filtered_df.columns:
-                 top = filtered_df['item_name'].value_counts().idxmax()
-                 count = filtered_df['item_name'].value_counts().max()
-                 return f"📦 Your best selling product **{time_label}** is **'{top}'** with {count} units sold."
+             if 'item_name' in filtered_df.columns and not filtered_df.empty:
+                 counts = filtered_df['item_name'].value_counts()
+                 if not counts.empty:
+                     top = counts.idxmax()
+                     count = counts.max()
+                     return f"📦 Your best selling product **{time_label}** is **'{top}'** with {count} units sold."
 
         if "lowest" in query or "worst" in query:
-             if 'Category' in filtered_df.columns:
-                 low = filtered_df.groupby('Category')['item_revenue'].sum().idxmin()
-                 return f"⚠️ The lowest performing category **{time_label}** is **{low}**. You might want to review its stock or marketing."
+             if 'Category' in filtered_df.columns and not filtered_df.empty:
+                 cat_sums = filtered_df.groupby('Category')['item_revenue'].sum()
+                 if not cat_sums.empty:
+                     low = cat_sums.idxmin()
+                     return f"⚠️ The lowest performing category **{time_label}** is **{low}**. You might want to review its stock or marketing."
 
         # Fallback for complex queries
         return ("🔍 I've analyzed your data and found that your overall performance is stable. "

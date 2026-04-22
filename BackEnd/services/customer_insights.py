@@ -308,6 +308,8 @@ def get_favorite_products(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty or "item_name" not in df.columns:
         return pd.DataFrame(columns=["customer_id", "favorite_product"])
     counts = df.groupby(["customer_id", "item_name"]).size().reset_index(name="count")
+    if counts.empty:
+        return pd.DataFrame(columns=["customer_id", "favorite_product"])
     favorite = counts.loc[counts.groupby("customer_id")["count"].idxmax()].copy()
     favorite = favorite.rename(columns={"item_name": "favorite_product"})
     return favorite[["customer_id", "favorite_product"]]

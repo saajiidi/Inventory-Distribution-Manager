@@ -213,7 +213,12 @@ def _build_core_dashboard_data(
     if active_snapshot_mode:
         st.info(f"📶 **{SNAPSHOT_LABEL}**: Performance optimized for slow connections. Real-time syncing is paused.")
         df_sales_raw = prune_dataframe(
-            load_hybrid_data(woocommerce_mode="cache_only", use_snapshot=True),
+            load_hybrid_data(
+                start_date=window_config["start_date_str"],
+                end_date=window_config["end_date_str"],
+                woocommerce_mode="cache_only",
+                use_snapshot=True
+            ),
             DASHBOARD_SALES_COLUMNS,
         )
     else:
@@ -259,6 +264,7 @@ def _build_core_dashboard_data(
             start_date=window_config["prev_start_date_str"],
             end_date=window_config["prev_end_date_str"],
             woocommerce_mode="cache_only",
+            use_snapshot=active_snapshot_mode,
         ),
         DASHBOARD_SALES_COLUMNS,
     )
@@ -439,7 +445,7 @@ def render_intelligence_hub_page():
             return "", 0
         diff = curr - prev
         pct = diff / prev * 100
-        return f"{pct:+.1f}% vs last {data['window_label']}", diff
+        return f"{pct:+.1f}% vs {data['window_label']}", diff
 
     d_items_label, d_items_val = calc_delta(total_items, prev_items_val)
     d_rev_label, d_rev_val = calc_delta(total_rev, prev_rev_val)

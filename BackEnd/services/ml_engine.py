@@ -66,6 +66,9 @@ def croston_method(ts, extra_periods=1, alpha=0.1):
     f = np.zeros(cols+1) # forecast
     
     # Initialization
+    if cols == 0 or not np.any(d > 0):
+        return np.zeros(extra_periods)
+        
     first_occurrence = np.argmax(d > 0)
     a[0] = d[first_occurrence]
     p[0] = first_occurrence + 1
