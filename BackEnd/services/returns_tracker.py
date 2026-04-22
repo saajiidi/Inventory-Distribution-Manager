@@ -1589,7 +1589,9 @@ def calculate_net_sales_metrics(
             total_return_qty_all += 1
 
     # ── Returned Orders Percentage ──
-    returned_orders_pct = (return_count / total_orders * 100) if total_orders > 0 else 0.0
+    # Ensure total_orders is a scalar to avoid ambiguous truth value error
+    total_orders_scalar = int(total_orders) if hasattr(total_orders, '__int__') else total_orders
+    returned_orders_pct = (return_count / total_orders_scalar * 100) if total_orders_scalar > 0 else 0.0
 
     # ── Calculate Revenue Impact from Cross-Referenced Items ──
     # Sum up revenue impact from enhanced item data
@@ -1605,8 +1607,8 @@ def calculate_net_sales_metrics(
     daily_financials = _build_daily_financials(unique_orders, sales_context)
 
     # ── Fix percentage calculations with correct denominators ──
-    # returned_orders_pct: % of unique orders that had returns
-    returned_orders_pct_fixed = (return_count / total_orders * 100) if total_orders > 0 else 0.0
+    # returned_orders_pct: % of unique orders that had returns (use already-defined scalar)
+    returned_orders_pct_fixed = (return_count / total_orders_scalar * 100) if total_orders_scalar > 0 else 0.0
     
     # total_returned_items_pct: % of total items sold that were returned (vs total_items_sold, not orders)
     total_returned_items_pct = (total_return_qty_all / total_items_sold * 100) if total_items_sold > 0 else 0.0
@@ -1648,9 +1650,9 @@ def calculate_net_sales_metrics(
     }
 
     # ── Return rate ──
-    if total_orders and total_orders > 0:
+    if total_orders_scalar and total_orders_scalar > 0:
         metrics["return_rate"] = round(
-            (return_count + partial_count + exchange_count) / total_orders * 100, 2
+            (return_count + partial_count + exchange_count) / total_orders_scalar * 100, 2
         )
     else:
         metrics["return_rate"] = 0.0
