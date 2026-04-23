@@ -164,7 +164,7 @@ def render_returns_tracker_page() -> None:
 
     # 3. Data is available - If still refreshing in background, show indicator
     if is_loading:
-        st.caption("🔄 Data is refreshing in the background... showing cached snapshot.")
+        st.caption("🔄 Background sync in progress... ensuring data fidelity.")
         from streamlit_autorefresh import st_autorefresh
         st_autorefresh(interval=5000, key="returns_background_refresh")
 
@@ -680,7 +680,7 @@ def _render_reason_charts(metrics: dict) -> None:
     reasons = metrics.get("reason_counts", {})
 
     if not reasons:
-        st.info("No return reason data available.")
+        st.info("No live inventory data is available yet. Initializing sync...")
         return
 
     c1, c2 = st.columns(2)

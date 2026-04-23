@@ -14,11 +14,12 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 
-from src.utils.woocommerce_helpers import (
-    clean_phone,
-    clean_email,
+from BackEnd.utils.woocommerce_helpers import (
     format_currency,
     format_wc_date,
+    calculate_customer_metrics,
+    clean_phone,
+    clean_email,
 )
 from BackEnd.core.logging_config import get_logger
 

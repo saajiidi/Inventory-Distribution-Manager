@@ -5,6 +5,8 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
+from BackEnd.utils.io import to_excel_bytes
+
 HEADER_TOKENS = {
     "Cons. ID",
     "Order ID",
@@ -245,39 +247,6 @@ def parse_data_fuzzy(raw_text):
     return pd.DataFrame(records)
 
 
-def df_to_excel_bytes(df: pd.DataFrame) -> bytes:
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name="Deliveries")
-        ws = writer.book["Deliveries"]
-        ws.freeze_panes = "A2"
-
-        widths = {
-            "A": 18,
-            "B": 10,
-            "C": 12,
-            "D": 18,
-            "E": 20,
-            "F": 60,
-            "G": 14,
-            "H": 30,
-            "I": 16,
-            "J": 12,
-            "K": 10,
-            "L": 10,
-            "M": 14,
-            "N": 14,
-        }
-        for col, width in widths.items():
-            ws.column_dimensions[col].width = width
-
-        for row in range(2, ws.max_row + 1):
-            ws[f"J{row}"].number_format = "#,##0.00"
-            ws[f"K{row}"].number_format = "#,##0.00"
-            ws[f"L{row}"].number_format = "#,##0.00"
-
-    output.seek(0)
-    return output.read()
 
 
 from BackEnd.commerce_ops.persistence import clear_state_keys
@@ -341,7 +310,7 @@ POD"""
             st.dataframe(st.session_state.standard_parsed_df, use_container_width=True)
             st.download_button(
                 "Download standard parser output",
-                df_to_excel_bytes(st.session_state.standard_parsed_df),
+                to_excel_bytes(st.session_state.standard_parsed_df, sheet_name="Deliveries"),
                 f"deliveries_{datetime.now().strftime('%d-%m-%Y')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
@@ -386,7 +355,7 @@ POD"""
             st.dataframe(st.session_state.fuzzy_parsed_df, use_container_width=True)
             st.download_button(
                 "Download fuzzy parser output",
-                df_to_excel_bytes(st.session_state.fuzzy_parsed_df),
+                to_excel_bytes(st.session_state.fuzzy_parsed_df, sheet_name="Deliveries"),
                 f"fuzzy_deliveries_{datetime.now().strftime('%d-%m-%Y')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,

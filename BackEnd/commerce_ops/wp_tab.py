@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from BackEnd.commerce_ops.error_handler import log_error
+from BackEnd.core.logging_config import log_error
 from BackEnd.commerce_ops.persistence import clear_state_keys
 from BackEnd.commerce_ops.ui_components import (
     render_action_bar,
@@ -11,7 +11,7 @@ from BackEnd.commerce_ops.ui_components import (
     to_excel_bytes,
 )
 from BackEnd.commerce_ops.wp_processor import WhatsAppOrderProcessor
-from BackEnd.commerce_ops.utils import read_uploaded_file
+from BackEnd.utils.io import read_uploaded_file
 
 FUZZY_REQUIRED_FIELDS = {
     "phone": ["phone", "mobile", "contact", "billing phone"],

@@ -11,6 +11,7 @@ import hashlib
 from typing import Optional, List, Dict, Any, Tuple
 from pathlib import Path
 from BackEnd.core.logging_config import get_logger
+from BackEnd.utils.woocommerce_helpers import clean_phone, clean_email
 
 logger = get_logger("customer_manager")
 
@@ -63,19 +64,6 @@ class UnionFind:
             clusters[root].append(node)
         return clusters
 
-def clean_phone(phone: str) -> str:
-    if pd.isna(phone) or not phone:
-        return ""
-    digits = re.sub(r"\D", "", str(phone).strip())
-    # Standardize BD numbers if needed
-    if len(digits) == 10 and digits.startswith("1"):
-        digits = "0" + digits
-    return digits
-
-def clean_email(email: str) -> str:
-    if pd.isna(email) or not email:
-        return ""
-    return str(email).strip().lower()
 
 def load_raw_customer_data(url: str = CUSTOMER_DATA_URL) -> pd.DataFrame:
     """Load raw data from the provided Google Sheet CSV URL."""
@@ -317,70 +305,3 @@ def get_customer_metrics(start_date: date, end_date: date) -> Dict[str, int]:
         "new_customers": new_customers
     }
 
-# Legacy function shim for backward compatibility
-def consolidate_customers(df: pd.DataFrame) -> pd.DataFrame:
-    """Shim for legacy code to use the new Union-Find logic."""
-    # If the input DF is the raw gsheet data, we can just use our new builder
-    consolidated = build_customer_mapping(pd.DataFrame(), gsheet_df=df)
-    
-    # Rename columns to match what the old Customer Intelligence page expects
-    mapping = {
-        "primary_name": "Prominent Name",
-        "secondary_names": "Secondary Names",
-        "primary_phone": "Primary Phone",
-        "phones": "Secondary Phones", # The old code expects comma-separated list here
-        "primary_email": "Primary Email",
-        "emails": "Secondary Emails",
-        "total_orders": "Total Orders"
-    }
-    return consolidated.rename(columns=mapping)
-
-def load_cached_customers() -> pd.DataFrame:
-    """Shim for legacy code."""
-    return load_customer_mapping()
-
-def verify_with_woocommerce(customer_df: pd.DataFrame, woo_sales_df: pd.DataFrame) -> pd.DataFrame:
-    """Verify customer existence and data in WooCommerce using standardized schema."""
-    if customer_df.empty or woo_sales_df is None or woo_sales_df.empty:
-        return customer_df
-    
-    df = customer_df.copy()
-    
-    # Standardize woo data for matching (using canonical schema names: phone, email)
-    woo_phones = set()
-    if 'phone' in woo_sales_df.columns:
-        woo_phones = set(woo_sales_df['phone'].astype(str).str.replace(r'\D', '', regex=True).str.strip())
-        
-    woo_emails = set()
-    if 'email' in woo_sales_df.columns:
-        woo_emails = set(woo_sales_df['email'].astype(str).str.lower().str.strip())
-    
-    def check_verified(row):
-        # Handle both old and new column names
-        p_val = row.get('Primary Phone', row.get('primary_phone', ''))
-        e_val = row.get('Primary Email', row.get('primary_email', ''))
-        
-        phone = str(p_val).replace(r'\D', '', regex=True)
-        email = str(e_val).lower()
-        
-        if (phone and phone in woo_phones) or (email and email in woo_emails):
-            return "Yes"
-        return "No"
-
-    df['Verified'] = df.apply(check_verified, axis=1)
-    return df
-
-def save_consolidated_data(df: pd.DataFrame):
-    """Shim for legacy code."""
-    # Convert back to internal schema if needed, but save_mapping handles generic DFs too
-    save_mapping(df)
-
-def export_to_excel(df: pd.DataFrame, filename: str):
-    """Shim for legacy code."""
-    try:
-        df.to_excel(filename, index=False, engine='openpyxl')
-        logger.info(f"Exported customer report to {filename}")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to export Excel: {e}")
-        return False

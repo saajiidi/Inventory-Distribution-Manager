@@ -146,6 +146,21 @@ def clean_email(email: Optional[str]) -> str:
         return ""
     
     return str(email).strip().lower()
+    
+def normalize_name(name: Optional[str]) -> str:
+    """Normalize customer name for consistency.
+    
+    Args:
+        name: Raw name string
+        
+    Returns:
+        Cleaned, titled name string
+    """
+    if not name or pd.isna(name):
+        return ""
+    
+    # Remove extra spaces and title case
+    return " ".join(str(name).split()).title()
 
 
 def generate_customer_key(

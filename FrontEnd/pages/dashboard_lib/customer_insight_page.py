@@ -13,14 +13,14 @@ import streamlit as st
 import pandas as pd
 
 # Use EXISTING working API components
-from src.components.customer_insight.customer_filters import (
+from FrontEnd.components.customer_insight.customer_filters import (
     render_customer_filters,
     apply_customer_filters,
 )
-from src.components.customer_insight.customer_selector import (
+from FrontEnd.components.customer_insight.customer_selector import (
     render_customer_selector,
 )
-from src.components.customer_insight.customer_report import render_customer_report
+from FrontEnd.components.customer_insight.customer_report import render_customer_report
 from FrontEnd.components.ui import export_to_excel
 
 # Use EXISTING working services (inherits from working dashboard data)
@@ -365,7 +365,7 @@ def _get_filtered_customers_from_sales(
         return pd.DataFrame()
     
     # Use the unified apply_customer_filters which handles hierarchical Category/Product/Size
-    from src.components.customer_insight.customer_filters import apply_customer_filters
+    from FrontEnd.components.customer_insight.customer_filters import apply_customer_filters
     return apply_customer_filters(sales_df, filters)
 
 

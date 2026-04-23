@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from BackEnd.commerce_ops.error_handler import log_error
+from BackEnd.core.logging_config import log_error
 from BackEnd.commerce_ops.persistence import clear_state_keys, save_state
 from BackEnd.commerce_ops.ui_components import (
     render_action_bar,
@@ -13,7 +13,7 @@ from BackEnd.commerce_ops.ui_components import (
 )
 from BackEnd.commerce_ops.ui_config import INVENTORY_LOCATIONS
 from BackEnd.commerce_ops import core as inv_core
-from BackEnd.commerce_ops.utils import read_uploaded_file
+from BackEnd.utils.io import read_uploaded_file, to_excel_bytes
 
 
 def _reset_inventory_state():
@@ -159,12 +159,9 @@ def render_distribution_tab(search_q):
 
         st.dataframe(df, use_container_width=True)
 
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-            df.to_excel(writer, index=False, sheet_name="Distribution")
         st.download_button(
             "Download distribution report",
-            output.getvalue(),
+            to_excel_bytes(df, sheet_name="Distribution"),
             "Stock_Distribution.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,

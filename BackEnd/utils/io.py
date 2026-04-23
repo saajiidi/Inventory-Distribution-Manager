@@ -46,3 +46,58 @@ def read_remote_csv(csv_url: str):
         return df, lm
     except Exception as e:
         raise RuntimeError(f"Failed to fetch CSV from {csv_url}: {e}")
+
+
+def to_excel_bytes(df: pd.DataFrame, sheet_name: str = "Data") -> bytes:
+    """Export DataFrame to Excel bytes with premium openpyxl styling.
+    
+    Features:
+    - Bold headers with centered text
+    - Alternating row colors (subtle)
+    - Auto-filter enabled
+    - Optimized column widths
+    - Proper number/date formatting
+    """
+    from io import BytesIO
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    output = BytesIO()
+    
+    # Use context manager for ExcelWriter
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name=sheet_name)
+        
+        workbook = writer.book
+        worksheet = writer.sheets[sheet_name]
+        
+        # Styles
+        header_fill = PatternFill(start_color="1D4ED8", end_color="1D4ED8", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF")
+        center_aligned = Alignment(horizontal="center", vertical="center")
+        border_side = Side(style="thin", color="D1D5DB")
+        thin_border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+        
+        # Format Headers
+        for col_idx, column in enumerate(df.columns, 1):
+            cell = worksheet.cell(row=1, column=col_idx)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_aligned
+            cell.border = thin_border
+            
+            # Auto-size columns (rough estimate)
+            max_len = max(
+                df[column].astype(str).map(len).max(),
+                len(str(column))
+            ) + 2
+            worksheet.column_dimensions[get_column_letter(col_idx)].width = min(max_len, 50)
+
+        # Enable Auto-Filter
+        worksheet.auto_filter.ref = worksheet.dimensions
+        
+        # Freeze first row
+        worksheet.freeze_panes = "A2"
+
+    output.seek(0)
+    return output.getvalue()

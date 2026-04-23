@@ -27,11 +27,4 @@ STATUS_COLORS = {
 }
 
 # Performance & Memory Optimization
-# Community Cloud should default to the baked snapshot unless explicitly turned off.
-USE_STATIC_SNAPSHOT = _env_bool("USE_STATIC_SNAPSHOT", True)
-
-# Components that ALWAYS use snapshot to save memory (like complex maps)
-MAP_FORCE_SNAPSHOT = _env_bool("MAP_FORCE_SNAPSHOT", True)
-
-SNAPSHOT_DATE = "2026-04-08"
-SNAPSHOT_LABEL = "April 2026 Operational Snapshot"
+# Hybrid loading is now the primary path. Static snapshots are deprecated.

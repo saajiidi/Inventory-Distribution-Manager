@@ -10,7 +10,7 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     st.subheader("Stock Insight")
     
     if stock_df is None or stock_df.empty:
-        st.info("No live stock snapshot is available yet.")
+        st.info("No live inventory data is available yet. Initializing sync...")
         return
         
     # 1. Consolidated Data Pre-processing

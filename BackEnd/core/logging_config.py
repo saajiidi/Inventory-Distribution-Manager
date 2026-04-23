@@ -14,6 +14,11 @@ from functools import wraps
 
 from BackEnd.core.paths import LOGS_DIR
 
+def log_error(error_msg: any, context: str = "General", details: dict = None):
+    """Bridge to the centralized error handler."""
+    from FrontEnd.utils.error_handler import log_error as core_log
+    return core_log(error_msg, context, details)
+
 # Configure log directory
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -11,6 +11,7 @@ import streamlit as st
 
 from BackEnd.services.hybrid_data_loader import load_full_woocommerce_history, load_hybrid_data
 from BackEnd.utils.sales_schema import ensure_sales_schema
+from BackEnd.utils.woocommerce_helpers import clean_phone, clean_email, normalize_name
 from FrontEnd.utils.error_handler import log_error
 from BackEnd.services.customer_manager import load_customer_mapping
 
@@ -27,28 +28,6 @@ CUSTOMER_BASE_COLUMNS = [
 
 
 
-def normalize_name(name: str) -> str:
-    if pd.isna(name) or not name:
-        return ""
-    name = re.sub(r"\s+", " ", str(name).strip())
-    return name.title()
-
-
-
-def clean_phone(phone: str) -> str:
-    if pd.isna(phone) or not phone:
-        return ""
-    digits = re.sub(r"\D", "", str(phone).strip())
-    if len(digits) == 10 and digits.startswith("1"):
-        digits = "0" + digits
-    return digits
-
-
-
-def clean_email(email: str) -> str:
-    if pd.isna(email) or not email:
-        return ""
-    return str(email).strip().lower()
 
 
 
@@ -78,7 +57,7 @@ def generate_customer_insights(
     include_woocommerce: bool = True,
 ) -> pd.DataFrame:
     # Customer insights exclusively use WooCommerce order history.
-    df = load_hybrid_data(start_date, end_date, include_gsheet=False, include_woocommerce=include_woocommerce)
+    df = load_hybrid_data(start_date, end_date, include_woocommerce=include_woocommerce)
     full_history = load_full_woocommerce_history(end_date=end_date) if include_woocommerce else pd.DataFrame()
     return generate_customer_insights_from_sales(df, full_history_df=full_history)
 
@@ -173,6 +152,10 @@ def generate_customer_insights_from_sales(
                     how="left",
                 )
         result = result.merge(current_window, on="customer_id", how="left")
+        
+        # --- RETURN RATE ENRICHMENT ---
+        result = _enrich_with_returns(result, full_history_df)
+        
         if include_rfm:
             result = calculate_rfm_scores(result)
             result = classify_rfm_segments(result)
@@ -298,9 +281,62 @@ def calculate_rfm_scores(df: pd.DataFrame) -> pd.DataFrame:
     result["r_score"] = _score(result["recency_days"], [5, 4, 3, 2, 1], ascending=False)
     result["f_score"] = _score(result["total_orders"], [1, 2, 3, 4, 5], ascending=True)
     result["m_score"] = _score(result["total_revenue"], [1, 2, 3, 4, 5], ascending=True)
+    
+    # Reliability Score based on return rate (lower return rate is better)
+    if "return_rate" in result.columns:
+        result["rel_score"] = _score(result["return_rate"], [5, 4, 3, 2, 1], ascending=False)
+    else:
+        result["rel_score"] = 5
+        
     result["rfm_score"] = result["r_score"].astype(str) + result["f_score"].astype(str) + result["m_score"].astype(str)
-    result["rfm_avg"] = (result["r_score"] + result["f_score"] + result["m_score"]) / 3
+    result["rfm_avg"] = (result["r_score"] + result["f_score"] + result["m_score"] + result["rel_score"]) / 4
     return result
+
+
+def _enrich_with_returns(customers_df: pd.DataFrame, full_history_df: pd.DataFrame) -> pd.DataFrame:
+    """Enrich customers DataFrame with return rate metrics."""
+    returns_df = st.session_state.get("returns_data", pd.DataFrame())
+    if returns_df.empty or full_history_df.empty:
+        customers_df["return_count"] = 0
+        customers_df["return_rate"] = 0.0
+        return customers_df
+    
+    try:
+        # 1. Map return orders to customer_id using full_history_df
+        # We need a mapping of order_id -> customer_id from ALL historical data
+        id_map = _prepare_customer_identity(full_history_df)[["order_id", "customer_id"]].drop_duplicates()
+        
+        # 2. Extract order_id from returns
+        ret_df = returns_df.copy()
+        if "order_id" not in ret_df.columns:
+            customers_df["return_count"] = 0
+            customers_df["return_rate"] = 0.0
+            return customers_df
+            
+        # 3. Merge returns with id_map to assign a customer_id to each return
+        returns_mapped = ret_df.merge(id_map, on="order_id", how="inner")
+        
+        if returns_mapped.empty:
+            customers_df["return_count"] = 0
+            customers_df["return_rate"] = 0.0
+            return customers_df
+            
+        # 4. Count returns per customer
+        return_counts = returns_mapped.groupby("customer_id").size().reset_index(name="return_count")
+        
+        # 5. Merge with our target customers_df
+        customers_df = customers_df.merge(return_counts, on="customer_id", how="left")
+        customers_df["return_count"] = customers_df["return_count"].fillna(0).astype(int)
+        
+        # 6. Calculate return rate
+        customers_df["return_rate"] = (customers_df["return_count"] / customers_df["total_orders"]).fillna(0)
+        
+    except Exception as e:
+        log_error(e, context="Return Rate Enrichment")
+        customers_df["return_count"] = 0
+        customers_df["return_rate"] = 0.0
+        
+    return customers_df
 
 
 

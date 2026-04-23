@@ -16,15 +16,15 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from src.utils.woocommerce_helpers import (
+from BackEnd.utils.woocommerce_helpers import (
     format_currency,
     format_wc_date,
     calculate_customer_metrics,
     clean_phone,
     clean_email,
 )
-from src.services.woocommerce.fetch_orders import fetch_customer_orders
-from src.services.woocommerce.fetch_customers import fetch_customer_by_id
+from BackEnd.services.woocommerce_client.fetch_orders import fetch_customer_orders
+from BackEnd.services.woocommerce_client.fetch_customers import fetch_customer_by_id
 from BackEnd.core.logging_config import get_logger
 
 
@@ -128,7 +128,7 @@ def _filter_orders_for_guest(customer_data: Dict[str, Any]) -> pd.DataFrame:
     Returns:
         Filtered orders DataFrame
     """
-    from src.services.woocommerce.fetch_orders import fetch_orders
+    from BackEnd.services.woocommerce_client.fetch_orders import fetch_orders
     
     # Fetch recent orders
     orders_df = fetch_orders()
@@ -185,6 +185,12 @@ def _render_customer_profile(
                 st.caption(f"Customer ID: {customer_id}")
         else:
             st.info("👤 Guest Customer")
+            
+        # Add Reliability Score if available
+        rel_score = customer_data.get("rel_score")
+        if rel_score is not None:
+            stars = "⭐" * int(rel_score)
+            st.markdown(f"**Reliability Score:** {stars} ({rel_score}/5)")
     
     with col2:
         st.markdown("**Account Timeline**")
@@ -326,7 +332,7 @@ def _render_order_metrics(metrics: Dict[str, Any]) -> None:
         )
     
     # Additional metrics
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         first_order = metrics.get("first_order_date")
@@ -339,8 +345,18 @@ def _render_order_metrics(metrics: Dict[str, Any]) -> None:
         if last_order and not pd.isna(last_order):
             last_str = format_wc_date(last_order, "%Y-%m-%d")
             st.metric("Last Order Date", last_str)
-    
+            
     with col3:
+        return_count = customer_data.get("return_count", 0)
+        return_rate = customer_data.get("return_rate", 0.0)
+        st.metric(
+            "Return Rate", 
+            f"{return_rate:.1%}", 
+            delta=f"{return_count} orders",
+            delta_color="inverse" if return_rate > 0.15 else "normal"
+        )
+
+    with col4:
         lifespan = metrics.get("customer_lifespan_days", 0)
         if lifespan > 0:
             st.metric("Customer Lifespan", f"{lifespan} days")

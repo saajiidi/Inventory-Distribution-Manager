@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from BackEnd.commerce_ops.ui_config import APP_TITLE, APP_VERSION
+from BackEnd.utils.io import to_excel_bytes
 
 
 def inject_base_styles():
@@ -339,12 +340,7 @@ def render_reset_confirm(label: str, state_key: str, reset_fn):
     st.session_state.registered_resets[label] = {"fn": reset_fn, "key": state_key}
 
 
-def to_excel_bytes(df: pd.DataFrame, sheet_name: str = "Sheet1") -> bytes:
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name=sheet_name)
-    output.seek(0)
-    return output.read()
+from BackEnd.utils.io import to_excel_bytes
 
 
 def show_last_updated(path: str):

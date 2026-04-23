@@ -1,0 +1,6 @@
+{
+  "kind": "orders",
+  "state": "failed",
+  "updated_at": "2026-04-23 13:00:22",
+  "error": "'WooCommerceService' object has no attribute 'fetch_orders_range'"
+}

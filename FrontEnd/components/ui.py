@@ -9,7 +9,6 @@ from .charts import build_discrete_color_map, apply_plotly_theme, donut_chart, b
 from .data_display import file_summary, export_to_excel, show_last_updated, _safe_datetime_series
 from .interactive import floating_action_bar, dialog_confirm
 from .animation import animation_bike
-from .ai_chatbot import floating_chat
 from .mui_components import mui_stat_card, render_mui_dashboard_sync
 
 __all__ = [
@@ -38,7 +37,6 @@ __all__ = [
     "export_to_excel",
     "show_last_updated",
     "animation_bike",
-    "floating_chat",
     "mui_stat_card",
     "operational_card",
     "render_mui_dashboard_sync",

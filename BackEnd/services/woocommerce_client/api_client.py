@@ -17,7 +17,7 @@ import uuid
 
 import requests
 
-from src.inheritance.base_api_client import BaseAPIClient, APIConfig, APIError
+from .base_api_client import BaseAPIClient, APIConfig, APIError
 from BackEnd.core.logging_config import get_logger
 
 

@@ -35,21 +35,30 @@ DEEN-BI/
 ├── BackEnd/                        # Backend services & data processing
 │   ├── core/                       # Core utilities
 │   │   ├── categories.py           # Product category mapping
-│   │   ├── data_engine.py          # Data processing engine
 │   │   ├── geo.py                  # Geographic/district code resolution
 │   │   ├── logging_config.py       # Centralized logging
 │   │   ├── ml_engine.py            # ML/forecasting engine
-│   │   └── woocommerce_client.py   # WooCommerce API client
+│   │   ├── paths.py                # System paths
+│   │   ├── zones.py                # Zone/Area resolution
+│   │   └── woocommerce_service.py  # Core WooCommerce API service
 │   │
 │   ├── services/                   # Business logic services
-│   │   ├── returns_tracker.py      # Returns data loading, classification, cross-referencing
+│   │   ├── returns_tracker.py      # Returns data loading, classification
 │   │   ├── hybrid_data_loader.py   # WooCommerce data with caching & background refresh
-│   │   ├── customer_manager.py     # Customer insights, RFM scoring
-│   │   ├── strategic_intelligence.py # Executive narratives, story generation
-│   │   └── powerbi_export.py       # PowerBI integration
+│   │   ├── customer_manager.py     # Customer insights, deduplication
+│   │   ├── customer_insights.py    # RFM scoring and segmentation
+│   │   ├── strategic_intelligence.py # Executive narratives
+│   │   ├── powerbi_export.py       # PowerBI integration
+│   │   ├── processor.py            # Orders dataframe processing
+│   │   └── woocommerce_client/      # Advanced WooCommerce API clients
+│   │       ├── api_client.py       # Base client with retry logic
+│   │       ├── fetch_orders.py     # Order fetching logic
+│   │       └── fetch_customers.py  # Customer profile fetching
 │   │
-│   ├── ai_engine/                  # AI/ML capabilities
-│   │   └── ai_query.py             # Natural language query processing
+│   ├── commerce_ops/               # Operational tools
+│   │   ├── pathao_tab.py           # Pathao shipping integration
+│   │   ├── fuzzy_parser_tab.py     # Unstructured data parsing
+│   │   └── ui_components.py        # Shared operational UI
 │   │
 │   └── cache/                      # Local data cache
 │       └── *.parquet               # Cached data files
@@ -62,26 +71,11 @@ DEEN-BI/
 │   │   ├── charts.py               # Plotly chart utilities
 │   │   ├── layout.py               # Theme, sidebar, page structure
 │   │   ├── animation.py            # Lottie animations
-│   │   └── ai_chatbot.py           # Floating AI assistant
-│   │
-│   ├── pages/                      # Main dashboard pages
-│   │   ├── dashboard.py            # Primary intelligence hub (STAGED LOADING)
-│   │   ├── orders_analytics.py     # Order-focused analytics
-│   │   └── dashboard_lib/          # Page sub-modules
-│   │       ├── returns_tracker.py  # Returns Insights page (renamed from Returns & Net Sales)
-│   │       ├── customer_insight_page.py
-│   │       ├── inventory.py
-│   │       ├── acquisition.py
-│   │       ├── deep_dive.py
-│   │       ├── live_dashboard.py
-│   │       └── data_helpers.py
-│   │
-│   ├── utils/                      # Frontend utilities
-│   │   └── config.py               # Feature flags, constants
-│   │
-│   └── data/                       # Frontend data storage
-│       ├── error_prompts/          # Error context files (NOT IN GIT)
-│       └── *.json, *.parquet
+│   │   ├── ai_chatbot.py           # Floating AI assistant
+│   │   └── customer_insight/       # Customer-specific UI components
+│   │       ├── customer_report.py  # Detailed customer reports
+│   │       └── customer_filters.py # Advanced filtering logic
+│
 │
 ├── tests/                          # Test suite
 │   ├── test_app.py

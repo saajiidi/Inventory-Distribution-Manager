@@ -68,7 +68,7 @@ def _render_banner():
                 </h1>
                 <div style="display: flex; align-items: center; margin-top: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 12px; border-radius: 20px; width: fit-content;">
                     <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 10px; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite;"></div>
-                    <span style="color: #10b981; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">System Online | Intelligence Hub Active</span>
+                    <span style="color: #10b981; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Live Operational Intelligence Hub</span>
                 </div>
             </div>
         </div>
@@ -193,14 +193,11 @@ def _build_core_dashboard_data(
     window: str,
     window_config: dict[str, str | int | date],
     global_sync: bool,
-    active_snapshot_mode: bool,
     needs_history: bool,
     orders_status: dict,
     global_cats: list[str],
     global_stats: list[str],
 ) -> dict | None:
-    from FrontEnd.utils.config import SNAPSHOT_LABEL
-
     cache_empty = not orders_status.get("cache_exists", False)
 
     if needs_history:
@@ -210,61 +207,49 @@ def _build_core_dashboard_data(
             "This runs in the background and may take a few minutes."
         )
 
-    if active_snapshot_mode:
-        st.info(f"📶 **{SNAPSHOT_LABEL}**: Performance optimized for slow connections. Real-time syncing is paused.")
-        df_sales_raw = prune_dataframe(
-            load_hybrid_data(
-                start_date=window_config["start_date_str"],
-                end_date=window_config["end_date_str"],
-                woocommerce_mode="cache_only",
-                use_snapshot=True
-            ),
-            DASHBOARD_SALES_COLUMNS,
-        )
-    else:
-        should_force = global_sync or (window == "Last Day") or needs_history or cache_empty
-        refresh_started = start_orders_background_refresh(
-            window_config["start_date_str"],
-            window_config["end_date_str"],
-            force=should_force,
-        )
+    # Hybrid loading is now the default path.
+    should_force = global_sync or (window == "Last Day") or needs_history or cache_empty
+    refresh_started = start_orders_background_refresh(
+        window_config["start_date_str"],
+        window_config["end_date_str"],
+        force=should_force,
+    )
 
-        if cache_empty:
-            if refresh_started or orders_status.get("is_running"):
-                _render_initial_sync_placeholder(
-                    window_config["start_date_str"],
-                    window_config["end_date_str"],
-                    orders_status.get("status_message", "First WooCommerce sync is running in the background."),
-                )
-                return None
+    if cache_empty:
+        if refresh_started or orders_status.get("is_running"):
+            _render_initial_sync_placeholder(
+                window_config["start_date_str"],
+                window_config["end_date_str"],
+                orders_status.get("status_message", "First WooCommerce sync is running in the background."),
+            )
+            return None
 
-            with st.spinner("Running first WooCommerce sync..."):
-                df_sales_raw = prune_dataframe(
-                    load_hybrid_data(
-                        start_date=window_config["start_date_str"],
-                        end_date=window_config["end_date_str"],
-                        woocommerce_mode="live",
-                    ),
-                    DASHBOARD_SALES_COLUMNS,
-                )
-        else:
-            # Use live mode for Last Day, Custom Date Range, or when global sync requested
-            sync_mode = "live" if (window in ("Last Day", "Custom Date Range") or global_sync) else "cache_only"
+        with st.spinner("Running first WooCommerce sync..."):
             df_sales_raw = prune_dataframe(
                 load_hybrid_data(
                     start_date=window_config["start_date_str"],
                     end_date=window_config["end_date_str"],
-                    woocommerce_mode=sync_mode,
+                    woocommerce_mode="live",
                 ),
                 DASHBOARD_SALES_COLUMNS,
             )
+    else:
+        # Use live mode for Last Day, Custom Date Range, or when global sync requested
+        sync_mode = "live" if (window in ("Last Day", "Custom Date Range") or global_sync) else "cache_only"
+        df_sales_raw = prune_dataframe(
+            load_hybrid_data(
+                start_date=window_config["start_date_str"],
+                end_date=window_config["end_date_str"],
+                woocommerce_mode=sync_mode,
+            ),
+            DASHBOARD_SALES_COLUMNS,
+        )
 
     df_prev_raw = prune_dataframe(
         load_hybrid_data(
             start_date=window_config["prev_start_date_str"],
             end_date=window_config["prev_end_date_str"],
             woocommerce_mode="cache_only",
-            use_snapshot=active_snapshot_mode,
         ),
         DASHBOARD_SALES_COLUMNS,
     )
@@ -314,12 +299,11 @@ def _build_core_dashboard_data(
 def _enrich_dashboard_data_for_selection(
     data: dict,
     selection: str,
-    active_snapshot_mode: bool,
     global_cats: list[str],
 ) -> dict:
     if selection in SECTIONS_REQUIRING_STOCK:
         stock_df = data.get("stock", pd.DataFrame())
-        if stock_df.empty and not active_snapshot_mode:
+        if stock_df.empty:
             from BackEnd.services.hybrid_data_loader import load_woocommerce_stock_data
 
             with st.spinner("📦 Syncing inventory levels..."):
@@ -334,15 +318,6 @@ def _enrich_dashboard_data_for_selection(
             stock_df = _filter_stock_by_categories(stock_df, global_cats)
 
         data["stock"] = stock_df
-
-    needs_customers = selection in SECTIONS_REQUIRING_CUSTOMERS or selection in SECTIONS_REQUIRING_ML
-    if active_snapshot_mode and needs_customers and data.get("ml") is None:
-        from BackEnd.services.hybrid_data_loader import load_static_ml_bundle
-
-        data["ml"] = load_static_ml_bundle() or {}
-        snapshot_customers = data["ml"].get("customers") if isinstance(data["ml"], dict) else None
-        if snapshot_customers is not None:
-            data["customers"] = snapshot_customers
 
     if needs_customers and data.get("customers") is None:
         from BackEnd.services.customer_insights import generate_customer_insights_from_sales
@@ -381,10 +356,6 @@ def render_intelligence_hub_page():
     )
     needs_history = window == "Custom Date Range" and not orders_status.get("is_covered", True)
 
-    from FrontEnd.utils.config import USE_STATIC_SNAPSHOT
-
-    slow_conn = st.session_state.get("conn_speed_mode") == "Slow Connection"
-    active_snapshot_mode = USE_STATIC_SNAPSHOT or slow_conn
     global_cats = st.session_state.get("global_categories", ["All"])
     global_stats = st.session_state.get("global_statuses", ["All"])
 
@@ -395,7 +366,6 @@ def render_intelligence_hub_page():
             window_config["end_date_str"],
             window_config["prev_start_date_str"],
             window_config["prev_end_date_str"],
-            str(active_snapshot_mode),
             _serialize_context_value(global_cats),
             _serialize_context_value(global_stats),
             str(orders_status.get("last_refresh") or ""),
@@ -409,7 +379,6 @@ def render_intelligence_hub_page():
             window=window,
             window_config=window_config,
             global_sync=global_sync,
-            active_snapshot_mode=active_snapshot_mode,
             needs_history=needs_history,
             orders_status=orders_status,
             global_cats=global_cats,
@@ -419,7 +388,7 @@ def render_intelligence_hub_page():
             return
         st.session_state["dashboard_data"] = data
 
-    data = _enrich_dashboard_data_for_selection(data, selection, active_snapshot_mode, global_cats)
+    data = _enrich_dashboard_data_for_selection(data, selection, global_cats)
     st.session_state["dashboard_data"] = data
 
     df_exec = data["sales_active"]

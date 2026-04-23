@@ -1,9 +1,9 @@
 import pandas as pd
 import streamlit as st
 
-from BackEnd.commerce_ops.error_handler import log_error
+from BackEnd.core.logging_config import log_error
 from BackEnd.commerce_ops.persistence import clear_state_keys, save_state
-from BackEnd.commerce_ops.processor import process_orders_dataframe
+from BackEnd.services.processor import process_orders_dataframe
 from BackEnd.commerce_ops.ui_components import (
     render_action_bar,
     render_file_summary,
@@ -11,7 +11,7 @@ from BackEnd.commerce_ops.ui_components import (
     section_card,
     to_excel_bytes,
 )
-from BackEnd.commerce_ops.utils import read_uploaded_file
+from BackEnd.utils.io import read_uploaded_file
 
 REQUIRED_COLUMNS = ["Phone (Billing)"]
 
