@@ -14,6 +14,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
+from streamlit.runtime.scriptrunner import add_script_run_context
 
 from BackEnd.services.returns_tracker import (
     load_returns_data,
@@ -34,7 +35,6 @@ logger = get_logger("returns_tracker_page")
 def _load_returns_async(sync_window: str, sales_df_full: pd.DataFrame):
     """Background loader for returns data."""
     try:
-        st.session_state["returns_loading"] = True
         st.session_state["returns_load_started"] = time.time()
         
         # Load the data (blocks this thread, not the UI)
@@ -43,11 +43,11 @@ def _load_returns_async(sync_window: str, sales_df_full: pd.DataFrame):
         # Store in session state
         st.session_state["returns_data"] = df_returns
         st.session_state["last_returns_sync"] = sync_window
-        st.session_state["returns_loading"] = False
         st.session_state["returns_load_complete"] = True
     except Exception as e:
-        st.session_state["returns_loading"] = False
         log_error(e, context="Returns Background Load")
+    finally:
+        st.session_state["returns_loading"] = False
 
 
 def _get_date_range_from_window() -> tuple[date, date]:
@@ -122,6 +122,7 @@ def render_returns_tracker_page() -> None:
 
     # ── Auto Data Sync ──
     sales_df_full = _get_gross_sales_context()
+    sales_df = _filter_sales_by_date_range(sales_df_full, start_dt, end_dt)
     sync_window = get_current_sync_window()
     
     # Trigger background load if needed
@@ -130,7 +131,9 @@ def render_returns_tracker_page() -> None:
 
     if needs_load and not is_loading:
         # Start background thread
+        st.session_state["returns_loading"] = True
         thread = Thread(target=_load_returns_async, args=(sync_window, sales_df_full), daemon=True)
+        add_script_run_context(thread)
         thread.start()
         st.rerun()
 
@@ -202,30 +205,6 @@ def render_returns_tracker_page() -> None:
     with tab_ledger:
         _render_details_table(df, sales_df)
 
-
-# ═══════════════════════════════════════════════════════════════════
-# SYNC PANEL
-# ═══════════════════════════════════════════════════════════════════
-
-    # ── Get Global Time Window ──
-    start_dt, end_dt = _get_date_range_from_window()
-
-    # ── Auto Data Sync ──
-    sales_df_full = _get_gross_sales_context()
-    # Filter sales to match the time window
-    sales_df = _filter_sales_by_date_range(sales_df_full, start_dt, end_dt)
-
-    sync_window = get_current_sync_window()
-    if "returns_data" not in st.session_state or st.session_state.get("last_returns_sync") != sync_window:
-        try:
-            with st.spinner("Syncing delivery-issue data (Scheduled)..."):
-                df_returns = load_returns_data(sync_window=sync_window, sales_df=sales_df_full)
-                st.session_state.returns_data = df_returns
-                st.session_state.last_returns_sync = sync_window
-        except Exception as e:
-            logger.error(f"Failed to load returns data: {e}")
-            st.session_state.returns_data = pd.DataFrame()
-            st.session_state.last_returns_sync = sync_window
 
 
 # ═══════════════════════════════════════════════════════════════════
