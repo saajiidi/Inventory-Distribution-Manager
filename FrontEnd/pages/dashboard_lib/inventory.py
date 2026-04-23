@@ -47,13 +47,16 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     else:
         inventory["daily_velocity"] = 0.0
 
-    def classify_stock_trend(rate):
-        if rate > 3.0: return "🔥 Fast Moving"
-        if rate > 0.8: return "⚖️ Regular"
-        if rate > 0.01: return "🐌 Slow Moving"
-        return "❄️ Non-Moving"
-
-    inventory["Trend"] = inventory["daily_velocity"].apply(classify_stock_trend)
+    # Vectorized Trend Classification
+    inventory["Trend"] = np.select(
+        [
+            inventory["daily_velocity"] > 3.0,
+            inventory["daily_velocity"] > 0.8,
+            inventory["daily_velocity"] > 0.01
+        ],
+        ["🔥 Fast Moving", "⚖️ Regular", "🐌 Slow Moving"],
+        default="❄️ Non-Moving"
+    )
 
     # Summary Metrics
     low_stock = inventory[inventory["Stock Quantity"] <= 5]
@@ -103,24 +106,25 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         
         st.markdown(f"**Detailed Analysis for:** `{active_prod}`")
         
-        # Velocity and Trend display
-        item_trend = sniper_results["Trend"].iloc[0]
-        item_velocity = sniper_results["daily_velocity"].iloc[0]
-        
-        k1, k2, k3 = st.columns(3)
-        k1.metric("Current Stock Balance", f"{int(sniper_results['Stock Quantity'].sum())}")
-        k2.metric("Sales Velocity", f"{item_velocity:.2f} units/day")
-        k3.metric("Velocity Tier", item_trend)
-        
-        # Stock-out Countdown
-        if item_velocity > 0:
-            days_left = sniper_results['Stock Quantity'].sum() / item_velocity
-            if days_left < 7:
-                st.error(f"🚨 **Stock-out Risk**: This item is selling {item_velocity:.2f} units/day and will be gone in approximately **{int(days_left)} days**.")
-            elif days_left < 15:
-                st.warning(f"⚠️ **Restock Advised**: Approximately **{int(days_left)} days** of stock remaining.")
-            else:
-                st.success(f"✅ **Healthy Velocity**: **{int(days_left)} days** of stock available at current sales rate.")
+        if not sniper_results.empty:
+            # Velocity and Trend display securely cast to scalar types
+            item_trend = str(sniper_results["Trend"].iloc[0])
+            item_velocity = float(sniper_results["daily_velocity"].iloc[0])
+            
+            k1, k2, k3 = st.columns(3)
+            k1.metric("Current Stock Balance", f"{int(sniper_results['Stock Quantity'].sum())}")
+            k2.metric("Sales Velocity", f"{item_velocity:.2f} units/day")
+            k3.metric("Velocity Tier", item_trend)
+            
+            # Stock-out Countdown
+            if item_velocity > 0:
+                days_left = float(sniper_results['Stock Quantity'].sum()) / item_velocity
+                if days_left < 7:
+                    st.error(f"🚨 **Stock-out Risk**: This item is selling {item_velocity:.2f} units/day and will be gone in approximately **{int(days_left)} days**.")
+                elif days_left < 15:
+                    st.warning(f"⚠️ **Restock Advised**: Approximately **{int(days_left)} days** of stock remaining.")
+                else:
+                    st.success(f"✅ **Healthy Velocity**: **{int(days_left)} days** of stock available at current sales rate.")
 
         st.markdown("**Variation Breakdown:**")
         st.dataframe(sniper_results[["Name", "SKU", "_size", "Stock Status", "Stock Quantity", "Price"]].rename(
@@ -154,9 +158,9 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         val_col = val_col_map.get(val_basis, "Value")
 
         # 3. Data Preparation
-        valid_cats = set(get_master_category_list())
-        inventory["Category"] = inventory["Category"].apply(lambda c: c if c in valid_cats else "Others")
-        inventory["Main Category"] = inventory["Category"].apply(lambda x: str(x).split(" - ")[0])
+        valid_cats = list(get_master_category_list())
+        inventory["Category"] = np.where(inventory["Category"].isin(valid_cats), inventory["Category"], "Others")
+        inventory["Main Category"] = inventory["Category"].astype(str).str.split(" - ").str[0]
         
         cat_agg = inventory.groupby("Main Category").agg(
             Selected_Value=(val_col, "sum"),
@@ -192,13 +196,15 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
             # Use real daily_velocity calculated at the top
             inventory["days_remaining"] = (inventory["Stock Quantity"] / inventory["daily_velocity"]).replace([np.inf, -np.inf], 999).fillna(999).astype(int)
             
-            # Recommendation logic
-            def get_rec(row):
-                if row["days_remaining"] < 3 and row["daily_velocity"] > 0: return "🚨 CRITICAL: RESTOCK TODAY"
-                if row["days_remaining"] < 7 and row["daily_velocity"] > 0: return "⚠️ WARNING: REORDER NOW"
-                return "✅ HEALTHY"
-            
-            inventory["Status"] = inventory.apply(get_rec, axis=1)
+            # Vectorized Recommendation logic
+            inventory["Status"] = np.select(
+                [
+                    (inventory["days_remaining"] < 3) & (inventory["daily_velocity"] > 0),
+                    (inventory["days_remaining"] < 7) & (inventory["daily_velocity"] > 0)
+                ],
+                ["🚨 CRITICAL: RESTOCK TODAY", "⚠️ WARNING: REORDER NOW"],
+                default="✅ HEALTHY"
+            )
             
             crit_items = inventory[(inventory["days_remaining"] < 7) & (inventory["daily_velocity"] > 0)].sort_values("days_remaining")
             if not crit_items.empty:
