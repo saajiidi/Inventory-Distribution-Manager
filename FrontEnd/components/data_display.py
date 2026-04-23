@@ -77,29 +77,50 @@ def file_summary(uploaded_file, df: pd.DataFrame | None, required_columns: list[
 
 
 
-def export_to_excel(df: pd.DataFrame, sheet_name: str = "Analysis Report", additional_sheets: dict[str, pd.DataFrame] = None) -> bytes:
-    """High-fidelity Excel export with professional styling and multi-sheet support."""
+def export_to_excel(
+    df: pd.DataFrame, 
+    sheet_name: str = "Detailed Data", 
+    additional_sheets: dict[str, pd.DataFrame] = None,
+    report_title: str = "Business Intelligence Report",
+    summary_metrics: dict[str, Any] = None
+) -> bytes:
+    """High-fidelity Excel export with professional styling, multi-sheet support, and summary insights."""
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
     output = BytesIO()
     
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        # Main Data Sheet
+        # 1. Summary Sheet (If metrics provided)
+        if summary_metrics:
+            summary_df = pd.DataFrame([
+                {"Metric": k, "Value": v} for k, v in summary_metrics.items()
+            ])
+            summary_df.to_excel(writer, index=False, sheet_name="Executive Summary")
+        
+        # 2. Main Data Sheet
         df.to_excel(writer, index=False, sheet_name=sheet_name)
         
-        # Additional Sheets (e.g. Summary, Stats)
+        # 3. Additional Sheets
         if additional_sheets:
             for s_name, s_df in additional_sheets.items():
                 s_df.to_excel(writer, index=False, sheet_name=s_name)
         
         wb = writer.book
         
-        # Consistent Styling for all sheets
-        header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
-        header_font = Font(bold=True, color='FFFFFF')
-        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), 
-                           top=Side(style='thin'), bottom=Side(style='thin'))
+        # Consistent Styling
+        header_fill = PatternFill(start_color='1E293B', end_color='1E293B', fill_type='solid')
+        header_font = Font(bold=True, color='FFFFFF', size=11)
+        summary_fill = PatternFill(start_color='F8FAFC', end_color='F8FAFC', fill_type='solid')
+        thin_border = Border(
+            left=Side(style='thin', color='CBD5E1'), 
+            right=Side(style='thin', color='CBD5E1'), 
+            top=Side(style='thin', color='CBD5E1'), 
+            bottom=Side(style='thin', color='CBD5E1')
+        )
         
         for ws in wb.worksheets:
+            is_summary = ws.title == "Executive Summary"
+            
             # Header Styling
             for cell in ws[1]:
                 cell.fill = header_fill
@@ -107,26 +128,32 @@ def export_to_excel(df: pd.DataFrame, sheet_name: str = "Analysis Report", addit
                 cell.alignment = Alignment(horizontal='center', vertical='center')
                 cell.border = thin_border
             
-            # Freeze Header
-            ws.freeze_panes = 'A2'
+            # Freeze Header (except summary)
+            if not is_summary:
+                ws.freeze_panes = 'A2'
             
-            # Auto-adjust column widths
-            # We need the dataframe associated with this sheet to calculate widths
-            # This is a bit tricky with worksheets, but we can iterate cells
-            for col in ws.columns:
+            # Auto-adjust column widths and apply borders
+            for col_idx, col in enumerate(ws.columns, 1):
                 max_length = 0
-                column = col[0].column_letter # Get the column name
+                column_letter = get_column_letter(col_idx)
+                
                 for cell in col:
+                    # Styling every cell
+                    cell.border = thin_border
+                    if is_summary and cell.row > 1:
+                        cell.fill = summary_fill
+                        
                     try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
+                        val_str = str(cell.value)
+                        if len(val_str) > max_length:
+                            max_length = len(val_str)
                     except:
                         pass
-                ws.column_dimensions[column].width = max(min(max_length + 2, 50), 10)
                 
-                # Row Styling
-                for cell in col:
-                    cell.border = thin_border
+                ws.column_dimensions[column_letter].width = max(min(max_length + 3, 60), 12)
+
+    output.seek(0)
+    return output.read()
 
     output.seek(0)
     return output.read()

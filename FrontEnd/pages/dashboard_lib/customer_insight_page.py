@@ -30,8 +30,8 @@ from BackEnd.services.customer_manager import (
     update_customer_mapping, 
     get_customer_metrics,
     load_raw_customer_data,
-    save_consolidated_data,
-    verify_with_woocommerce
+    save_mapping,
+    build_customer_mapping
 )
 
 from FrontEnd.components import ui
@@ -153,15 +153,9 @@ def _render_consolidation_tab() -> None:
             with st.spinner("Fetching and processing data..."):
                 raw_df = load_raw_customer_data()
                 if not raw_df.empty:
-                    from BackEnd.services.customer_manager import consolidate_customers
-                    consolidated = consolidate_customers(raw_df)
-                    
-                    # Try to verify with WooCommerce
-                    if "dashboard_data" in st.session_state:
-                        woo_sales = st.session_state.dashboard_data.get("sales_active", pd.DataFrame())
-                        consolidated = verify_with_woocommerce(consolidated, woo_sales)
-                    
-                    save_consolidated_data(consolidated)
+                    woo_sales = st.session_state.dashboard_data.get("sales_active", pd.DataFrame()) if "dashboard_data" in st.session_state else pd.DataFrame()
+                    consolidated = build_customer_mapping(woo_sales, raw_df)
+                    save_mapping(consolidated)
                     st.success("Sync Complete!")
                     st.rerun()
                 else:
@@ -200,16 +194,27 @@ def _render_consolidation_tab() -> None:
                 "total_orders": st.column_config.NumberColumn("Orders", format="%d"),
             }
         )
-        
+
         # Quick Export
-        csv = filtered_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download This List (CSV)",
-            data=csv,
-            file_name=f"customer_ledger_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime='text/csv',
-            width="stretch",
+        summary_metrics = {
+            "Total Customers in Ledger": len(df),
+            "Filtered Records": len(filtered_df),
+            "Report Generated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        excel_bytes = ui.export_to_excel(
+            filtered_df, 
+            sheet_name="Customer Ledger", 
+            summary_metrics=summary_metrics
         )
+        st.download_button(
+            label="📥 Download Custom Excel Report",
+            data=excel_bytes,
+            file_name=f"customer_ledger_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            width="stretch",
+            key="customer_ledger_export_btn"
+        )
+        
 
 
 def _on_filter_change(filters: Dict[str, Any]) -> None:
@@ -293,7 +298,7 @@ def _render_main_content(filters: Dict[str, Any]) -> None:
         total_orders = customers_df["total_orders"].sum() if "total_orders" in customers_df.columns else 0
         st.metric("Total Orders (Filtered)", f"{int(total_orders):,}")
     with col2:
-        total_revenue = customers_df["total_value"].sum() if "total_value" in customers_df.columns else 0
+        total_revenue = customers_df["total_revenue"].sum() if "total_revenue" in customers_df.columns else customers_df.get("total_value", pd.Series([0])).sum()
         st.metric("Total Revenue (Filtered)", f"৳{total_revenue:,.0f}")
     with col3:
         avg_aov = customers_df["avg_order_value"].mean() if "avg_order_value" in customers_df.columns else 0
@@ -306,8 +311,8 @@ def _render_main_content(filters: Dict[str, Any]) -> None:
         export_df = customers_df.copy()
         # Select relevant columns for export
         export_columns = [
-            "customer_key", "name", "primary_name", "all_emails", "all_phones",
-            "total_orders", "total_value", "avg_order_value", 
+            "customer_id", "customer_key", "primary_name", "name", "all_emails", "all_phones",
+            "total_orders", "total_revenue", "total_value", "avg_order_value", 
             "first_order", "last_order", "segment"
         ]
         # Only include columns that exist
@@ -328,6 +333,7 @@ def _render_main_content(filters: Dict[str, Any]) -> None:
     st.markdown("---")
     
     # Customer selection
+    id_col = "customer_id" if "customer_id" in customers_df.columns else "customer_key"
     selected_customer = render_customer_selector(
         customers_df=customers_df,
         on_select=_on_customer_select,
@@ -517,7 +523,7 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
     with col1:
         st.metric("Customers", len(customers_df))
     with col2:
-        total = customers_df["total_value"].sum() if "total_value" in customers_df.columns else 0
+        total = customers_df["total_revenue"].sum() if "total_revenue" in customers_df.columns else customers_df.get("total_value", pd.Series([0])).sum()
         st.metric("Revenue", f"৳{total:,.0f}")
     with col3:
         orders = customers_df["total_orders"].sum() if "total_orders" in customers_df.columns else 0
@@ -529,8 +535,8 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
         # Prepare export data
         export_df = customers_df.copy()
         export_columns = [
-            "customer_key", "name", "primary_name", "all_emails", "all_phones",
-            "total_orders", "total_value", "avg_order_value",
+            "customer_id", "customer_key", "primary_name", "name", "all_emails", "all_phones",
+            "total_orders", "total_revenue", "total_value", "avg_order_value",
             "first_order", "last_order", "segment"
         ]
         available_cols = [c for c in export_columns if c in export_df.columns]
@@ -551,10 +557,11 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
     st.markdown("---")
     
     # Simplified selector
+    id_col = "customer_id" if "customer_id" in customers_df.columns else "customer_key"
     selected = st.selectbox(
         "Select a customer to view details",
-        options=customers_df["customer_key"].tolist(),
-        format_func=lambda x: _format_customer_option(x, customers_df),
+        options=customers_df[id_col].tolist() if id_col in customers_df.columns else [],
+        format_func=lambda x: _format_customer_option(x, customers_df, id_col),
         key="ci_tab_selector",
     )
     
@@ -568,23 +575,24 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
             )
 
 
-def _format_customer_option(key: str, df: pd.DataFrame) -> str:
+def _format_customer_option(key: str, df: pd.DataFrame, id_col: str = "customer_id") -> str:
     """Format customer option for selectbox.
     
     Args:
         key: Customer key
         df: Customers DataFrame
+        id_col: Column to match against
         
     Returns:
         Formatted option string
     """
-    match = df[df["customer_key"] == key]
+    match = df[df[id_col] == key]
     if match.empty:
         return key
     
     row = match.iloc[0]
-    name = row.get("name", "Unknown")
+    name = row.get("primary_name", row.get("name", "Unknown"))
     orders = row.get("total_orders", 0)
-    value = row.get("total_value", 0)
+    value = row.get("total_revenue", row.get("total_value", 0))
     
     return f"{name} ({orders} orders, ৳{value:,.0f})"

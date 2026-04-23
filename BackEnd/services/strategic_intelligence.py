@@ -10,9 +10,9 @@ def detect_business_anomalies(sales_df: pd.DataFrame, returns_df: pd.DataFrame) 
     if sales_df.empty:
         return anomalies
 
-    # Ensure datetime types
+    # Ensure datetime types and strip timezone for safe comparison with naive datetime.now()
     if 'order_date' in sales_df.columns:
-        sales_df['order_date'] = pd.to_datetime(sales_df['order_date'])
+        sales_df['order_date'] = pd.to_datetime(sales_df['order_date'], errors='coerce').dt.tz_localize(None)
 
     # 1. Revenue Leakage: "Ghost" Orders (Stale Pendings)
     today = datetime.now()
@@ -115,7 +115,7 @@ def calculate_rfm_churn_risk(sales_df: pd.DataFrame) -> pd.DataFrame:
 
     today = datetime.now()
     sales_df = sales_df.copy()
-    sales_df['order_date'] = pd.to_datetime(sales_df['order_date'])
+    sales_df['order_date'] = pd.to_datetime(sales_df.get('order_date'), errors='coerce').dt.tz_localize(None)
     
     # Aggregate by customer
     rfm = sales_df.groupby('customer_key').agg({

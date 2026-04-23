@@ -28,3 +28,5 @@ STATUS_COLORS = {
 
 # Performance & Memory Optimization
 # Hybrid loading is now the primary path. Static snapshots are deprecated.
+# DATA_SYNC_MODE: 'hybrid' (background threads) or 'direct' (synchronous blocking)
+DATA_SYNC_MODE = os.getenv("DATA_SYNC_MODE", "direct")

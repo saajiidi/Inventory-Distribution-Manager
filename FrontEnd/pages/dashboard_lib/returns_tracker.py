@@ -39,6 +39,7 @@ from BackEnd.services.returns_tracker import (
     track_reordering_customers,
 )
 from FrontEnd.components import ui
+from FrontEnd.utils.config import DATA_SYNC_MODE
 from FrontEnd.utils.error_handler import log_error
 from BackEnd.core.logging_config import get_logger
 
@@ -74,18 +75,26 @@ def _get_date_range_from_window() -> tuple[date, date]:
     elif window == "YTD":
         start_dt = today.replace(month=1, day=1)
         end_dt = today
-    elif window == "Last Month":
-        end_dt = today
-        start_dt = today - timedelta(days=30)
-    elif window == "Last 7 Days":
-        end_dt = today
-        start_dt = today - timedelta(days=7)
     elif window == "Custom Date Range":
         start_dt = st.session_state.get("wc_sync_start_date", today - timedelta(days=30))
         end_dt = st.session_state.get("wc_sync_end_date", today)
     else:
+        window_map = {
+            "Last Day": 1,
+            "Last 3 Days": 3,
+            "Last 4 Days": 4,
+            "Last 7 Days": 7,
+            "Last 15 Days": 15,
+            "Last Month": 30,
+            "Last 3 Months": 90,
+            "Last Quarter": 90,
+            "Last Half Year": 180,
+            "Last 9 Months": 270,
+            "Last Year": 365
+        }
+        days_back = window_map.get(window, 30)
+        start_dt = today - timedelta(days=days_back)
         end_dt = today
-        start_dt = today - timedelta(days=30)
 
     return start_dt, end_dt
 
@@ -143,8 +152,14 @@ def render_returns_tracker_page() -> None:
     is_complete = st.session_state.get("returns_load_complete", False)
 
     if needs_load and not is_loading:
-        _trigger_background_load(sync_window, sales_df_full)
-        st.rerun()
+        if DATA_SYNC_MODE == "direct":
+            with st.spinner("📦 Syncing Returns Data..."):
+                st.session_state["returns_data"] = load_returns_data(sync_window=sync_window, sales_df=sales_df_full)
+                st.session_state["last_returns_sync"] = sync_window
+                st.session_state["returns_load_complete"] = True
+        else:
+            _trigger_background_load(sync_window, sales_df_full)
+            st.rerun()
 
     # 1. Render skeleton if loading AND no data exists yet
     if is_loading and "returns_data" not in st.session_state:
@@ -209,7 +224,7 @@ def render_returns_tracker_page() -> None:
         _render_customer_recovery(df, sales_df)
 
     with tab_inventory:
-        _render_return_inventory(df, sales_df)
+        _render_return_inventory(df, sales_df, key_prefix="top_tab")
 
     with tab_ledger:
         _render_details_table(df, sales_df)
@@ -254,9 +269,10 @@ def _render_date_filter(df: pd.DataFrame) -> pd.DataFrame:
     if "issue_type" in df.columns:
         all_types = sorted(df["issue_type"].unique().tolist())
         selected_types = st.multiselect(
-            "Issue Types", all_types,
+            "Filter by Issue Type",
+            options=all_types,
             default=all_types,
-            key="returns_type_filter"
+            key="ledger_issue_type_filter"
         )
     else:
         selected_types = []
@@ -298,6 +314,35 @@ def _get_gross_sales_context():
 # KPI CARDS
 # ═══════════════════════════════════════════════════════════════════
 
+def _ui_return_metric(label: str, value: str, icon: str, help_text: str, border_color: str):
+    """Premium custom metric card for Returns Insights."""
+    st.markdown(f"""
+        <div style="
+            background: var(--secondary-background-color);
+            border: 1px solid rgba(128, 128, 128, 0.1);
+            border-top: 4px solid {border_color};
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {label}
+                </div>
+                <div style="font-size: 1.1rem;">
+                    {icon}
+                </div>
+            </div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--text-color); line-height: 1.2; margin-bottom: 4px;">
+                {value}
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">
+                {help_text}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
 def _render_kpi_cards(metrics: dict) -> None:
     """Render the executive KPI cards using premium components."""
     st.markdown("#### 📦 Operational Intelligence")
@@ -306,41 +351,41 @@ def _render_kpi_cards(metrics: dict) -> None:
     
     def format_pct(val):
         if t_ord > 0:
-            return f"{val:,} ({(val / t_ord * 100):.1f}%)"
+            return f"{val:,} <span style='font-size:0.9rem; color:#64748b; font-weight:500;'>({(val / t_ord * 100):.1f}%)</span>"
         return f"{val:,}"
 
     cols = st.columns(4)
     
     with cols[0]:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Total Issues",
             value=format_pct(metrics.get('total_issues', 0)),
             help_text=f"Out of {t_ord:,} total orders",
-            icon="📦"
+            icon="📦", border_color="#3b82f6"
         )
 
     with cols[1]:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Returns",
             value=format_pct(metrics.get('return_count', 0)),
             help_text=f"Paid: {metrics.get('paid_return_count', 0)} | Non-Paid: {metrics.get('non_paid_return_count', 0)}",
-            icon="🔴"
+            icon="🔴", border_color="#ef4444"
         )
 
     with cols[2]:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Partials",
             value=format_pct(metrics.get('partial_count', 0)),
             help_text=f"৳{metrics.get('partial_amounts', 0):,.0f} impact",
-            icon="🟡"
+            icon="🟡", border_color="#eab308"
         )
 
     with cols[3]:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Exchanges",
             value=format_pct(metrics.get('exchange_count', 0)),
             help_text="Product/Size swaps",
-            icon="🟣"
+            icon="🟣", border_color="#8b5cf6"
         )
 
 
@@ -361,50 +406,50 @@ def _render_financial_impact_summary(metrics: dict) -> None:
     # Primary Row: High-level financial outcome
     c1, c2, c3 = st.columns(3)
     with c1:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Net Settled Sales",
             value=f"৳{net_sales:,.0f}",
             help_text=f"After {metrics.get('return_count', 0)} returns & {metrics.get('partial_count', 0)} partials",
-            icon="💰"
+            icon="💰", border_color="#10b981"
         )
     with c2:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Net Revenue Yield",
             value=f"{net_yield_pct:.1f}%",
             help_text=f"Efficiency: ৳{net_sales:,.0f} / ৳{gross:,.0f}",
-            icon="📊"
+            icon="📊", border_color="#3b82f6"
         )
     with c3:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Total Loss Attribution",
             value=f"৳{(metrics.get('return_value_extracted', 0) + partial_loss):,.0f}",
             help_text="Revenue lost to returns and partials",
-            icon="📉"
+            icon="📉", border_color="#ef4444"
         )
 
     # Secondary Row: Operational impact
     c4, c5, c6 = st.columns(3)
     with c4:
         items_pct_text = f"{total_returned_items_pct:.1f}% of {total_items_sold:,} units" if total_items_sold > 0 else "0% items returned"
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Returned Item Volume",
             value=f"{total_ret_qty} Units",
             help_text=items_pct_text,
-            icon="📦"
+            icon="📦", border_color="#f59e0b"
         )
     with c5:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Returned Order Share",
             value=f"{returned_orders_pct:.1f}%",
             help_text=f"1 in every {int(100/returned_orders_pct) if returned_orders_pct > 0 else 'N/A'} orders",
-            icon="📈"
+            icon="📈", border_color="#ec4899"
         )
     with c6:
-        ui.metric_highlight(
+        _ui_return_metric(
             label="Exchanged Items",
             value=f"{metrics.get('total_exchanged_items', 0)} Units",
             help_text="Product swaps (No revenue loss)",
-            icon="🔄"
+            icon="🔄", border_color="#8b5cf6"
         )
 
     # Financial Integrity Chart
@@ -514,7 +559,7 @@ def _render_charts(df: pd.DataFrame, metrics: dict, sales_df: pd.DataFrame) -> N
         _render_customer_recovery(df, sales_df)
 
     with tab6:
-        _render_return_inventory(df, sales_df)
+        _render_return_inventory(df, sales_df, key_prefix="charts_tab")
 
     with tab7:
         _render_returned_items_list(df)
@@ -848,7 +893,7 @@ def _render_customer_recovery(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
     )
 
 
-def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
+def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame, key_prefix: str = "default") -> None:
     """Explode order-level returns into an item-centric inventory view."""
     st.markdown("#### 📋 Return Item Inventory")
     st.caption("A granular list of every individual product returned, including size and category.")
@@ -909,11 +954,11 @@ def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
         master_cats = get_master_category_list()
         # Filter to only categories present in data but preserve master order
         available_cats = [c for c in master_cats if c in item_df["Category"].values]
-        cat_filter = st.multiselect("Filter Category", options=available_cats, format_func=format_category_label)
+        cat_filter = st.multiselect("Filter Category", options=available_cats, format_func=format_category_label, key=f"{key_prefix}_returns_inventory_cat_filter")
     with c2:
-        type_filter = st.multiselect("Filter Issue Type", options=sorted(item_df["Type"].unique()))
+        type_filter = st.multiselect("Filter Issue Type", options=sorted(item_df["Type"].unique()), key=f"{key_prefix}_inventory_analysis_type_filter")
     with c3:
-        search_query = st.text_input("🔍 Search Product/SKU", placeholder="Enter name or SKU...")
+        search_query = st.text_input("🔍 Search Product/SKU", placeholder="Enter name or SKU...", key=f"{key_prefix}_inventory_analysis_search")
 
     # Apply filters
     if cat_filter:
@@ -1153,18 +1198,17 @@ def ui_metric_small(label: str, value: str, icon: str):
     """Small metric helper with premium glassmorphism styling."""
     st.markdown(f"""
         <div style="
-            background: var(--surface);
-            border: 1px solid var(--outline);
+            background: var(--secondary-background-color);
+            border: 1px solid rgba(128, 128, 128, 0.1);
             border-radius: 12px;
             padding: 12px;
             text-align: center;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            backdrop-filter: blur(10px);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         ">
-            <div style="font-size: 1.2rem; margin-bottom: 4px;">{icon}</div>
-            <div style="font-size: 0.7rem; color: #6b7280; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">{label}</div>
-            <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-color);">{value}</div>
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">{icon}</div>
+            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;">{label}</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: var(--text-color);">{value}</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1424,22 +1468,3 @@ def _trigger_background_load(sync_window: str, sales_df: pd.DataFrame):
     )
     add_script_run_context(thread)
     thread.start()
-
-
-def _load_returns_async(window: str, sales_df: pd.DataFrame):
-    """Background worker for returns data loading."""
-    try:
-        # Avoid circular import
-        from BackEnd.services.returns_tracker import load_returns_data
-        
-        df = load_returns_data(sync_window=window, sales_df=sales_df)
-        
-        # Update session state safely
-        st.session_state.returns_data = df
-        st.session_state["last_returns_sync"] = window
-        st.session_state["returns_load_complete"] = True
-    except Exception as e:
-        from BackEnd.core.logging_config import get_logger
-        get_logger("returns_tracker_ui").exception("Background returns load failed")
-    finally:
-        st.session_state["returns_loading"] = False

@@ -242,6 +242,18 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
 
     # --- Strategic Visuals & Breakdown ---
     st.divider()
+    
+    # Pre-calculate bulk propensity for export and visuals
+    order_basket = w_df.groupby("order_id")["qty"].sum().reset_index()
+    total_orders_in_cluster = len(order_basket)
+    if total_orders_in_cluster > 0:
+        single_piece = len(order_basket[order_basket["qty"] == 1])
+        bulk_pieces = len(order_basket[order_basket["qty"] >= 3])
+        mid_piece = total_orders_in_cluster - single_piece - bulk_pieces
+        p_single = (single_piece / total_orders_in_cluster) * 100
+        p_bulk = (bulk_pieces / total_orders_in_cluster) * 100
+        p_other = (mid_piece / total_orders_in_cluster) * 100
+
     rd1, rd2 = st.columns([3, 1])
     with rd1:
         st.markdown(f"#### 📊 Strategic Analytics Export")
@@ -393,20 +405,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         st.markdown("##### 🧠 Bulk Purchase Dynamics (ML Analysis)")
         st.caption("Analyzing the propensity for bulk purchasing within this cluster. (Single Piece vs 3+ Units)")
         
-        # Calculate Propensity
-        # Use order_total and line items to determine if they bought 1 or 3+ of THIS CATEGORY items
-        order_basket = w_df.groupby("order_id")["qty"].sum().reset_index()
-        total_orders_in_cluster = len(order_basket)
-        
         if total_orders_in_cluster > 0:
-            single_piece = len(order_basket[order_basket["qty"] == 1])
-            bulk_pieces = len(order_basket[order_basket["qty"] >= 3])
-            mid_piece = total_orders_in_cluster - single_piece - bulk_pieces # Usually 2 items
-            
-            p_single = (single_piece / total_orders_in_cluster) * 100
-            p_bulk = (bulk_pieces / total_orders_in_cluster) * 100
-            p_other = (mid_piece / total_orders_in_cluster) * 100
-            
             # Optimized Columns for readability
             bm1, bm2, bm3 = st.columns(3)
             with bm1: ui.metric_highlight("SINGLE PIECE PROPENSITY", f"{p_single:.1f}%", f"Orders: {single_piece}", icon="🛍️")

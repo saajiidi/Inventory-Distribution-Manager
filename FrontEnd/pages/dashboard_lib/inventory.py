@@ -236,14 +236,37 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     # 3. Report Summary & Download
     d1, d2 = st.columns([2, 1])
     with d1:
-        st.markdown("#### Complete Inventory Snapshot")
-        st.caption("Includes all published products across the entire store catalog.")
+        st.markdown("#### Strategic Inventory Snapshot")
+        st.caption("Exports data based on active 'Inventory Sniper' filters and current velocity metrics.")
     with d2:
-        excel_bytes = ui.export_to_excel(inventory, "Inventory Health Report")
+        # Apply active filters to the exported dataframe
+        export_inv = inventory.copy()
+        if active_cat: export_inv = export_inv[export_inv["Category"].str.startswith(active_cat, na=False)]
+        if active_trend: export_inv = export_inv[export_inv["Trend"] == active_trend]
+        if active_prod:
+            export_inv["_display_name"] = export_inv["_clean_name"] + " [" + export_inv["SKU"].astype(str) + "]"
+            export_inv = export_inv[export_inv["_display_name"] == active_prod]
+        
+        summary_metrics = {
+            "Total SKU Records": len(export_inv),
+            "Total Stock Quantity": export_inv["Stock Quantity"].sum(),
+            "Total Asset Value (৳)": f"{export_inv['Value'].sum():,.2f}",
+            "Low Stock Items": len(export_inv[export_inv["Stock Quantity"] <= 5]),
+            "Fast Moving Items": len(export_inv[export_inv["Trend"] == "🔥 Fast Moving"]),
+            "Dead Stock Items": len(export_inv[export_inv["Trend"] == "❄️ Non-Moving"]),
+            "Report Generated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        excel_bytes = ui.export_to_excel(
+            export_inv.drop(columns=[c for c in export_inv.columns if c.startswith("_")], errors="ignore"), 
+            sheet_name="Inventory Data",
+            summary_metrics=summary_metrics
+        )
         st.download_button(
-            label="📊 Download Full Report",
+            label="📊 Download Custom Report",
             data=excel_bytes,
-            file_name=f"deen_inventory_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            file_name=f"deen_inventory_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            width="stretch"
+            width="stretch",
+            key="inv_custom_export_btn"
         )

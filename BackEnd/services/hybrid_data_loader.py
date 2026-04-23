@@ -39,7 +39,8 @@ from BackEnd.core.cache_storage import (
     write_json as storage_write_json,
     write_parquet as storage_write_parquet,
 )
-from BackEnd.utils.sales_schema import ensure_sales_schema
+from BackEnd.utils.sales_schema import ensure_sales_schema, dedupe_sales_data
+from FrontEnd.utils.config import DATA_SYNC_MODE
 from FrontEnd.utils.error_handler import log_error
 
 # Configuration
@@ -342,7 +343,7 @@ def load_full_woocommerce_history(end_date: Optional[str] = None) -> pd.DataFram
     if cached is None or cached.empty:
         return pd.DataFrame()
 
-    merged = _dedupe_orders(ensure_sales_schema(cached))
+    merged = dedupe_sales_data(ensure_sales_schema(cached))
     if end_date:
         end_ts = pd.to_datetime(end_date, errors="coerce")
         if pd.notna(end_ts):
@@ -518,7 +519,7 @@ def refresh_woocommerce_orders_cache(
         if cache_path.exists():
             existing = _read_parquet(cache_path)
             
-        merged = _dedupe_orders(pd.concat([ensure_sales_schema(df_new), ensure_sales_schema(existing)], ignore_index=True))
+        merged = dedupe_sales_data(pd.concat([ensure_sales_schema(df_new), ensure_sales_schema(existing)], ignore_index=True))
         _write_parquet(merged, cache_path)
         
         # Update meta
@@ -576,14 +577,20 @@ def load_woocommerce_live_data(
     days: int = 30,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    force: bool = False,
 ) -> pd.DataFrame:
-    """Intelligent live loader: serves from cache if fresh, otherwise triggers background sync."""
+    """Intelligent live loader: serves from cache if fresh, otherwise triggers sync."""
     status = get_woocommerce_orders_cache_status(start_date, end_date, days=days)
-    if not status["needs_refresh"]:
+    if not force and not status["needs_refresh"]:
         return load_cached_woocommerce_live_data(start_date=start_date, end_date=end_date, days=days)
     
-    # Trigger background refresh if not running
-    start_orders_background_refresh(start_date=start_date, end_date=end_date, days=days)
+    # Check if we should use direct (synchronous) or hybrid (background) sync
+    if DATA_SYNC_MODE == "direct":
+        # Direct fetch: Synchronous blocking call (the "early type" requested by user)
+        return refresh_woocommerce_orders_cache(days=days, start_date=start_date, end_date=end_date)
+    
+    # Hybrid fetch: Trigger background refresh if not running
+    start_orders_background_refresh(start_date=start_date, end_date=end_date, days=days, force=force)
     
     # Return what we have (even if stale) to keep UI responsive
     return load_cached_woocommerce_live_data(start_date=start_date, end_date=end_date, days=days)
@@ -619,6 +626,7 @@ def load_hybrid_data(
     end_date: Optional[str] = None,
     include_woocommerce: bool = True,
     woocommerce_mode: str = "live",
+    force: bool = False,
 ) -> pd.DataFrame:
     """Primary data entry point. Orchestrates cache vs live loading."""
     if not include_woocommerce:
@@ -627,13 +635,13 @@ def load_hybrid_data(
     df_woo = (
         load_cached_woocommerce_live_data(start_date=start_date, end_date=end_date)
         if woocommerce_mode == "cache_only"
-        else load_woocommerce_live_data(start_date=start_date, end_date=end_date)
+        else load_woocommerce_live_data(start_date=start_date, end_date=end_date, force=force)
     )
     if df_woo.empty:
         return pd.DataFrame()
 
     merged = ensure_sales_schema(df_woo)
-    merged = _dedupe_orders(merged)
+    merged = dedupe_sales_data(merged)
 
     if start_date:
         start_ts = pd.to_datetime(start_date, errors="coerce")

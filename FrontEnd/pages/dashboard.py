@@ -16,6 +16,7 @@ from BackEnd.services.hybrid_data_loader import (
     load_hybrid_data,
     start_orders_background_refresh,
 )
+from FrontEnd.utils.config import DATA_SYNC_MODE
 from FrontEnd.components import ui
 from .dashboard_lib.data_helpers import (
     apply_global_filters,
@@ -215,7 +216,7 @@ def _build_core_dashboard_data(
         force=should_force,
     )
 
-    if cache_empty:
+    if cache_empty and DATA_SYNC_MODE != "direct":
         if refresh_started or orders_status.get("is_running"):
             _render_initial_sync_placeholder(
                 window_config["start_date_str"],
@@ -230,6 +231,7 @@ def _build_core_dashboard_data(
                     start_date=window_config["start_date_str"],
                     end_date=window_config["end_date_str"],
                     woocommerce_mode="live",
+                    force=should_force,
                 ),
                 DASHBOARD_SALES_COLUMNS,
             )
@@ -241,6 +243,7 @@ def _build_core_dashboard_data(
                 start_date=window_config["start_date_str"],
                 end_date=window_config["end_date_str"],
                 woocommerce_mode=sync_mode,
+                force=should_force,
             ),
             DASHBOARD_SALES_COLUMNS,
         )
@@ -319,7 +322,7 @@ def _enrich_dashboard_data_for_selection(
 
         data["stock"] = stock_df
 
-    if needs_customers and data.get("customers") is None:
+    if selection in SECTIONS_REQUIRING_CUSTOMERS and data.get("customers") is None:
         from BackEnd.services.customer_insights import generate_customer_insights_from_sales
 
         with st.spinner("Building customer intelligence..."):
@@ -478,6 +481,47 @@ def render_intelligence_hub_page():
                 </div>
                 """,
                 unsafe_allow_html=True,
+            )
+
+        st.divider()
+        
+        # --- Strategic Export ---
+        ex_col1, ex_col2 = st.columns([3, 1])
+        with ex_col1:
+            st.markdown("#### 💎 Executive Strategic Export")
+            st.caption("Generate a professional multi-sheet report containing the current filtered dataset and key performance metrics.")
+        with ex_col2:
+            summary_metrics = {
+                "Report Window": window,
+                "Gross Revenue (৳)": f"{total_rev:,.2f}",
+                "Order Volume": f"{order_count:,}",
+                "Customer Count": f"{cust_count:,}",
+                "Units Sold": f"{total_items:,}",
+                "AOV (৳)": f"{total_rev/order_count:,.2f}" if order_count > 0 else "0",
+                "Growth vs Prev": d_rev_label,
+                "Generated At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            # Additional analysis: Top Categories
+            from BackEnd.core.categories import get_subcategory_name
+            cat_df = data["sales_active"].copy()
+            cat_df["Sub-Category"] = cat_df["Category"].apply(get_subcategory_name)
+            top_cats = cat_df.groupby("Sub-Category")["item_revenue"].sum().reset_index().sort_values("item_revenue", ascending=False).head(10)
+            
+            report_bytes = ui.export_to_excel(
+                data["sales_active"].drop(columns=[c for c in data["sales_active"].columns if c.startswith("_")], errors="ignore"),
+                sheet_name="Sales Data",
+                summary_metrics=summary_metrics,
+                additional_sheets={"Top Categories": top_cats}
+            )
+            
+            st.download_button(
+                label="📊 Export Full Report",
+                data=report_bytes,
+                file_name=f"deen_sales_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                width="stretch",
+                key="sales_overview_export_btn"
             )
 
         st.divider()

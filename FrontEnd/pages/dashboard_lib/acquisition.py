@@ -13,7 +13,10 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
     
     # --- Synthetic Acquisition Engine ---
     # We anchor the simulation on real total orders
-    total_orders = df_sales['order_id'].nunique()
+    total_orders = df_sales['order_id'].nunique() if 'order_id' in df_sales.columns else 0
+    if total_orders == 0:
+        st.info("Insufficient order data to simulate acquisition metrics.")
+        return
     
     # Model: ~3.2% Conversion Rate
     cvr = 0.032
@@ -78,8 +81,12 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
     st.plotly_chart(fig_funnel, width="stretch")
 
     # Simulate time series
+    if 'order_date' not in df_sales.columns:
+        return
+        
     df_ts_base = df_sales[df_sales['order_date'].notna()].copy()
-    df_ts_base['date'] = pd.to_datetime(df_ts_base['order_date']).dt.date
+    df_ts_base['date'] = pd.to_datetime(df_ts_base['order_date'], errors='coerce').dt.tz_localize(None).dt.date
+    df_ts_base = df_ts_base.dropna(subset=['date'])
     dates = sorted(df_ts_base['date'].unique())
     ts_data = []
     for d in dates:

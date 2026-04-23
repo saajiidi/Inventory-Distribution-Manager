@@ -117,7 +117,15 @@ class WooCommerceService:
         all_dfs = []
         page = 1
         
-        status_container = st.empty() if self.ui_enabled and show_progress else None
+        status_container = None
+        if self.ui_enabled and show_progress:
+            try:
+                # Prevent Streamlit Thread crashes by verifying context
+                from streamlit.runtime.scriptrunner import get_script_run_ctx
+                if get_script_run_ctx() is not None:
+                    status_container = st.empty()
+            except Exception:
+                pass
         
         if status_container:
             status_container.info(f"Initializing Smart Sync for status: {status}...")

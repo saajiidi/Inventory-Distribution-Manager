@@ -1724,7 +1724,7 @@ def track_reordering_customers(returns_df: pd.DataFrame, sales_df: pd.DataFrame)
     
     sales_local = sales_df.copy()
     sales_local["order_id_str"] = sales_local["order_id"].astype(str)
-    sales_local["order_date"] = pd.to_datetime(sales_local["order_date"])
+    sales_local["order_date"] = pd.to_datetime(sales_local.get("order_date"), errors="coerce").dt.tz_localize(None)
     
     # Get unique order-customer mapping
     order_cust = sales_local.drop_duplicates(subset=["order_id_str"])[["order_id_str", "customer_key", "customer_name", "order_date"]]

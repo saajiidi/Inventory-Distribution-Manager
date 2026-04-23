@@ -216,6 +216,9 @@ def _render_workspace_sidebar():
             mins = int(diff.total_seconds() / 60)
             sync_time = f"{mins}m ago" if mins > 0 else "Just now"
 
+        from FrontEnd.utils.config import DATA_SYNC_MODE
+        mode_label = "Direct (Synchronous)" if DATA_SYNC_MODE == "direct" else "Hybrid (Background)"
+        
         st.markdown(f"""
             <div class="heartbeat-card">
                 <div class="pulse-text">
@@ -224,6 +227,7 @@ def _render_workspace_sidebar():
                 </div>
                 <div style="font-size:0.8rem; color:var(--on-surface-variant); margin-top:8px;">
                     <b>Sync Fidelity:</b> {sync_time}<br>
+                    <b>Sync Mode:</b> {mode_label}<br>
                     <span style="opacity:0.7;">Sajid | Executive Data Stream</span>
                 </div>
             </div>

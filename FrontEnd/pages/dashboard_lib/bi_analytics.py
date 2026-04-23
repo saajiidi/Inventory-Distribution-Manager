@@ -177,7 +177,7 @@ def render_ml_forecast_charts(daily: pd.DataFrame, ml_bundle: dict = None):
     # If not pre-calculated, check for forecasting dependencies for live training
     if not use_precalculated:
         try:
-            from BackEnd.services.ts_forecast import generate_forecasts
+            from BackEnd.services.ml_engine import run_automl_forecast as generate_forecasts
             # Pre-flight check
             import statsmodels
             import sklearn

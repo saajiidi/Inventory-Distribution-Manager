@@ -111,3 +111,10 @@ def pick_first_existing(df: pd.DataFrame, *canonical_names: str) -> str:
         if col:
             return col
     return ""
+
+
+def dedupe_sales_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure order-item level integrity by removing duplicate records."""
+    if df.empty or "order_item_key" not in df.columns:
+        return df
+    return df.drop_duplicates(subset=["order_item_key"], keep="first")

@@ -13,15 +13,15 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
     # 1. Logistics Efficiency: Shipping Latency
     st.markdown("#### 🚚 Logistics Velocity")
     
-    # Ensure date types
+    # Ensure date types and strip timezones to prevent subtraction crashes
     df = df_sales.copy()
-    df['Order Date'] = pd.to_datetime(df['Order Date'])
-    df['Shipped Date'] = pd.to_datetime(df['Shipped Date'], errors='coerce')
+    df['order_date'] = pd.to_datetime(df.get('order_date'), errors='coerce').dt.tz_localize(None)
+    df['shipped_date'] = pd.to_datetime(df.get('shipped_date'), errors='coerce').dt.tz_localize(None)
     
     # Filter for shipped/completed orders to calculate latency
-    shipped_df = df[df['Shipped Date'].notna()].copy()
+    shipped_df = df[df['shipped_date'].notna()].copy()
     if not shipped_df.empty:
-        shipped_df['latency'] = (shipped_df['Shipped Date'] - shipped_df['Order Date']).dt.days
+        shipped_df['latency'] = (shipped_df['shipped_date'] - shipped_df['order_date']).dt.days
         avg_latency = shipped_df['latency'].mean()
         
         c1, c2 = st.columns([1, 2])
@@ -40,16 +40,16 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
                          color_discrete_sequence=['#F59E0B'])
             st.plotly_chart(fig, width="stretch")
     else:
-        st.info("No 'Shipped Date' data available in this window to calculate velocity.")
+        st.info("No 'shipped_date' data available in this window to calculate velocity.")
 
     st.divider()
 
     # 2. Refund Analytics
     st.markdown("#### 🔄 Returns & Refund Control")
     
-    refund_df = df[df['Order Status'].astype(str).str.lower() == 'refunded']
-    total_orders = df['Order Number'].nunique()
-    refund_count = refund_df['Order Number'].nunique()
+    refund_df = df[df['order_status'].astype(str).str.lower() == 'refunded'] if 'order_status' in df.columns else pd.DataFrame()
+    total_orders = df['order_id'].nunique() if 'order_id' in df.columns else 0
+    refund_count = refund_df['order_id'].nunique() if 'order_id' in refund_df.columns else 0
     refund_rate = (refund_count / total_orders * 100) if total_orders > 0 else 0
     
     m1, m2 = st.columns(2)
@@ -60,16 +60,17 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         st.progress(min(refund_rate / 15.0, 1.0), text=f"Tolerance: {target}%")
 
     # Weekly Refund Trend
-    df['week'] = df['Order Date'].dt.to_period('W').apply(lambda r: r.start_time)
-    weekly_refunds = df.groupby('week').apply(
-        lambda x: (x[x['Order Status'].str.lower() == 'refunded']['Order Number'].nunique() / x['Order Number'].nunique() * 100) if not x.empty else 0
-    ).reset_index()
-    weekly_refunds.columns = ['Week', 'Refund Rate']
-    
-    fig_ref = px.line(weekly_refunds, x='Week', y='Refund Rate', title="Weekly Refund Rate Trend",
-                      markers=True, color_discrete_sequence=['#EF4444'])
-    fig_ref.add_hline(y=5.0, line_dash="dash", line_color="green", annotation_text="Target")
-    st.plotly_chart(fig_ref, width="stretch")
+    if 'order_date' in df.columns and 'order_status' in df.columns and 'order_id' in df.columns:
+        df['week'] = df['order_date'].dt.to_period('W').apply(lambda r: r.start_time)
+        weekly_refunds = df.groupby('week').apply(
+            lambda x: (x[x['order_status'].str.lower() == 'refunded']['order_id'].nunique() / x['order_id'].nunique() * 100) if x['order_id'].nunique() > 0 else 0
+        ).reset_index()
+        weekly_refunds.columns = ['Week', 'Refund Rate']
+        
+        fig_ref = px.line(weekly_refunds, x='Week', y='Refund Rate', title="Weekly Refund Rate Trend",
+                          markers=True, color_discrete_sequence=['#EF4444'])
+        fig_ref.add_hline(y=5.0, line_dash="dash", line_color="green", annotation_text="Target")
+        st.plotly_chart(fig_ref, width="stretch")
 
     st.divider()
 
@@ -95,7 +96,12 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         }).reset_index()
         cat_stock.columns = ['Category', 'Product Count', 'Total Stock']
         
-        st.plotly_chart(px.treemap(stock_df, path=['Category', 'Name'], values='Stock Quantity', 
+        # Guard against NaNs in Plotly Treemap path
+        plot_stock = stock_df.copy()
+        plot_stock['Category'] = plot_stock.get('Category', 'Unknown').fillna('Unknown')
+        plot_stock['Name'] = plot_stock.get('Name', 'Unnamed').fillna('Unnamed')
+        
+        st.plotly_chart(px.treemap(plot_stock, path=['Category', 'Name'], values='Stock Quantity', 
                                    title="Inventory Volume by Category"), width="stretch")
     else:
         st.warning("Inventory data currently unavailable.")
