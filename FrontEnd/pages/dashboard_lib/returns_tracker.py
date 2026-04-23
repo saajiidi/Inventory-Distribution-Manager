@@ -724,7 +724,7 @@ def _render_reason_charts(metrics: dict) -> None:
     """Return reason distribution charts."""
     reasons = metrics.get("reason_counts", {})
 
-    if not reasons:
+    if not isinstance(reasons, dict) or not reasons:
         st.info("No live inventory data is available yet. Initializing sync...")
         return
 

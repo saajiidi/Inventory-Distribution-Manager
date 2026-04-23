@@ -443,105 +443,6 @@ def render_intelligence_hub_page():
     st.markdown("<br>", unsafe_allow_html=True)
 
     if selection == "💎 Sales Overview":
-        from BackEnd.services.strategic_intelligence import generate_executive_narrative
-        from .dashboard_lib.bi_analytics import render_sales_overview_timeseries
-        from .dashboard_lib.story import render_dashboard_story
-
-        story_points = render_dashboard_story(
-            data["sales_active"],
-            data.get("customers", pd.DataFrame()),
-            data.get("ml") or {},
-            window,
-            df_prev_sales=data["prev_sales_active"],
-            return_raw=True,
-        )
-        briefing_points = generate_executive_narrative(
-            data["sales_active"],
-            st.session_state.get("returns_data", pd.DataFrame()),
-            total_rev,
-            prev_rev_val,
-        )
-        all_points = story_points + briefing_points
-
-        with st.container():
-            st.markdown(
-                f"""
-                <div style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.08) 0%, rgba(30, 27, 75, 0.05) 100%);
-                            border-left: 5px solid #3b82f6; border-radius: 12px; padding: 24px; margin: 20px 0;
-                            border: 1px solid rgba(59, 130, 246, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
-                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <div style="font-size: 1.2rem; margin-right: 12px;">💎</div>
-                        <div style="font-weight: 800; color: #3b82f6; font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase;">
-                            Strategic Executive Intelligence
-                        </div>
-                    </div>
-                    <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-color);">
-                        {"<div style='margin-bottom:10px;'>" + "</div><div style='margin-bottom:10px;'>".join([f"• {point}" for point in all_points]) + "</div>"}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        st.divider()
-        
-        # --- Strategic Export ---
-        ex_col1, ex_col2 = st.columns([3, 1])
-        with ex_col1:
-            st.markdown("#### 💎 Executive Strategic Export")
-            st.caption("Generate a professional multi-sheet report containing the current filtered dataset and key performance metrics.")
-        with ex_col2:
-            summary_metrics = {
-                "Report Window": window,
-                "Gross Revenue (৳)": f"{total_rev:,.2f}",
-                "Order Volume": f"{order_count:,}",
-                "Customer Count": f"{cust_count:,}",
-                "Units Sold": f"{total_items:,}",
-                "AOV (৳)": f"{total_rev/order_count:,.2f}" if order_count > 0 else "0",
-                "Growth vs Prev": d_rev_label,
-                "Generated At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            
-            # Additional analysis: Top Categories
-            from BackEnd.core.categories import get_subcategory_name
-            cat_df = data["sales_active"].copy()
-            cat_df["Sub-Category"] = cat_df["Category"].apply(get_subcategory_name)
-            top_cats = cat_df.groupby("Sub-Category")["item_revenue"].sum().reset_index().sort_values("item_revenue", ascending=False).head(10)
-            
-            ai_insights = pd.DataFrame({"Executive Narrative & Intelligence Briefing": all_points})
-            
-            additional_sheets = {
-                "Top Categories": top_cats,
-                "AI Briefing": ai_insights
-            }
-            
-            if data.get("ml") and "forecast" in data["ml"]:
-                fc = data["ml"]["forecast"]
-                if not fc.empty:
-                    additional_sheets["ML Forecasts"] = fc[["item_name", "forecast_7d_units", "risk_level", "reorder_comment"]]
-            if data.get("ml") and "anomalies" in data["ml"]:
-                an = data["ml"]["anomalies"]
-                if not an.empty:
-                    additional_sheets["Detected Anomalies"] = an[["order_day", "metric", "direction", "commentary"]]
-            
-            report_bytes = ui.export_to_excel(
-                data["sales_active"].drop(columns=[c for c in data["sales_active"].columns if c.startswith("_")], errors="ignore"),
-                sheet_name="Sales Data",
-                summary_metrics=summary_metrics,
-                additional_sheets=additional_sheets
-            )
-            
-            st.download_button(
-                label="📊 Export Full Report",
-                data=report_bytes,
-                file_name=f"deen_sales_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                width="stretch",
-                key="sales_overview_export_btn"
-            )
-
-        st.divider()
-        
         # --- Sales Integrity Gap Chart ---
         from BackEnd.services.returns_tracker import calculate_net_sales_metrics
         import plotly.graph_objects as go
@@ -628,7 +529,107 @@ def render_intelligence_hub_page():
                 st.plotly_chart(fig_gap, width="stretch", config={'displayModeBar': False})
                 st.divider()
 
+        from BackEnd.services.strategic_intelligence import generate_executive_narrative
+        from .dashboard_lib.story import render_dashboard_story
+
+        story_points = render_dashboard_story(
+            data["sales_active"],
+            data.get("customers", pd.DataFrame()),
+            data.get("ml") or {},
+            window,
+            df_prev_sales=data["prev_sales_active"],
+            return_raw=True,
+        )
+        briefing_points = generate_executive_narrative(
+            data["sales_active"],
+            st.session_state.get("returns_data", pd.DataFrame()),
+            total_rev,
+            prev_rev_val,
+        )
+        all_points = story_points + briefing_points
+
+        with st.container():
+            st.markdown(
+                f"""
+                <div style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.08) 0%, rgba(30, 27, 75, 0.05) 100%);
+                            border-left: 5px solid #3b82f6; border-radius: 12px; padding: 24px; margin: 20px 0;
+                            border: 1px solid rgba(59, 130, 246, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="font-size: 1.2rem; margin-right: 12px;">💎</div>
+                        <div style="font-weight: 800; color: #3b82f6; font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase;">
+                            Strategic Executive Intelligence
+                        </div>
+                    </div>
+                    <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-color);">
+                        {"<div style='margin-bottom:10px;'>" + "</div><div style='margin-bottom:10px;'>".join([f"• {point}" for point in all_points]) + "</div>"}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        st.divider()
+        
+        from .dashboard_lib.bi_analytics import render_sales_overview_timeseries
         render_sales_overview_timeseries(data["sales_active"], ml_bundle=data.get("ml") or {})
+
+        st.divider()
+
+        # --- Strategic Export ---
+        ex_col1, ex_col2 = st.columns([3, 1])
+        with ex_col1:
+            st.markdown("#### 💎 Executive Strategic Export")
+            st.caption("Generate a professional multi-sheet report containing the current filtered dataset and key performance metrics.")
+        with ex_col2:
+            summary_metrics = {
+                "Report Window": window,
+                "Gross Revenue (৳)": f"{total_rev:,.2f}",
+                "Order Volume": f"{order_count:,}",
+                "Customer Count": f"{cust_count:,}",
+                "Units Sold": f"{total_items:,}",
+                "AOV (৳)": f"{total_rev/order_count:,.2f}" if order_count > 0 else "0",
+                "Growth vs Prev": d_rev_label,
+                "Generated At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            # Additional analysis: Top Categories
+            from BackEnd.core.categories import get_subcategory_name
+            cat_df = data["sales_active"].copy()
+            cat_df["Sub-Category"] = cat_df["Category"].apply(get_subcategory_name)
+            top_cats = cat_df.groupby("Sub-Category")["item_revenue"].sum().reset_index().sort_values("item_revenue", ascending=False).head(10)
+            
+            ai_insights = pd.DataFrame({"Executive Narrative & Intelligence Briefing": all_points})
+            
+            additional_sheets = {
+                "Top Categories": top_cats,
+                "AI Briefing": ai_insights
+            }
+            
+            if data.get("ml") and "forecast" in data["ml"]:
+                fc = data["ml"]["forecast"]
+                if not fc.empty:
+                    additional_sheets["ML Forecasts"] = fc[["item_name", "forecast_7d_units", "risk_level", "reorder_comment"]]
+            if data.get("ml") and "anomalies" in data["ml"]:
+                an = data["ml"]["anomalies"]
+                if not an.empty:
+                    additional_sheets["Detected Anomalies"] = an[["order_day", "metric", "direction", "commentary"]]
+            
+            report_bytes = ui.export_to_excel(
+                data["sales_active"].drop(columns=[c for c in data["sales_active"].columns if c.startswith("_")], errors="ignore"),
+                sheet_name="Sales Data",
+                summary_metrics=summary_metrics,
+                additional_sheets=additional_sheets
+            )
+            
+            st.download_button(
+                label="📊 Export Full Report",
+                data=report_bytes,
+                file_name=f"deen_sales_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                width="stretch",
+                key="sales_overview_export_btn"
+            )
+        st.divider()
 
     elif selection == "📊 Traffic & Acquisition":
         from .dashboard_lib.acquisition import render_acquisition_analytics
