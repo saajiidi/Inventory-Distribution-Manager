@@ -19,6 +19,13 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 
+# --- Polars Engine Auto-Detection ---
+try:
+    import polars as pl
+    POLARS_AVAILABLE = True
+except ImportError:
+    POLARS_AVAILABLE = False
+
 from BackEnd.core.cache_storage import (
     build_cache_target,
     read_json as storage_read_json,
@@ -276,7 +283,15 @@ def load_returns_data(
     # ── Fetch fresh data from Google Sheets ──
     try:
         source = url or DEFAULT_SHEET_URL
-        fresh_df = pd.read_csv(source)
+        if POLARS_AVAILABLE:
+            try:
+                # Polars multi-threaded CSV parsing is much faster for large sheets
+                fresh_df = pl.read_csv(source, infer_schema_length=10000, ignore_errors=True).to_pandas()
+            except Exception as pe:
+                logger.warning(f"Polars CSV load failed, falling back to Pandas: {pe}")
+                fresh_df = pd.read_csv(source)
+        else:
+            fresh_df = pd.read_csv(source)
         logger.info(f"Fetched {len(fresh_df)} total rows from returns data source")
     except Exception as e:
         logger.error(f"Failed to load returns data: {e}")

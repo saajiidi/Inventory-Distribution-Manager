@@ -1,7 +1,7 @@
 # DEEN Commerce BI - AI Agent Coder Guide
 
 > **Purpose**: Comprehensive blueprint for AI agents to understand, navigate, and extend this codebase.
-> **Last Updated**: 2026-04-20
+> **Last Updated**: 2026-04-23
 > **Project**: DEEN Commerce Business Intelligence Dashboard
 > **Auto-Update**: This file is automatically updated via pre-commit hooks and GitHub Actions
 
@@ -412,6 +412,13 @@ pytest tests/ -v
 
 ## 10. Recent Changes (Agent Context)
 
+### 2026-04-23: Global UI/UX Overhaul & Stability Matrix
+- **Premium UI Framework**: Injected global CSS for glassmorphism, hover-lift animations, and standardized inputs (`st.selectbox`, `st.dataframe`, download buttons).
+- **Vectorized Pandas Logic**: Replaced iterative `.apply()` loops with `np.select` and `np.where` in Inventory and Strategic intelligence to resolve "ambiguous truth value" crashes.
+- **Hierarchical Visuals**: Upgraded Stock Insights to use Plotly Treemaps and Sunburst charts synced strictly with the master category definitions.
+- **AI-Enriched Exports**: Overhauled `export_to_excel` to inject multiple sheets including ML Forecasts, Detected Anomalies, and AI narratives directly into downloaded reports.
+- **Thread Safety**: Wrapped background UI container calls (e.g., `st.empty()`) in `get_script_run_ctx()` guards to prevent Streamlit thread crashes during WooCommerce syncs.
+
 ### 2026-04-20: Fast Loading Implementation
 - Added skeleton loading components (`skeleton_metric`, `skeleton_row`)
 - Implemented staged loading in main dashboard
@@ -491,6 +498,14 @@ MAP_FORCE_SNAPSHOT = False   # Map always uses snapshot
 ## 14. CHANGELOG (Version History)
 
 > **Note**: This section contains the project version history from CHANGELOG.md
+
+### Version 2.2.0 (2026-04-23)
+
+#### Features
+- **Global UI Standardization**: Modern SaaS aesthetic with animated dataframes and floating metric cards.
+- **Advanced Excel Exports**: Automated multi-sheet BI reports featuring native AI-generated executive summaries.
+- **Hierarchical Inventory Mapping**: Visual drill-downs from Master Category to Sub-category using Plotly Treemaps.
+- **Vectorized Performance**: Eliminated iteration bottlenecks and "truth value" bugs in core analytic engines.
 
 ### Version 2.1.0 (2025-08-15)
 

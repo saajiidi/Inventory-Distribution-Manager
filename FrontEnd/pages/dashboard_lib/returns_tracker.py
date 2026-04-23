@@ -1347,6 +1347,22 @@ def _render_export(df: pd.DataFrame, metrics: dict) -> None:
             )
 
 
+def _safe_scalar(value, default=0, cast_type=int):
+    """Safely convert a value to scalar, handling Series/arrays."""
+    if value is None:
+        return default
+    if hasattr(value, '__len__') and not isinstance(value, str):
+        # It's a Series/array - get first element or default
+        try:
+            value = value.iloc[0] if hasattr(value, 'iloc') else value[0]
+        except (IndexError, TypeError):
+            return default
+    try:
+        return cast_type(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _generate_excel_report(df: pd.DataFrame, metrics: dict) -> bytes:
     """Generate a multi-sheet Excel report."""
     from io import BytesIO
@@ -1373,15 +1389,15 @@ def _generate_excel_report(df: pd.DataFrame, metrics: dict) -> bytes:
                 "Partial Amounts (৳)",
             ],
             "Value": [
-                int(metrics.get("total_issues", 0)),
-                int(metrics.get("return_count", 0)),
-                int(metrics.get("paid_return_count", 0)),
-                int(metrics.get("non_paid_return_count", 0)),
-                int(metrics.get("partial_count", 0)),
-                int(metrics.get("exchange_count", 0)),
+                _safe_scalar(metrics.get("total_issues", 0), 0, int),
+                _safe_scalar(metrics.get("return_count", 0), 0, int),
+                _safe_scalar(metrics.get("paid_return_count", 0), 0, int),
+                _safe_scalar(metrics.get("non_paid_return_count", 0), 0, int),
+                _safe_scalar(metrics.get("partial_count", 0), 0, int),
+                _safe_scalar(metrics.get("exchange_count", 0), 0, int),
                 "",
-                float(metrics.get("return_rate", 0.0)),
-                float(metrics.get("partial_amounts", 0.0)),
+                _safe_scalar(metrics.get("return_rate", 0.0), 0.0, float),
+                _safe_scalar(metrics.get("partial_amounts", 0.0), 0.0, float),
             ],
         }
         summary_df = pd.DataFrame(summary_data)
@@ -1409,14 +1425,14 @@ def _generate_excel_report(df: pd.DataFrame, metrics: dict) -> bytes:
 
         # ── AI Insights & Analytics ──
         insights_list = [
-            f"FINANCIAL INTEGRITY: ৳{float(metrics.get('total_loss', 0)):,.0f} total lost to {int(metrics.get('return_count', 0))} returns and {int(metrics.get('partial_count', 0))} partials.",
-            f"REVENUE YIELD: {float(metrics.get('net_yield_pct', 0)):.1f}% net yield efficiency.",
-            f"ATTRIBUTION: {float(metrics.get('attribution_confidence_pct', 0)):.1f}% financial attribution confidence to actual WooCommerce orders."
+            f"FINANCIAL INTEGRITY: ৳{_safe_scalar(metrics.get('total_loss', 0), 0.0, float):,.0f} total lost to {_safe_scalar(metrics.get('return_count', 0), 0, int)} returns and {_safe_scalar(metrics.get('partial_count', 0), 0, int)} partials.",
+            f"REVENUE YIELD: {_safe_scalar(metrics.get('net_yield_pct', 0), 0.0, float):.1f}% net yield efficiency.",
+            f"ATTRIBUTION: {_safe_scalar(metrics.get('attribution_confidence_pct', 0), 0.0, float):.1f}% financial attribution confidence to actual WooCommerce orders."
         ]
         
         if isinstance(reasons, dict) and len(reasons) > 0:
             top_reason = list(reasons.keys())[0]
-            insights_list.append(f"PREDICTION: '{top_reason}' is the dominant return reason. Address this to recapture up to ৳{float(metrics.get('full_return_loss', 0)) * 0.3:,.0f} monthly.")
+            insights_list.append(f"PREDICTION: '{top_reason}' is the dominant return reason. Address this to recapture up to ৳{_safe_scalar(metrics.get('full_return_loss', 0), 0.0, float) * 0.3:,.0f} monthly.")
             
         insights_df = pd.DataFrame({"AI Analytics & Recommendations": insights_list})
         insights_df.to_excel(writer, sheet_name="AI Insights", index=False)
