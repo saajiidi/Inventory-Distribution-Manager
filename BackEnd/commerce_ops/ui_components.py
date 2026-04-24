@@ -88,6 +88,9 @@ def inject_base_styles():
             margin-bottom: 4px;
             box-shadow: 0 4px 12px var(--card-shadow);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         .hub-welcome-banner {
             background-color: transparent;
@@ -177,6 +180,14 @@ def inject_base_styles():
             border-radius: 12px !important;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03) !important;
             transition: all 0.2s ease-in-out !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            height: 100% !important;
+            min-height: 100px !important;
+            overflow: hidden !important;
         }
         div[data-testid="stMetric"]:hover {
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06) !important;
@@ -186,10 +197,38 @@ def inject_base_styles():
         div[data-testid="stMetricLabel"] {
             color: #64748b !important;
             font-weight: 700 !important;
-            font-size: 0.8rem !important;
+            font-size: clamp(0.55rem, 1.2vw, 0.7rem) !important;
             text-transform: uppercase !important;
             letter-spacing: 0.5px !important;
-            margin-bottom: 4px !important;
+            margin-bottom: auto !important;
+            width: 100% !important;
+            display: block !important;
+            white-space: normal !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        div[data-testid="stMetricLabel"] > div {
+            justify-content: center !important;
+        }
+        div[data-testid="stMetricValue"] {
+            font-size: clamp(1.4rem, 4vw, 2.2rem) !important;
+            line-height: 1.1 !important;
+            margin: 4px 0 !important;
+            width: 100% !important;
+            white-space: normal !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        div[data-testid="stMetricDelta"] {
+            margin-top: auto !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+        }
+        div[data-testid="stMetricDelta"] > div {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         
         /* Premium Expander Styling */
@@ -233,10 +272,20 @@ def inject_base_styles():
         }
             /* Metric Font Scaling for Small Screens */
             div[data-testid="stMetricValue"] {
-                font-size: 1.2rem !important;
+                font-size: 1.8rem !important;
+                word-break: break-word !important;
             }
             div[data-testid="stMetricLabel"] {
-                font-size: 0.75rem !important;
+                font-size: 0.6rem !important;
+                word-break: break-word !important;
+            }
+            div[data-testid="stMetricDelta"] {
+                display: none !important;
+            }
+            div[data-testid="stMetricContainer"] {
+                min-height: auto !important;
+                height: auto !important;
+                padding: 12px !important;
             }
             /* Compact Tabs on Mobile */
             div[data-testid="stTab"] button {
@@ -348,6 +397,150 @@ def render_footer():
         """,
         unsafe_allow_html=True,
     )
+
+
+def premium_metric_card(label: str, value: str, icon: str, help_text: str = "", border_color: str = "var(--primary)"):
+    """Global premium metric card with top border highlight and hover effects."""
+    import re
+    safe_class = re.sub(r'[^a-z0-9]', '-', label.lower())
+    unique_class = f"premium-card-{safe_class}"
+    
+    st.markdown(f"""
+        <style>
+            .{unique_class} {{
+                transition: all 0.2s ease-in-out;
+            }}
+            .{unique_class}:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important;
+                border-color: {border_color} !important;
+            }}
+            @media (max-width: 1250px) {{
+                .{unique_class} {{ padding: 10px !important; min-height: 90px !important; }}
+                .{unique_class} .pmc-icon {{ display: none !important; }}
+                .{unique_class} .pmc-value {{ font-size: clamp(1.2rem, 3vw, 1.8rem) !important; }}
+                .{unique_class} .pmc-help {{ font-size: 0.55rem !important; }}
+            }}
+            @media (max-width: 640px) {{
+                .{unique_class} .pmc-help {{ display: none !important; }}
+            }}
+        </style>
+        <div class="{unique_class}" style="
+            background: var(--surface, var(--secondary-background-color, #ffffff));
+            border: 1px solid rgba(128, 128, 128, 0.1);
+            border-top: 4px solid {border_color};
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            min-height: 120px;
+            overflow: hidden;
+        ">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; margin-bottom: auto;">
+                <div class="pmc-label" style="font-size: clamp(0.55rem, 1.2vw, 0.7rem); font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {label}
+                </div>
+                <div class="pmc-icon" style="font-size: 0.9rem; flex-shrink: 0; opacity: 0.7;">
+                    {icon}
+                </div>
+            </div>
+            <div class="pmc-value" style="font-size: clamp(1.4rem, 3.5vw, 2.2rem); font-weight: 800; color: var(--text-color); line-height: 1.1; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">
+                {value}
+            </div>
+            <div class="pmc-help" style="font-size: clamp(0.55rem, 1vw, 0.65rem); color: #94a3b8; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; margin-top: auto;">
+                {help_text}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+def small_metric_card(label: str, value: str, icon: str):
+    """Global small metric card for compact layouts."""
+    import re
+    safe_class = re.sub(r'[^a-z0-9]', '-', label.lower())
+    unique_class = f"small-card-{safe_class}"
+    
+    st.markdown(f"""
+        <style>
+            .{unique_class} {{
+                transition: all 0.2s ease-in-out;
+            }}
+            .{unique_class}:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important;
+            }}
+            @media (max-width: 1250px) {{
+                .{unique_class} {{ padding: 10px !important; min-height: 80px !important; }}
+                .{unique_class} .smc-icon {{ display: none !important; }}
+                .{unique_class} .smc-value {{ font-size: clamp(1.1rem, 2.5vw, 1.5rem) !important; }}
+            }}
+        </style>
+        <div class="{unique_class}" style="
+            background: var(--surface, var(--secondary-background-color, #ffffff));
+            border: 1px solid rgba(128, 128, 128, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            min-height: 100px;
+            overflow: hidden;
+        ">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; margin-bottom: auto;">
+                <div class="smc-label" style="font-size: clamp(0.55rem, 1.2vw, 0.7rem); color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{label}</div>
+                <div class="smc-icon" style="font-size: 0.9rem; opacity: 0.7;">{icon}</div>
+            </div>
+            <div class="smc-value" style="font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 800; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; margin: 4px 0;">{value}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+def anomaly_alert_card(title: str, description: str, category: str, level: str, action: str):
+    """Global anomaly alert card."""
+    color = "#ef4444" if level.upper() == "CRITICAL" else "#f59e0b"
+    st.markdown(f"""
+        <style>
+        .anomaly-card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }}
+        .anomaly-card {{ transition: all 0.2s ease-in-out; }}
+        @media (max-width: 1250px) {{
+            .anomaly-card {{ padding: 12px !important; }}
+            .anomaly-card .ac-title {{ font-size: 0.95rem !important; }}
+            .anomaly-card .ac-desc {{ font-size: 0.75rem !important; }}
+        }}
+        </style>
+        <div class="anomaly-card" style="
+            background:var(--surface, var(--secondary-background-color, #ffffff)); 
+            border: 1px solid rgba(128,128,128,0.1); 
+            border-left: 5px solid {color}; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        ">
+            <div style="display:flex; justify-content:space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                <span style="font-weight:800; color:{color}; text-transform:uppercase; font-size:0.75rem; word-break: break-word;">{category} | {level}</span>
+                <span style="background:{color}20; color:{color}; padding: 2px 8px; border-radius: 12px; font-size:0.7rem; font-weight:700; white-space: nowrap;">Action Required</span>
+            </div>
+            <div class="ac-title" style="font-size:1.1rem; font-weight:700; margin: 5px 0; word-break: break-word; line-height: 1.3;">{title}</div>
+            <div class="ac-desc" style="font-size:0.85rem; opacity:0.8; word-break: break-word; line-height: 1.4; margin-bottom: auto;">{description}</div>
+            <div style="margin-top:10px; font-size:0.8rem; font-weight:600; color:{color}; word-break: break-word; line-height: 1.3;">⚡ Suggested Action: {action}</div>
+        </div>
+    """, unsafe_allow_html=True)
 
 
 def render_file_summary(

@@ -361,7 +361,11 @@ class WooCommerceService:
         import openai
         
         # Determine API Key from environment or secrets
-        api_key = st.secrets.get("OPENAI_API_KEY")
+        try:
+            api_key = st.secrets.get("OPENAI_API_KEY")
+        except Exception:
+            api_key = None
+            
         if not api_key:
             return "Error: OPENAI_API_KEY is missing in Streamlit secrets."
         

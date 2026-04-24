@@ -16,7 +16,10 @@ class DataNLPInterpreter:
         query = query.lower()
         
         # 1. Date Range Detection
-        date_mask = self.df.index > (self.today - timedelta(days=365)) # Default 1 year
+        if 'order_date' in self.df.columns:
+            date_mask = self.df['order_date'] >= (self.today - timedelta(days=365))
+        else:
+            date_mask = pd.Series(True, index=self.df.index)
         time_label = "over the last year"
         
         if "yesterday" in query:

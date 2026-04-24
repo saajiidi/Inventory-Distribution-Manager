@@ -38,6 +38,7 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
                          title="Shipping Velocity Distribution",
                          labels={'Count': 'Orders'},
                          color_discrete_sequence=['#F59E0B'])
+            fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig, width="stretch")
     else:
         st.info("No 'shipped_date' data available in this window to calculate velocity.")
@@ -70,6 +71,7 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         fig_ref = px.line(weekly_refunds, x='Week', y='Refund Rate', title="Weekly Refund Rate Trend",
                           markers=True, color_discrete_sequence=['#EF4444'])
         fig_ref.add_hline(y=5.0, line_dash="dash", line_color="green", annotation_text="Target")
+        fig_ref.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_ref, width="stretch")
 
     st.divider()
@@ -101,7 +103,8 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         plot_stock['Category'] = plot_stock.get('Category', 'Unknown').fillna('Unknown')
         plot_stock['Name'] = plot_stock.get('Name', 'Unnamed').fillna('Unnamed')
         
-        st.plotly_chart(px.treemap(plot_stock, path=['Category', 'Name'], values='Stock Quantity', 
-                                   title="Inventory Volume by Category"), width="stretch")
+        fig_tree = px.treemap(plot_stock, path=['Category', 'Name'], values='Stock Quantity', title="Inventory Volume by Category")
+        fig_tree.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig_tree, width="stretch")
     else:
         st.warning("Inventory data currently unavailable.")

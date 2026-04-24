@@ -9,7 +9,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 from typing import Optional, Callable
-from datetime import datetime
+from datetime import datetime, date
 
 from .api_client import WooCommerceAPI, get_woocommerce_api
 from .base_api_client import APIError

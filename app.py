@@ -32,6 +32,22 @@ def _numbered_dataframe(data, *args, **kwargs):
 
 st.dataframe = _numbered_dataframe
 
+_original_plotly_chart = st.plotly_chart
+
+def _transparent_plotly_chart(figure_or_data, *args, **kwargs):
+    try:
+        import plotly.graph_objects as go
+        if isinstance(figure_or_data, go.Figure):
+            figure_or_data.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)"
+            )
+    except Exception:
+        pass
+    return _original_plotly_chart(figure_or_data, *args, **kwargs)
+
+st.plotly_chart = _transparent_plotly_chart
+
 st.set_page_config(
     page_title=APP_TITLE,
     page_icon="AP",
@@ -91,10 +107,10 @@ def _render_workspace_sidebar():
             data = st.session_state.dashboard_data
             df_raw = data.get("sales", pd.DataFrame())
             stock = data.get("stock", pd.DataFrame())
-            if not df_raw.empty:
-                stats["proc"] = df_raw[df_raw["order_status"].str.lower() == "processing"]["order_id"].nunique()
-            if not stock.empty:
-                stats["low"] = len(stock[stock["Stock Quantity"] <= 5])
+            if not df_raw.empty and "order_status" in df_raw.columns and "order_id" in df_raw.columns:
+                stats["proc"] = df_raw[df_raw["order_status"].astype(str).str.lower() == "processing"]["order_id"].nunique()
+            if not stock.empty and "Stock Quantity" in stock.columns:
+                stats["low"] = len(stock[pd.to_numeric(stock["Stock Quantity"], errors="coerce").fillna(0) <= 5])
 
         # 2. Unified Navigation (Single Stack for Smooth Performance)
         st.markdown('<div class="sidebar-group-label">⚡ NAVIGATION HUB</div>', unsafe_allow_html=True)
@@ -197,15 +213,17 @@ def _render_workspace_sidebar():
                         st.rerun()
 
                 st.divider()
-                csv = st.session_state.dashboard_data["sales"].to_csv(index=False)
-                st.download_button("📥 Raw Dashboard Export (CSV)", csv, "deen_analysis_export.csv", "text/csv", use_container_width=True)
+                sales_export_df = st.session_state.dashboard_data.get("sales", pd.DataFrame())
+                csv = sales_export_df.to_csv(index=False)
+                st.download_button("📥 Raw Dashboard Export (CSV)", csv, "deen_analysis_export.csv", "text/csv", use_container_width=True, disabled=sales_export_df.empty)
 
         # 5. Anomaly Detection (Toasts)
         if "dashboard_data" in st.session_state:
-            df_curr = st.session_state.dashboard_data["sales"]
-            refund_count = len(df_curr[df_curr["order_status"].str.lower() == "refunded"])
-            if refund_count > 5:
-                st.toast("🚨 Unusual refund activity detected in the current window!", icon="⚠️")
+            df_curr = st.session_state.dashboard_data.get("sales", pd.DataFrame())
+            if not df_curr.empty and "order_status" in df_curr.columns:
+                refund_count = len(df_curr[df_curr["order_status"].astype(str).str.lower() == "refunded"])
+                if refund_count > 5:
+                    st.toast("🚨 Unusual refund activity detected in the current window!", icon="⚠️")
 
         # 4. System Heartbeat Widget (Suggestion 3)
         sync_time = "Just now"
@@ -260,8 +278,25 @@ def _render_system_logs():
 
 
 def _render_primary_navigation():
-    from FrontEnd.pages.dashboard import render_intelligence_hub_page
-    render_intelligence_hub_page()
+    try:
+        import FrontEnd.pages.dashboard as dashboard
+        
+        # Dynamically find the correct render function to prevent ImportErrors
+        if hasattr(dashboard, 'render_dashboard_tab'):
+            dashboard.render_dashboard_tab()
+        elif hasattr(dashboard, 'render_intelligence_hub_page'):
+            dashboard.render_intelligence_hub_page()
+        elif hasattr(dashboard, 'render_dashboard'):
+            dashboard.render_dashboard()
+        elif hasattr(dashboard, 'main'):
+            dashboard.main()
+        elif hasattr(dashboard, 'render'):
+            dashboard.render()
+        else:
+            st.warning("Dashboard page loaded, but no standard render function was found (`render_dashboard_tab`, `main`, etc.).")
+            
+    except Exception as e:
+        st.error(f"Failed to load dashboard: {e}")
 
 
 def run_app():

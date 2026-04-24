@@ -426,19 +426,25 @@ def render_intelligence_hub_page():
     d_cust_label, d_cust_val = calc_delta(cust_count, prev_cust_val)
     d_aov_label, d_aov_val = calc_delta(aov, prev_aov_val)
 
+    def format_compact(num):
+        if pd.isna(num): return "0"
+        if num >= 1_000_000: return f"{num/1_000_000:.1f}M".replace(".0M", "M")
+        if num >= 1_000: return f"{num/1_000:.1f}K".replace(".0K", "K")
+        return f"{num:,.0f}" if isinstance(num, (int, float)) else str(num)
+
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     with c1:
-        ui.icon_metric("Total Items Sold", f"{total_items:,}", icon="📦", delta=d_items_label, delta_val=d_items_val)
+        ui.icon_metric("Total Items Sold", format_compact(total_items), icon="📦", delta=d_items_label, delta_val=d_items_val)
     with c2:
-        ui.icon_metric("Revenue", f"৳{total_rev:,.0f}", icon="💰", delta=d_rev_label, delta_val=d_rev_val)
+        ui.icon_metric("Revenue", f"৳{format_compact(total_rev)}", icon="💰", delta=d_rev_label, delta_val=d_rev_val)
     with c3:
-        ui.icon_metric("Orders", f"{order_count:,}", icon="🛒", delta=d_orders_label, delta_val=d_orders_val)
+        ui.icon_metric("Orders", format_compact(order_count), icon="🛒", delta=d_orders_label, delta_val=d_orders_val)
     with c4:
-        ui.icon_metric("Avg. Orders / Day", f"{avg_orders_per_day:,.0f}", icon="📅", delta=d_avg_label, delta_val=d_avg_val)
+        ui.icon_metric("Avg. Orders / Day", format_compact(avg_orders_per_day), icon="📅", delta=d_avg_label, delta_val=d_avg_val)
     with c5:
-        ui.icon_metric("Customers", f"{cust_count:,}", icon="👥", delta=d_cust_label, delta_val=d_cust_val)
+        ui.icon_metric("Customers", format_compact(cust_count), icon="👥", delta=d_cust_label, delta_val=d_cust_val)
     with c6:
-        ui.icon_metric("Basket Size", f"৳{aov:,.0f}", icon="💎", delta=d_aov_label, delta_val=d_aov_val)
+        ui.icon_metric("Basket Size", f"৳{format_compact(aov)}", icon="💎", delta=d_aov_label, delta_val=d_aov_val)
 
     st.markdown("<br>", unsafe_allow_html=True)
 

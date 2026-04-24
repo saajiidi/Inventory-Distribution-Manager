@@ -352,6 +352,9 @@ def load_cached_woocommerce_live_data(
 def load_cached_woocommerce_stock_data() -> pd.DataFrame:
     cache_path = _cache_file("woo_stock.parquet")
     
+    if not target_exists(cache_path):
+        return pd.DataFrame()
+        
     if POLARS_AVAILABLE and target_exists(cache_path):
         try:
             return pl.read_parquet(str(cache_path)).to_pandas()
@@ -383,6 +386,9 @@ def load_cached_woocommerce_history() -> pd.DataFrame:
 
 
 def load_full_woocommerce_history(end_date: Optional[str] = None) -> pd.DataFrame:
+    if not get_woocommerce_credentials():
+        return ensure_sales_schema(_generate_demo_sales(start_date="2023-01-01", end_date=end_date))
+
     cached = load_cached_woocommerce_history()
     if cached is None or cached.empty:
         return pd.DataFrame()
@@ -641,6 +647,9 @@ def load_woocommerce_live_data(
 
 
 def load_woocommerce_stock_data() -> pd.DataFrame:
+    if not get_woocommerce_credentials():
+        return _generate_demo_stock()
+
     status = get_woocommerce_stock_cache_status()
     if not status["needs_refresh"]:
         return load_cached_woocommerce_stock_data()
@@ -652,6 +661,9 @@ def load_woocommerce_stock_data() -> pd.DataFrame:
 @st.cache_data(ttl=43200)
 def load_woocommerce_customer_count() -> int:
     """Fetch total count of registered store customers (12h cache)."""
+    if not get_woocommerce_credentials():
+        return 5240  # Demo count
+        
     try:
         cached_count = load_cached_woocommerce_customer_count()
         if cached_count:
@@ -665,6 +677,68 @@ def load_woocommerce_customer_count() -> int:
         return int(load_cached_woocommerce_customer_count() or 0)
 
 
+def _generate_demo_sales(start_date=None, end_date=None) -> pd.DataFrame:
+    """Generates realistic mock sales data for demo purposes."""
+    import numpy as np
+    from datetime import datetime, timedelta
+    
+    end = pd.to_datetime(end_date) if end_date else datetime.now()
+    start = pd.to_datetime(start_date) if start_date else end - timedelta(days=30)
+    
+    days = max(1, (end - start).days)
+    num_orders = days * np.random.randint(15, 35)
+    
+    dates = [start + timedelta(minutes=int(np.random.randint(0, days * 24 * 60))) for _ in range(num_orders)]
+    dates.sort()
+    
+    items = ["Premium T-Shirt", "Slim Fit Jeans", "Leather Wallet", "Cotton Panjabi", "Casual Shirt", "Active Joggers", "Winter Hoodie"]
+    skus = ["TS-01", "JN-02", "WL-03", "PJ-04", "SH-05", "JG-06", "HD-07"]
+    cats = ["T-Shirt", "Jeans", "Wallet", "Panjabi", "FS Shirt", "Trousers", "Sweatshirt"]
+    prices = [500, 1200, 800, 2500, 1500, 950, 1800]
+    
+    item_indices = np.random.randint(0, len(items), size=num_orders)
+    
+    df = pd.DataFrame({
+        "order_id": np.random.randint(100000, 999999, size=num_orders).astype(str),
+        "order_date": dates,
+        "item_name": [items[i] for i in item_indices],
+        "sku": [skus[i] for i in item_indices],
+        "qty": np.random.choice([1, 1, 1, 2, 3], size=num_orders),
+        "order_status": np.random.choice(
+            ["completed", "processing", "on-hold", "refunded", "cancelled"], 
+            num_orders, p=[0.75, 0.10, 0.05, 0.05, 0.05]
+        ),
+        "customer_key": ["reg_" + str(i) for i in np.random.randint(1, 100, size=num_orders)],
+        "city": np.random.choice(["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna"], num_orders),
+        "state": np.random.choice(["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna"], num_orders),
+        "Category": [cats[i] for i in item_indices],
+        "customer_name": ["Demo Customer " + str(i) for i in np.random.randint(1, 100, size=num_orders)],
+        "phone": ["01711" + str(np.random.randint(100000, 999999)) for _ in range(num_orders)],
+        "email": ["demo" + str(i) + "@example.com" for i in np.random.randint(1, 100, size=num_orders)],
+    })
+    
+    df["price"] = [prices[i] for i in item_indices]
+    df["item_revenue"] = df["qty"] * df["price"]
+    df["line_total"] = df["item_revenue"]
+    df["order_total"] = df["item_revenue"] + 60
+    
+    return df
+
+
+def _generate_demo_stock() -> pd.DataFrame:
+    """Generates realistic mock stock data for demo purposes."""
+    return pd.DataFrame({
+        "ID": range(1, 8),
+        "Name": ["Premium T-Shirt", "Slim Fit Jeans", "Leather Wallet", "Cotton Panjabi", "Casual Shirt", "Active Joggers", "Winter Hoodie"],
+        "SKU": ["TS-01", "JN-02", "WL-03", "PJ-04", "SH-05", "JG-06", "HD-07"],
+        "Stock Status": ["instock", "instock", "outofstock", "instock", "instock", "instock", "instock"],
+        "Stock Quantity": [45, 12, 0, 8, 105, 34, 3],
+        "Price": [500.0, 1200.0, 800.0, 2500.0, 1500.0, 950.0, 1800.0],
+        "Regular Price": [600.0, 1500.0, 1000.0, 3000.0, 1800.0, 1200.0, 2000.0],
+        "Category": ["T-Shirt", "Jeans", "Wallet", "Panjabi", "FS Shirt", "Trousers", "Sweatshirt"],
+    })
+
+
 def load_hybrid_data(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
@@ -675,6 +749,12 @@ def load_hybrid_data(
     """Primary data entry point. Orchestrates cache vs live loading."""
     if not include_woocommerce:
         return pd.DataFrame()
+
+    if not get_woocommerce_credentials():
+        if "demo_toast_shown" not in st.session_state:
+            st.toast("🧪 Running in Demo Mode (No credentials found)", icon="✨")
+            st.session_state.demo_toast_shown = True
+        return ensure_sales_schema(_generate_demo_sales(start_date, end_date))
 
     df_woo = (
         load_cached_woocommerce_live_data(start_date=start_date, end_date=end_date)

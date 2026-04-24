@@ -24,7 +24,10 @@ from FrontEnd.components.customer_insight.customer_report import render_customer
 from FrontEnd.components.ui import export_to_excel
 
 # Use EXISTING working services (inherits from working dashboard data)
-from BackEnd.services.customer_insights import generate_customer_insights_from_sales
+from BackEnd.services.customer_insights import (
+    generate_customer_insights_from_sales,
+    generate_cohort_matrix
+)
 from BackEnd.services.customer_manager import (
     load_customer_mapping, 
     update_customer_mapping, 

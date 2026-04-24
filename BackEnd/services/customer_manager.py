@@ -10,6 +10,7 @@ import re
 import hashlib
 from typing import Optional, List, Dict, Any, Tuple
 from pathlib import Path
+from datetime import date
 from BackEnd.core.logging_config import get_logger
 from BackEnd.utils.woocommerce_helpers import clean_phone, clean_email
 
@@ -304,4 +305,3 @@ def get_customer_metrics(start_date: date, end_date: date) -> Dict[str, int]:
         "total_customers": total_customers,
         "new_customers": new_customers
     }
-

@@ -329,7 +329,7 @@ def _enrich_with_returns(customers_df: pd.DataFrame, full_history_df: pd.DataFra
         customers_df["return_count"] = customers_df["return_count"].fillna(0).astype(int)
         
         # 6. Calculate return rate
-        customers_df["return_rate"] = (customers_df["return_count"] / customers_df["total_orders"]).fillna(0)
+        customers_df["return_rate"] = (customers_df["return_count"] / customers_df["total_orders"].replace(0, pd.NA)).fillna(0)
         
     except Exception as e:
         log_error(e, context="Return Rate Enrichment")
@@ -457,7 +457,7 @@ def generate_cohort_matrix(df: pd.DataFrame, period: str = 'M') -> pd.DataFrame:
     Generates a retention cohort matrix.
     period: 'M' for monthly, 'W' for weekly.
     """
-    if df.empty:
+    if df.empty or 'order_date' not in df.columns:
         return pd.DataFrame()
         
     df = df.copy()

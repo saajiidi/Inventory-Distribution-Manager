@@ -5,6 +5,7 @@ from BackEnd.services.strategic_intelligence import (
     detect_business_anomalies, 
     calculate_rfm_churn_risk
 )
+from BackEnd.commerce_ops.ui_components import anomaly_alert_card
 
 def render_war_room_page(sales_df: pd.DataFrame, returns_df: pd.DataFrame):
     """Business Intelligence War-Room for pro-active anomaly detection and strategy."""
@@ -19,23 +20,14 @@ def render_war_room_page(sales_df: pd.DataFrame, returns_df: pd.DataFrame):
         st.success("✅ No critical operational anomalies detected in the current window.")
     else:
         for anomaly in anomalies:
-            color = "#ef4444" if anomaly['level'] == "CRITICAL" else "#f59e0b"
             with st.container():
-                st.markdown(f"""
-                <style>
-                .anomaly-card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }}
-                .anomaly-card {{ transition: all 0.2s ease-in-out; }}
-                </style>
-                <div class="anomaly-card" style="background:var(--secondary-background-color); border: 1px solid rgba(128,128,128,0.1); border-left: 5px solid {color}; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="font-weight:800; color:{color}; text-transform:uppercase; font-size:0.75rem;">{anomaly['category']} | {anomaly['level']}</span>
-                        <span style="background:{color}20; color:{color}; padding: 2px 8px; border-radius: 12px; font-size:0.7rem; font-weight:700;">Action Required</span>
-                    </div>
-                    <div style="font-size:1.1rem; font-weight:700; margin: 5px 0;">{anomaly['title']}</div>
-                    <div style="font-size:0.85rem; opacity:0.8;">{anomaly['description']}</div>
-                    <div style="margin-top:10px; font-size:0.8rem; font-weight:600; color:{color};">⚡ Suggested Action: {anomaly['action']}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                anomaly_alert_card(
+                    title=anomaly['title'],
+                    description=anomaly['description'],
+                    category=anomaly['category'],
+                    level=anomaly['level'],
+                    action=anomaly['action']
+                )
 
     st.divider()
 

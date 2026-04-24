@@ -99,8 +99,7 @@ def render_district_map(df_sales: pd.DataFrame):
             color="Value",
             color_continuous_scale=color_scale,
             range_color=(0, agg_df["Value"].max() if agg_df["Value"].max() > 0 else 100),
-            labels=labels,
-            template="plotly_dark"
+            labels=labels
         )
 
     fig.update_geos(
@@ -134,15 +133,16 @@ def render_district_map(df_sales: pd.DataFrame):
             spot_df, x="Value", y="Region",
             orientation='h', color="Value",
             color_continuous_scale=color_scale,
-            labels={"Value": map_metric, "Region": "Refined Area"},
-            template="plotly_dark"
+            labels={"Value": map_metric, "Region": "Refined Area"}
         )
         
         fig_spot.update_layout(
             height=600, margin=dict(l=0, r=0, t=0, b=0),
             coloraxis_showscale=False,
             xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=False, categoryorder="total ascending")
+            yaxis=dict(showgrid=False, categoryorder="total ascending"),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)"
         )
         st.plotly_chart(fig_spot, width="stretch")
     

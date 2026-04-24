@@ -11,7 +11,7 @@ from __future__ import annotations
 import gc
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, List
 
@@ -255,6 +255,34 @@ def _process_returns_chunk(
     return df
 
 
+def _generate_demo_returns() -> pd.DataFrame:
+    """Generates realistic mock returns data for demo purposes."""
+    import numpy as np
+    from datetime import datetime, timedelta
+    
+    num_returns = 40
+    dates = [datetime.now() - timedelta(days=int(np.random.randint(0, 30))) for _ in range(num_returns)]
+    dates.sort(reverse=True)
+    
+    df = pd.DataFrame({
+        "order_id": np.random.randint(100000, 999999, size=num_returns).astype(str),
+        "date": dates,
+        "issue_type": np.random.choice(["Paid Return", "Non Paid Return", "Partial", "Exchange"], num_returns),
+        "return_reason": np.random.choice(["Size Issue", "Quality Issue", "Changed Mind", "Timing Issue"], num_returns),
+        "partial_amount": np.random.choice([0, 0, 500, 200], num_returns),
+        "courier": np.random.choice(["Pathao", "Steadfast", "RedX"], num_returns),
+        "product_details": ["Demo Product - " + str(i) for i in range(num_returns)],
+    })
+    
+    df["returned_items"] = [[{"name": "Demo Item", "sku": "DM-01", "qty": 1, "category": "General", "revenue_impact": 500, "transaction_type": "full_return"}]] * num_returns
+    df["items_cross_referenced"] = True
+    df["is_return"] = df["issue_type"].isin(["Paid Return", "Non Paid Return"])
+    df["is_partial"] = df["issue_type"] == "Partial"
+    df["is_exchange"] = df["issue_type"] == "Exchange"
+    
+    return df
+
+
 @st.cache_data(show_spinner=False, max_entries=2)
 def load_returns_data(
     url: Optional[str] = None,
@@ -274,6 +302,13 @@ def load_returns_data(
     Returns:
         Cleaned DataFrame with standardized columns and cross-referenced items.
     """
+    from BackEnd.services.woocommerce_service import get_woocommerce_credentials
+    if not get_woocommerce_credentials():
+        if "demo_returns_toast" not in st.session_state:
+            st.toast("🧪 Simulated Returns Data Loaded", icon="📦")
+            st.session_state.demo_returns_toast = True
+        return _generate_demo_returns()
+
     # ── Load cached historical data ──
     cached_df = _load_cached_returns()
     last_cached_date = _get_last_cached_date()

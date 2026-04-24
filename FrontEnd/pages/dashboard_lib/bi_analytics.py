@@ -71,9 +71,11 @@ def render_today_vs_last_day_sales_chart(df_sales: pd.DataFrame, df_customers: p
     order_daily["day_label"] = order_daily.apply(lambda row: f"{ {0: 'Today', 1: 'Previous'}.get((latest_day-row['order_day']).days, 'Earlier') } - {row['order_day'].strftime('%A, %d %b')}", axis=1)
     c1, c2 = st.columns(2)
     with c1:
-        st.plotly_chart(px.bar(order_daily, x="day_label", y="revenue", color="day_label", title="Today vs Previous Day Revenue", text_auto=".2s").update_layout(height=320, showlegend=False), width="stretch")
+        fig1 = px.bar(order_daily, x="day_label", y="revenue", color="day_label", title="Today vs Previous Day Revenue", text_auto=".2s")
+        st.plotly_chart(fig1.update_layout(height=320, showlegend=False, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"), width="stretch")
     with c2:
-        st.plotly_chart(px.bar(order_daily.melt(id_vars=["day_label"], value_vars=["orders", "unique_customers", "new_customers", "units"], var_name="metric", value_name="value"), x="metric", y="value", color="day_label", barmode="group", title="Today vs Previous Day Volume").update_layout(height=320), width="stretch")
+        fig2 = px.bar(order_daily.melt(id_vars=["day_label"], value_vars=["orders", "unique_customers", "new_customers", "units"], var_name="metric", value_name="value"), x="metric", y="value", color="day_label", barmode="group", title="Today vs Previous Day Volume")
+        st.plotly_chart(fig2.update_layout(height=320, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"), width="stretch")
 
 def render_last_7_days_sales_chart(df_sales: pd.DataFrame, df_customers: pd.DataFrame):
     st.markdown("#### Daily Comparison: Today vs Last Day vs Previous 7 Days")
@@ -130,7 +132,7 @@ def render_sales_overview_timeseries(df_sales: pd.DataFrame, ml_bundle: dict = N
                           markers=True, line_shape="spline",
                           color_discrete_sequence=["#4F46E5"])
         fig_rev.update_layout(height=300, margin=dict(l=0, r=0, t=40, b=0), 
-                              hovermode="x unified", template="plotly_white")
+                              hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_rev, width="stretch")
 
     with c2:
@@ -140,7 +142,7 @@ def render_sales_overview_timeseries(df_sales: pd.DataFrame, ml_bundle: dict = N
                           markers=True, line_shape="spline",
                           color_discrete_sequence=["#10B981"])
         fig_ord.update_layout(height=300, margin=dict(l=0, r=0, t=40, b=0), 
-                              hovermode="x unified", template="plotly_white")
+                              hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_ord, width="stretch")
 
     c3, c4 = st.columns(2)
@@ -151,7 +153,7 @@ def render_sales_overview_timeseries(df_sales: pd.DataFrame, ml_bundle: dict = N
                           markers=True, line_shape="spline",
                           color_discrete_sequence=["#F59E0B"])
         fig_units.update_layout(height=300, margin=dict(l=0, r=0, t=40, b=0), 
-                              hovermode="x unified", template="plotly_white")
+                              hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_units, width="stretch")
 
     with c4:
@@ -161,6 +163,7 @@ def render_sales_overview_timeseries(df_sales: pd.DataFrame, ml_bundle: dict = N
                           title="Average Order Value (AOV) Trend",
                           markers=True, line_shape="spline",
                           color_discrete_sequence=["#EC4899"])
+        fig_aov.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_aov, width="stretch")
 
     st.divider()
@@ -260,5 +263,5 @@ def render_ml_forecast_charts(daily: pd.DataFrame, ml_bundle: dict = None):
                     trace.line.dash = "dot"
                     trace.opacity = 0.6
                      
-            fig.update_layout(height=400, margin=dict(l=0, r=0, t=60, b=0), hovermode="x unified", template="plotly_white", showlegend=False)
+            fig.update_layout(height=400, margin=dict(l=0, r=0, t=60, b=0), hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", showlegend=False)
             st.plotly_chart(fig, width="stretch")

@@ -53,6 +53,7 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
         # Sessions by Channel
         fig_sess = px.pie(df_chan, values='Sessions', names='Channel', title="Traffic Source Mix",
                           hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
+        fig_sess.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_sess, width="stretch")
         
     with col_b:
@@ -60,6 +61,7 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
         fig_cvr = px.bar(df_chan.sort_values('CVR', ascending=False), x='CVR', y='Channel', 
                          title="Conversion Rate by Channel (%)",
                          orientation='h', color='CVR', color_continuous_scale='Teal')
+        fig_cvr.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_cvr, width="stretch")
 
     st.divider()
@@ -77,7 +79,7 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
         textinfo="value+percent initial",
         marker={"color": ["#636EFA", "#EF553B", "#00CC96", "#AB63FA"]}
     ))
-    fig_funnel.update_layout(title="Site-wide Conversion Pipeline", margin=dict(l=20, r=20, t=40, b=20))
+    fig_funnel.update_layout(title="Site-wide Conversion Pipeline", margin=dict(l=20, r=20, t=40, b=20), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     st.plotly_chart(fig_funnel, width="stretch")
 
     # Simulate time series
@@ -103,6 +105,7 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
     fig_mix = px.area(df_ts, x="Date", y="Sessions", color="Traffic Type", 
                        title="Daily Session Volume (Retention Adjusted)",
                        color_discrete_map={"New": "#3B82F6", "Returning": "#10B981"})
+    fig_mix.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     st.plotly_chart(fig_mix, width="stretch")
     
     st.caption("⚠️ Acquisition data is currently derived from your conversion engine. GA4 integration pending.")

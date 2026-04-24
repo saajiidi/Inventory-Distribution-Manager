@@ -72,7 +72,7 @@ def setup_theme():
 
         [data-testid="stMetricLabel"] {
             font-weight: 600 !important;
-            font-size: 0.95rem !important;
+            font-size: clamp(0.55rem, 1.2vw, 0.7rem) !important;
             opacity: 0.8;
             color: var(--on-surface-variant) !important;
             letter-spacing: 0.05em !important;
@@ -89,38 +89,43 @@ def setup_theme():
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center;
             overflow: hidden !important;
             box-sizing: border-box !important;
         }
 
         .metric-highlight-label {
-            font-size: 0.75rem;
+            font-size: clamp(0.55rem, 1.2vw, 0.7rem);
             font-weight: 800;
             color: var(--on-surface-variant);
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            margin-bottom: 4px;
+            margin-bottom: auto;
             opacity: 0.7;
-            white-space: nowrap !important;
+            white-space: normal !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
+            width: 100%;
         }
 
         .metric-highlight-value {
-            font-size: 2.2rem;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
             font-weight: 800;
             color: var(--on-surface);
             letter-spacing: -0.04em;
             line-height: 1.1;
+            margin: 4px 0;
             white-space: nowrap !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
+            width: 100%;
         }
 
         .metric-icon-card {
             display: flex;
             align-items: center;
-            gap: 1.2rem;
+            gap: 0.8rem;
             height: 140px !important;
             min-height: 140px !important;
             max-height: 140px !important;
@@ -129,20 +134,20 @@ def setup_theme():
         }
         
         .metric-icon-wrap {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             background: rgba(var(--primary-rgb), 0.1);
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
+            border-radius: 10px;
         }
 
         [data-testid="stMetricValue"], 
         [data-testid="stMetricValue"] > div {
             font-weight: 800 !important;
-            font-size: 1.8rem !important;
+            font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
             color: var(--on-surface) !important;
             white-space: nowrap !important;
             overflow: visible !important;
@@ -221,14 +226,14 @@ def setup_theme():
         }
 
         /* Mobile Responsiveness for 6-pillar metrics */
-        @media (max-width: 768px) {
+        @media (max-width: 1250px) {
             [data-testid="stHorizontalBlock"] {
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
             }
             [data-testid="stColumn"] {
-                min-width: calc(50% - 0.5rem) !important;
-                flex: 1 1 calc(50% - 0.5rem) !important;
+                min-width: calc(33.33% - 0.5rem) !important;
+                flex: 1 1 calc(33.33% - 0.5rem) !important;
             }
             .hub-card, [data-testid="stMetricContainer"] {
                 padding: 0.8rem !important;
@@ -251,6 +256,13 @@ def setup_theme():
             }
             .hub-page_footer {
                 padding: 10px 0 20px 0 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            [data-testid="stColumn"] {
+                min-width: calc(50% - 0.5rem) !important;
+                flex: 1 1 calc(50% - 0.5rem) !important;
             }
         }
 
@@ -615,7 +627,7 @@ def setup_theme():
         }
         
         /* Tablet / Small Laptop */
-        @media (min-width: 769px) and (max-width: 1024px) {
+        @media (min-width: 769px) and (max-width: 1250px) {
             .main .block-container {
                 padding-left: 1rem !important;
                 padding-right: 1rem !important;
@@ -625,7 +637,7 @@ def setup_theme():
                 font-size: 1.3rem !important;
             }
             .hub-card {
-                padding: 12px 14px;
+                padding: 12px 10px;
             }
             div[data-testid="stTab"] button {
                 padding: 8px 16px !important;
@@ -691,11 +703,23 @@ def setup_theme():
                 flex: 1 1 100% !important;
             }
             /* Mobile metric adjustments */
-            [data-testid="stMetricValue"] {
-                font-size: 1.1rem !important;
+            [data-testid="stMetricValue"], .metric-highlight-value {
+                font-size: 1.8rem !important;
             }
-            [data-testid="stMetricContainer"] {
+            [data-testid="stMetricLabel"], .metric-highlight-label {
+                font-size: 0.6rem !important;
+            }
+            /* Hide secondary noise on small screens */
+            [data-testid="stMetricDelta"], .metric-delta, .metric-highlight-delta, .op-card-delta {
+                display: none !important;
+            }
+            .metric-highlight-help, .metric-icon-wrap, .metric-highlight-icon, .op-card-icon {
+                display: none !important;
+            }
+            [data-testid="stMetricContainer"], .hub-card, .metric-highlight, .metric-icon-card, .op-card {
                 min-height: auto !important;
+                height: auto !important;
+                padding: 12px !important;
             }
         }
         

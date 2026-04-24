@@ -1,37 +1,10 @@
 import os
 from datetime import datetime
 from io import BytesIO
+from typing import Any
 
 import pandas as pd
 import streamlit as st
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 def _safe_datetime_series(value) -> pd.Series:
     if value is None:

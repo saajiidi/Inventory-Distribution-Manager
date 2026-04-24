@@ -16,10 +16,8 @@ def detect_business_anomalies(sales_df: pd.DataFrame, returns_df: pd.DataFrame) 
 
     # 1. Revenue Leakage: "Ghost" Orders (Stale Pendings)
     today = datetime.now()
-    if 'order_date' in sales_df.columns:
+    if 'order_date' in sales_df.columns and 'order_status' in sales_df.columns:
         stale_cutoff = today - timedelta(days=5)
-# ... [rest of the function continues as before, but with safe types]
-
         stale_orders = sales_df[
             (sales_df['order_date'] < stale_cutoff) & 
             (sales_df['order_status'].str.lower().isin(['pending', 'on-hold', 'pending-payment']))

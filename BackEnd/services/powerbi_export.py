@@ -102,7 +102,7 @@ def build_star_schema(data: Dict[str, Any], returns_df: pd.DataFrame) -> Tuple[b
         if returns_df is not None and not returns_df.empty:
             fact_returns = returns_df.copy()
             if 'date' in fact_returns.columns:
-                fact_returns['DateKey'] = pd.to_datetime(fact_returns['date']).dt.strftime('%Y%m%d').astype(int)
+                fact_returns['DateKey'] = pd.to_datetime(fact_returns['date']).dt.strftime('%Y%m%d').fillna(0).astype(int)
                 
             cols_to_keep = [c for c in ['order_id', 'DateKey', 'issue_type', 'return_reason', 'partial_amount', 'courier'] if c in fact_returns.columns]
             fact_returns = fact_returns[cols_to_keep]

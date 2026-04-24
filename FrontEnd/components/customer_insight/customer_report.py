@@ -73,7 +73,7 @@ def render_customer_report(
     
     # Render sections
     _render_customer_profile(customer_data, metrics)
-    _render_order_metrics(metrics)
+    _render_order_metrics(metrics, customer_data)
     _render_order_history(orders_df, key_prefix)
     _render_spending_trend(orders_df, key_prefix)
 
@@ -116,6 +116,8 @@ def _get_customer_data(
         "total_value": row.get("total_value") or row.get("total_revenue", 0),
         "first_order": row.get("first_order_date") or row.get("first_order"),
         "last_order": row.get("last_order_date") or row.get("last_order"),
+        "return_count": row.get("return_count", 0),
+        "return_rate": row.get("return_rate", 0.0),
     }
 
 
@@ -133,7 +135,7 @@ def _filter_orders_for_guest(customer_data: Dict[str, Any]) -> pd.DataFrame:
     # Fetch recent orders
     orders_df = fetch_orders()
     
-    if orders_df.empty:
+    if orders_df is None or orders_df.empty:
         return pd.DataFrame()
     
     email = clean_email(customer_data.get("email", ""))

@@ -38,6 +38,7 @@ from BackEnd.services.returns_tracker import (
     get_order_items_breakdown,
     track_reordering_customers,
 )
+from BackEnd.commerce_ops.ui_components import premium_metric_card, small_metric_card
 from FrontEnd.components import ui
 from FrontEnd.utils.config import DATA_SYNC_MODE
 from FrontEnd.utils.error_handler import log_error
@@ -314,47 +315,6 @@ def _get_gross_sales_context():
 # KPI CARDS
 # ═══════════════════════════════════════════════════════════════════
 
-def _ui_return_metric(label: str, value: str, icon: str, help_text: str, border_color: str):
-    """Premium custom metric card for Returns Insights."""
-    # Use a unique class to scope the hover effect and avoid conflicts
-    unique_class = f"return-metric-card-{label.lower().replace(' ', '-')}"
-    st.markdown(f"""
-        <style>
-            .{unique_class} {{
-                transition: all 0.2s ease-in-out;
-            }}
-            .{unique_class}:hover {{
-                transform: translateY(-2px);
-                box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important;
-                border-color: {border_color} !important;
-            }}
-        </style>
-        <div class="{unique_class}" style="
-            background: var(--secondary-background-color);
-            border: 1px solid rgba(128, 128, 128, 0.1);
-            border-top: 4px solid {border_color};
-            border-radius: 10px;
-            padding: 16px 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
-                    {label}
-                </div>
-                <div style="font-size: 1.1rem;">
-                    {icon}
-                </div>
-            </div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: var(--text-color); line-height: 1.2; margin-bottom: 4px;">
-                {value}
-            </div>
-            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">
-                {help_text}
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
 def _render_kpi_cards(metrics: dict) -> None:
     """Render the executive KPI cards using premium components."""
     st.markdown("#### 📦 Operational Intelligence")
@@ -371,7 +331,7 @@ def _render_kpi_cards(metrics: dict) -> None:
     cols = st.columns(4)
     
     with cols[0]:
-        _ui_return_metric(
+        premium_metric_card(
             label="Total Issues",
             value=format_pct(metrics.get('total_issues', 0)),
             help_text=f"Out of {t_ord:,} total orders",
@@ -379,7 +339,7 @@ def _render_kpi_cards(metrics: dict) -> None:
         )
 
     with cols[1]:
-        _ui_return_metric(
+        premium_metric_card(
             label="Returns",
             value=format_pct(metrics.get('return_count', 0)),
             help_text=f"Paid: {metrics.get('paid_return_count', 0)} | Non-Paid: {metrics.get('non_paid_return_count', 0)}",
@@ -387,7 +347,7 @@ def _render_kpi_cards(metrics: dict) -> None:
         )
 
     with cols[2]:
-        _ui_return_metric(
+        premium_metric_card(
             label="Partials",
             value=format_pct(metrics.get('partial_count', 0)),
             help_text=f"৳{metrics.get('partial_amounts', 0):,.0f} impact",
@@ -395,7 +355,7 @@ def _render_kpi_cards(metrics: dict) -> None:
         )
 
     with cols[3]:
-        _ui_return_metric(
+        premium_metric_card(
             label="Exchanges",
             value=format_pct(metrics.get('exchange_count', 0)),
             help_text="Product/Size swaps",
@@ -421,21 +381,21 @@ def _render_financial_impact_summary(metrics: dict) -> None:
     # Primary Row: High-level financial outcome
     c1, c2, c3 = st.columns(3)
     with c1:
-        _ui_return_metric(
+        premium_metric_card(
             label="Net Settled Sales",
             value=f"৳{net_sales:,.0f}",
             help_text=f"After {metrics.get('return_count', 0)} returns & {metrics.get('partial_count', 0)} partials",
             icon="💰", border_color="#10b981"
         )
     with c2:
-        _ui_return_metric(
+        premium_metric_card(
             label="Net Revenue Yield",
             value=f"{net_yield_pct:.1f}%",
             help_text=f"Efficiency: ৳{net_sales:,.0f} / ৳{gross:,.0f}",
             icon="📊", border_color="#3b82f6"
         )
     with c3:
-        _ui_return_metric(
+        premium_metric_card(
             label="Total Loss Attribution",
             value=f"৳{(metrics.get('return_value_extracted', 0) + partial_loss):,.0f}",
             help_text="Revenue lost to returns and partials",
@@ -446,21 +406,21 @@ def _render_financial_impact_summary(metrics: dict) -> None:
     c4, c5, c6 = st.columns(3)
     with c4:
         items_pct_text = f"{total_returned_items_pct:.1f}% of {total_items_sold:,} units" if total_items_sold > 0 else "0% items returned"
-        _ui_return_metric(
+        premium_metric_card(
             label="Returned Item Volume",
             value=f"{total_ret_qty} Units",
             help_text=items_pct_text,
             icon="📦", border_color="#f59e0b"
         )
     with c5:
-        _ui_return_metric(
+        premium_metric_card(
             label="Returned Order Share",
             value=f"{returned_orders_pct:.1f}%",
             help_text=f"1 in every {int(100/returned_orders_pct) if returned_orders_pct > 0 else 'N/A'} orders",
             icon="📈", border_color="#ec4899"
         )
     with c6:
-        _ui_return_metric(
+        premium_metric_card(
             label="Exchanged Items",
             value=f"{metrics.get('total_exchanged_items', 0)} Units",
             help_text="Product swaps (No revenue loss)",
@@ -893,9 +853,9 @@ def _render_customer_recovery(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
     
     c1, c2 = st.columns(2)
     with c1:
-        ui_metric_small("Successfully Recovered", f"{total_reordered}", "🛡️")
+        small_metric_card("Successfully Recovered", f"{total_reordered}", "🛡️")
     with c2:
-        ui_metric_small("Avg. Recovery Days", f"{avg_days:.1f} days", "⏳")
+        small_metric_card("Avg. Recovery Days", f"{avg_days:.1f} days", "⏳")
         
     st.markdown("##### 📋 Recovery Ledger")
     st.dataframe(
@@ -1083,14 +1043,14 @@ def _render_returned_items_list(df: pd.DataFrame) -> None:
     # Summary row
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        ui_metric_small("Total Items", f"{total_items}", "📦")
+        small_metric_card("Total Items", f"{total_items}", "📦")
     with m2:
-        ui_metric_small("Total Qty", f"{total_qty}", "🔢")
+        small_metric_card("Total Qty", f"{total_qty}", "🔢")
     with m3:
-        ui_metric_small("Unique Orders", f"{unique_orders}", "📋")
+        small_metric_card("Unique Orders", f"{unique_orders}", "📋")
     with m4:
         unique_skus = items_df[items_df["SKU"] != "N/A"]["SKU"].nunique()
-        ui_metric_small("Unique SKUs", f"{unique_skus}", "🏷️")
+        small_metric_card("Unique SKUs", f"{unique_skus}", "🏷️")
 
     st.markdown("---")
 
@@ -1208,26 +1168,6 @@ def _render_returned_items_list(df: pd.DataFrame) -> None:
             st.info("No return reason data available for analysis.")
     else:
         st.info("Insufficient data for return reason prediction.")
-
-
-def ui_metric_small(label: str, value: str, icon: str):
-    """Small metric helper with premium glassmorphism styling."""
-    st.markdown(f"""
-        <div style="
-            background: var(--secondary-background-color);
-            border: 1px solid rgba(128, 128, 128, 0.1);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        ">
-            <div style="font-size: 1.4rem; margin-bottom: 8px;">{icon}</div>
-            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;">{label}</div>
-            <div style="font-size: 1.4rem; font-weight: 800; color: var(--text-color);">{value}</div>
-        </div>
-    """, unsafe_allow_html=True)
-
 
 # ═══════════════════════════════════════════════════════════════════
 # DETAILS TABLE
