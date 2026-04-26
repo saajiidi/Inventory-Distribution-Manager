@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from FrontEnd.components import ui
 import numpy as np
 
 def render_acquisition_analytics(df_sales: pd.DataFrame):
@@ -41,9 +42,9 @@ def render_acquisition_analytics(df_sales: pd.DataFrame):
     
     # 1. Executive Channel Summary
     c1, c2, c3 = st.columns(3)
-    c1.metric("Est. Traffic (Sessions)", f"{est_sessions:,}")
-    c2.metric("Overall CVR", f"{cvr*100:.2f}%")
-    c3.metric("Bounce Rate", "42.5%", delta="-1.2%", delta_color="normal")
+    with c1: ui.icon_metric("Est. Traffic", f"{est_sessions:,}", icon="👥")
+    with c2: ui.icon_metric("Overall CVR", f"{cvr*100:.2f}%", icon="🎯")
+    with c3: ui.icon_metric("Bounce Rate", "42.5%", icon="📉", delta="-1.2%", delta_val=-1.2, delta_color="inverse")
     
     st.divider()
     

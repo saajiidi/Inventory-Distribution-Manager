@@ -21,10 +21,12 @@ def _numbered_dataframe(data, *args, **kwargs):
         import pandas as pd
 
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            copied = data.copy()
-            if len(copied) > 0:
-                copied.index = range(1, len(copied) + 1)
-            return _original_dataframe(copied, *args, **kwargs)
+            # Only alter index if it is a default RangeIndex to preserve Time-Series/Grouped Data integrity
+            if isinstance(data.index, pd.RangeIndex):
+                copied = data.copy()
+                if len(copied) > 0:
+                    copied.index = range(1, len(copied) + 1)
+                return _original_dataframe(copied, *args, **kwargs)
     except Exception:
         pass
     return _original_dataframe(data, *args, **kwargs)

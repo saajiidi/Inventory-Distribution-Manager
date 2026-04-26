@@ -128,9 +128,6 @@ def export_to_excel(
     output.seek(0)
     return output.read()
 
-    output.seek(0)
-    return output.read()
-
 
 def show_last_updated(path: str):
     if not os.path.exists(path):

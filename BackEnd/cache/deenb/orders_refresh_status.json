@@ -1,6 +1,6 @@
 {
   "kind": "orders",
-  "state": "complete",
-  "updated_at": "2026-04-26 10:58:11",
-  "rows": 1321
+  "state": "failed",
+  "updated_at": "2026-04-26 13:19:33",
+  "error": "(\"Connection broken: ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)\", ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))"
 }

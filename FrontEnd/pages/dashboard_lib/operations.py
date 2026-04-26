@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from FrontEnd.components import ui
 from datetime import datetime, timedelta
 from BackEnd.utils.sales_schema import ensure_sales_schema
 
@@ -27,8 +28,8 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         
         c1, c2 = st.columns([1, 2])
         with c1:
-            st.metric("Avg. Shipping Time", f"{avg_latency:.1f} Days", 
-                      delta=f"{abs(avg_latency - 3):.1f}d vs Target", delta_color="inverse")
+            ui.icon_metric("Avg. Shipping Time", f"{avg_latency:.1f} Days", 
+                      icon="🚚", delta=f"{abs(avg_latency - 3):.1f}d vs Target", delta_val=(avg_latency - 3), delta_color="inverse")
             st.caption("Target dispatch: 72 hours.")
         
         with c2:
@@ -56,7 +57,7 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
     
     m1, m2 = st.columns(2)
     with m1:
-        st.metric("Refund Rate", f"{refund_rate:.1f}%", help="Percentage of total orders that resulted in a refund.")
+        ui.icon_metric("Refund Rate", f"{refund_rate:.1f}%", icon="🔄")
     with m2:
         target = 5.0
         st.progress(min(refund_rate / 15.0, 1.0), text=f"Tolerance: {target}%")
@@ -88,9 +89,9 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
         low_stock = len(stock_df[stock_df['Stock Quantity'] <= 5])
         
         i1, i2, i3 = st.columns(3)
-        i1.metric("Stock-out Rate", f"{stockout_rate:.1f}%", delta=f"{out_of_stock} OOS", delta_color="inverse")
-        i2.metric("Low Stock Alert", f"{low_stock} Items", help="Items with <= 5 units remaining.")
-        i3.metric("Inventory Value", f"৳{(stock_df['Stock Quantity'] * stock_df['Price']).sum():,.0f}")
+        with i1: ui.icon_metric("Stock-out Rate", f"{stockout_rate:.1f}%", icon="📉", delta=f"{out_of_stock} OOS", delta_val=-out_of_stock, delta_color="inverse")
+        with i2: ui.icon_metric("Low Stock Alert", f"{low_stock} Items", icon="⚠️")
+        with i3: ui.icon_metric("Inventory Value", f"৳{(stock_df['Stock Quantity'] * stock_df['Price']).sum():,.0f}", icon="💰")
         
         # Categorical Health
         cat_stock = stock_df.groupby('Category').agg({

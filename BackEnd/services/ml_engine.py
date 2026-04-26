@@ -57,37 +57,44 @@ class ForecastingRouter:
             
         return models
 
-def croston_method(ts, extra_periods=1, alpha=0.1):
-    """Croston method for intermittent demand forecasting."""
+def croston_method(ts, extra_periods=1, alpha=0.15, beta=0.15, variant='sba'):
+    """
+    Croston method for intermittent demand forecasting.
+    Includes Syntetos-Boylan Approximation (SBA) to correct the positive bias of vanilla Croston.
+    """
     d = np.array(ts) # demand
     cols = len(d)
-    a = np.zeros(cols+1) # level
-    p = np.zeros(cols+1) # period
-    f = np.zeros(cols+1) # forecast
     
     # Initialization
     if cols == 0 or not np.any(d > 0):
         return np.zeros(extra_periods)
         
+    a = np.zeros(cols+1) # level
+    p = np.zeros(cols+1) # period
+    f = np.zeros(cols+1) # forecast
+    
     first_occurrence = np.argmax(d > 0)
     a[0] = d[first_occurrence]
-    p[0] = first_occurrence + 1
+    p[0] = max(1, first_occurrence + 1)
     f[0] = a[0] / p[0]
     
     q = 1
     for t in range(0, cols):
         if d[t] > 0:
             a[t+1] = alpha * d[t] + (1 - alpha) * a[t]
-            p[t+1] = alpha * q + (1 - alpha) * p[t]
-            f[t+1] = a[t+1] / p[t+1]
+            p[t+1] = beta * q + (1 - beta) * p[t]
             q = 1
         else:
             a[t+1] = a[t]
             p[t+1] = p[t]
-            f[t+1] = f[t]
             q += 1
             
-    return np.full(extra_periods, f[-1])
+        f[t+1] = a[t+1] / p[t+1] if p[t+1] > 0 else 0
+        
+    # SBA bias correction
+    final_forecast = (1 - (beta / 2)) * f[-1] if variant == 'sba' else f[-1]
+    
+    return np.full(extra_periods, final_forecast)
 
 def run_automl_forecast(daily_df: pd.DataFrame, metric: str = "revenue", horizon: int = 7) -> dict:
     """Executes the high-performance AutoML tournament with defensive memory guarding."""

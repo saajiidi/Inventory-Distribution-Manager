@@ -16,9 +16,10 @@ def build_star_schema(data: Dict[str, Any], returns_df: pd.DataFrame) -> Tuple[b
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         
         # 1. Dim_Date
-        if not sales_df.empty and 'date' in sales_df.columns:
-            min_date = sales_df['date'].min()
-            max_date = sales_df['date'].max()
+        date_col = 'order_date' if 'order_date' in sales_df.columns else 'date' if 'date' in sales_df.columns else None
+        if not sales_df.empty and date_col:
+            min_date = sales_df[date_col].min()
+            max_date = sales_df[date_col].max()
         else:
             min_date = pd.to_datetime('2023-01-01')
             max_date = pd.to_datetime('today')
@@ -30,7 +31,7 @@ def build_star_schema(data: Dict[str, Any], returns_df: pd.DataFrame) -> Tuple[b
         dim_date['MonthName'] = dim_date['Date'].dt.strftime('%B')
         dim_date['Quarter'] = dim_date['Date'].dt.quarter
         dim_date['DayOfWeek'] = dim_date['Date'].dt.day_name()
-        dim_date['IsWeekend'] = dim_date['DayOfWeek'].isin(['Saturday', 'Sunday'])
+        dim_date['IsWeekend'] = dim_date['DayOfWeek'].isin(['Friday', 'Saturday'])
         
         dim_date.to_excel(writer, sheet_name='Dim_Date', index=False)
         
@@ -82,8 +83,8 @@ def build_star_schema(data: Dict[str, Any], returns_df: pd.DataFrame) -> Tuple[b
         if not sales_df.empty:
             fact_cols = []
             
-            if 'date' in sales_df.columns:
-                sales_df['DateKey'] = sales_df['date'].dt.strftime('%Y%m%d').astype(int)
+            if date_col:
+                sales_df['DateKey'] = sales_df[date_col].dt.strftime('%Y%m%d').astype(int)
                 fact_cols.append('DateKey')
             
             if 'order_id' in sales_df.columns: fact_cols.append('order_id')

@@ -13,7 +13,6 @@ from .metrics import metric_highlight, badge, date_context
 from .charts import build_discrete_color_map, apply_plotly_theme, donut_chart, bar_chart
 from .data_display import file_summary, export_to_excel, show_last_updated, _safe_datetime_series
 from .interactive import floating_action_bar, dialog_confirm
-from .animation import animation_bike
 
 __all__ = [
     "setup_theme",
@@ -37,6 +36,5 @@ __all__ = [
     "dialog_confirm",
     "export_to_excel",
     "show_last_updated",
-    "animation_bike",
     "ui"
 ]

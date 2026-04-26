@@ -15,6 +15,7 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 
+from FrontEnd.components import ui
 from BackEnd.utils.woocommerce_helpers import format_currency, format_wc_date
 from BackEnd.core.logging_config import get_logger
 
@@ -44,19 +45,19 @@ def render_order_history(
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("Total Orders", f"{len(orders_df):,}")
+        ui.icon_metric("Total Orders", f"{len(orders_df):,}", icon="🛒")
     
     with col2:
         total_items = orders_df["items_count"].sum() if "items_count" in orders_df.columns else 0
-        st.metric("Total Items", f"{int(total_items):,}")
+        ui.icon_metric("Total Items", f"{int(total_items):,}", icon="📦")
     
     with col3:
         total_value = orders_df["total"].sum() if "total" in orders_df.columns else 0
-        st.metric("Total Value", format_currency(total_value))
+        ui.icon_metric("Total Value", format_currency(total_value), icon="💰")
     
     with col4:
         avg_value = orders_df["total"].mean() if "total" in orders_df.columns else 0
-        st.metric("Average Order", format_currency(avg_value))
+        ui.icon_metric("Average Order", format_currency(avg_value), icon="💳")
     
     st.markdown("---")
     

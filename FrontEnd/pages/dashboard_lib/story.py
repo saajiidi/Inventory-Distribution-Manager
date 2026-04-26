@@ -109,19 +109,16 @@ def render_dashboard_story(df_sales: pd.DataFrame, df_customers: pd.DataFrame, m
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 0.9rem;
                 background: var(--surface);
+                color: var(--on-surface);
                 padding: 12px 18px;
                 border-radius: 4px;
-                border-left: 4px solid #F59E0B;
+                border-left: 4px solid var(--primary);
                 white-space: normal;
                 display: block;
                 width: 100%;
                 margin-bottom: 8px;
                 line-height: 1.5;
             }}
-
-            /* Light/Dark adaptive colors */
-            @media (prefers-color-scheme: light) {{ .orthodox-typewriter {{ color: #000000; border-left-color: #000000; }} }}
-            @media (prefers-color-scheme: dark) {{ .orthodox-typewriter {{ color: #F59E0B; border-left-color: #F59E0B; }} }}
 
             @keyframes revChar_{narrative_hash} {{
                 to {{ opacity: 1; }}

@@ -22,6 +22,7 @@ def setup_theme():
             --on-surface-variant: #64748B;
             --outline: #E2E8F0;
             --green: #10b981;
+            --warning: #f59e0b;
             --red: #ef4444;
         }
 
@@ -35,6 +36,7 @@ def setup_theme():
                 --on-surface: #FFFFFF;
                 --on-surface-variant: #A1A1AA;
                 --outline: #27272A;
+                --warning: #f59e0b;
             }
         }
 
@@ -57,11 +59,17 @@ def setup_theme():
             border: 1px solid rgba(128, 128, 128, 0.1) !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             backdrop-filter: blur(12px) !important;
-            height: 140px !important;
-            min-height: 140px !important;
-            max-height: 140px !important;
-            overflow: hidden !important;
             box-sizing: border-box !important;
+        }
+
+        /* Explicit constraints for Metric Cards to keep uniform grid */
+        [data-testid="stMetricContainer"], .metric-card {
+            height: 100% !important;
+            min-height: 140px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden !important;
         }
 
         .hub-card:hover {
@@ -82,9 +90,8 @@ def setup_theme():
         /* Metric Highlight Styling */
         .metric-highlight {
             padding: 1.25rem !important;
-            height: 140px !important;
+            height: 100% !important;
             min-height: 140px !important;
-            max-height: 140px !important;
             border-left: 4px solid var(--primary) !important;
             display: flex;
             flex-direction: column;
@@ -126,9 +133,8 @@ def setup_theme():
             display: flex;
             align-items: center;
             gap: 0.8rem;
-            height: 140px !important;
+            height: 100% !important;
             min-height: 140px !important;
-            max-height: 140px !important;
             overflow: hidden !important;
             box-sizing: border-box !important;
         }
@@ -150,8 +156,8 @@ def setup_theme():
             font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
             color: var(--on-surface) !important;
             white-space: nowrap !important;
-            overflow: visible !important;
-            text-overflow: clip !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
         }
 
 

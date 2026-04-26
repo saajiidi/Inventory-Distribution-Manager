@@ -43,18 +43,22 @@ def generate_demand_forecast(
     if product_daily.empty:
         return pd.DataFrame()
 
+    dataset_min_date = df["order_day"].min()
     latest_day = product_daily["order_day"].max()
     last_7_cutoff = latest_day - pd.Timedelta(days=6)
     last_28_cutoff = latest_day - pd.Timedelta(days=27)
+
+    available_days_7 = min(7, max(1, (latest_day - max(last_7_cutoff, dataset_min_date)).days + 1))
+    available_days_28 = min(28, max(1, (latest_day - max(last_28_cutoff, dataset_min_date)).days + 1))
 
     rows: list[dict] = []
     for item_name, group in product_daily.groupby("item_name"):
         last_7 = group[group["order_day"] >= last_7_cutoff]
         last_28 = group[group["order_day"] >= last_28_cutoff]
 
-        recent_7_daily = float(last_7["units"].sum() / max(7, 1))
-        recent_28_daily = float(last_28["units"].sum() / max(28, 1))
-        revenue_28_daily = float(last_28["revenue"].sum() / max(28, 1))
+        recent_7_daily = float(last_7["units"].sum() / max(available_days_7, 1))
+        recent_28_daily = float(last_28["units"].sum() / max(available_days_28, 1))
+        revenue_28_daily = float(last_28["revenue"].sum() / max(available_days_28, 1))
         weighted_daily = (recent_7_daily * 0.65) + (recent_28_daily * 0.35)
         trend_ratio = (recent_7_daily / recent_28_daily) if recent_28_daily > 0 else (1.5 if recent_7_daily > 0 else 1.0)
         forecast_units = max(weighted_daily * horizon_days, 0.0)

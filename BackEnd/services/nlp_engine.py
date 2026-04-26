@@ -81,9 +81,10 @@ class DataNLPInterpreter:
 class LLMAgent:
     """Agent that communicates with local or remote LLMs (Ollama, LM Studio, etc.)."""
     
-    def __init__(self, model_name: str = "gemma", base_url: str = "http://localhost:11434"):
+    def __init__(self, model_name: str = "gemma", base_url: str = "http://localhost:11434", agent_type: str = "Local AI Agent"):
         self.model_name = model_name
         self.base_url = base_url.rstrip('/')
+        self.agent_type = agent_type
 
     def query(self, prompt: str, context_df: pd.DataFrame) -> str:
         """Query the local model."""
@@ -103,6 +104,21 @@ class LLMAgent:
         Answer the user's question accurately based ONLY on this summary. 
         Be professional, concise, and use markdown.
         """
+        
+        if self.agent_type == "Google Gemini":
+            try:
+                import google.generativeai as genai
+                import streamlit as st
+                api_key = st.secrets.get("GEMINI_API_KEY")
+                if not api_key:
+                    return "❌ **Missing API Key:** Please add `GEMINI_API_KEY` to your `.streamlit/secrets.toml` file to use Google Gemini."
+                
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content(f"{system_prompt}\n\nUser Question: {prompt}")
+                return response.text
+            except Exception as e:
+                return f"❌ **Gemini API Error:** {str(e)}"
         
         # Determine if it's Ollama or OpenAI-compatible (LM Studio)
         is_ollama = "11434" in self.base_url
@@ -142,8 +158,8 @@ class LLMAgent:
 
 def get_nlp_response(query: str, sales_df: pd.DataFrame, agent_type: str = "Standard", model_name: str = "gemma", base_url: str = "http://localhost:11434") -> str:
     """Main entry point for NLP Pilot servicing."""
-    if agent_type == "Local AI Agent":
-        agent = LLMAgent(model_name=model_name, base_url=base_url)
+    if agent_type in ["Local AI Agent", "Google Gemini"]:
+        agent = LLMAgent(model_name=model_name, base_url=base_url, agent_type=agent_type)
         return agent.query(query, sales_df)
     else:
         interpreter = DataNLPInterpreter(sales_df)

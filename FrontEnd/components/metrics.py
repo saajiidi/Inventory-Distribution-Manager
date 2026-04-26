@@ -10,8 +10,8 @@ def skeleton_metric(icon: str = "📊"):
         <div class="hub-card metric-icon-card" style="opacity: 0.7;">
           <div class="metric-icon-wrap" style="animation: pulse 1.5s infinite;">{icon}</div>
           <div class="metric-content">
-            <div class="metric-highlight-label" style="background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 14px; width: 80px; border-radius: 4px; margin-bottom: 8px;"></div>
-            <div class="metric-highlight-value" style="background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 28px; width: 100px; border-radius: 4px;"></div>
+            <div class="metric-highlight-label" style="background: linear-gradient(90deg, rgba(128,128,128,0.1) 25%, rgba(128,128,128,0.2) 50%, rgba(128,128,128,0.1) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 14px; width: 80px; border-radius: 4px; margin-bottom: 8px;"></div>
+            <div class="metric-highlight-value" style="background: linear-gradient(90deg, rgba(128,128,128,0.1) 25%, rgba(128,128,128,0.2) 50%, rgba(128,128,128,0.1) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; height: 28px; width: 100px; border-radius: 4px;"></div>
           </div>
         </div>
         <style>
@@ -59,17 +59,23 @@ def badge(note: str):
 
 
 
-def icon_metric(label: str, value: str, icon: str = "📊", delta: str = "", delta_val: float = 0, loading: bool = False):
-    """Render metric card with optional loading skeleton state."""
+def icon_metric(label: str, value: str, icon: str = "📊", delta: str = "", delta_val: float = 0, loading: bool = False, delta_color: str = "normal"):
+    """Render metric card with optional loading skeleton state and dynamic delta coloring."""
     if loading:
         skeleton_metric(icon=icon)
         return
 
-    delta_class = "delta-up" if delta_val >= 0 else "delta-down"
     delta_icon = "↑" if delta_val >= 0 else "↓"
-    delta_html = f'<div class="metric-delta {delta_class}" style="font-size: clamp(0.6rem, 6cqi, 0.7rem); font-weight: 700; overflow-wrap: break-word; line-height: 1.2;">{delta_icon} {delta}</div>' if delta else ""
     
-    value_color = "#10b981" if delta and delta_val >= 0 else "#ef4444" if delta and delta_val < 0 else "var(--on-surface)"
+    if delta_color == "inverse":
+        color = "var(--red)" if delta_val > 0 else "var(--green)" if delta_val < 0 else "var(--on-surface-variant)"
+    elif delta_color == "off":
+        color = "var(--on-surface-variant)"
+    else:
+        color = "var(--green)" if delta_val > 0 else "var(--red)" if delta_val < 0 else "var(--on-surface-variant)"
+        
+    value_color = color if delta else "var(--on-surface)"
+    delta_html = f'<div class="metric-delta" style="color: {color}; font-size: clamp(0.6rem, 6cqi, 0.7rem); font-weight: 700; overflow-wrap: break-word; line-height: 1.2;">{delta_icon} {delta}</div>' if delta else ""
 
     st.markdown(
         f"""
@@ -106,11 +112,17 @@ def icon_metric(label: str, value: str, icon: str = "📊", delta: str = "", del
     )
 
 
-def metric_highlight(label: str, value: str, delta: str = "", delta_type: str = "up", help_text: str = "", icon: str = None):
+def metric_highlight(label: str, value: str, delta: str = "", delta_type: str = "up", help_text: str = "", icon: str = None, delta_color_mode: str = "normal"):
     """Premium Enterprise KPI card with glassmorphism, motion transitions, and optional icon."""
     delta_icon = "↑" if delta_type == "up" else "↓"
-    delta_color = "#10b981" if delta_type == "up" else "#ef4444"
     
+    if delta_color_mode == "inverse":
+        delta_color = "var(--red)" if delta_type == "up" else "var(--green)"
+    elif delta_color_mode == "off":
+        delta_color = "var(--on-surface-variant)"
+    else:
+        delta_color = "var(--green)" if delta_type == "up" else "var(--red)"
+        
     value_color = delta_color if delta else "var(--on-surface)"
     delta_html = f'<span class="metric-highlight-delta" style="color: {delta_color}; font-weight: 700;">{delta_icon} {delta}</span>' if delta else ""
     help_html = f'<span class="metric-highlight-help" style="color: #64748b; font-weight: 500;">{help_text}</span>' if help_text else ""
@@ -178,16 +190,22 @@ def date_context(
 
 
 
-def operational_card(title: str, order_count: int, item_count: int, revenue: float, icon: str = "📦", delta_text: str = "", delta_val: int = 0, item_label: str = "Items", is_alert: bool = False):
+def operational_card(title: str, order_count: int, item_count: int, revenue: float, icon: str = "📦", delta_text: str = "", delta_val: int = 0, item_label: str = "Items", is_alert: bool = False, delta_color: str = "normal"):
     """Premium multi-line operational metric card with optional alert pulse."""
-    delta_class = "delta-up" if delta_val >= 0 else "delta-down"
     delta_icon = "↑" if delta_val >= 0 else "↓"
-    delta_html = f'<div class="{delta_class} op-card-delta" style="font-size: clamp(0.6rem, 6cqi, 0.7rem); font-weight:700; overflow-wrap: break-word; line-height: 1.2;">{delta_icon} {delta_text}</div>' if delta_text else ""
     
-    value_color = "#10b981" if delta_text and delta_val >= 0 else "#ef4444" if delta_text and delta_val < 0 else "var(--primary)"
+    if delta_color == "inverse":
+        color = "var(--red)" if delta_val > 0 else "var(--green)" if delta_val < 0 else "var(--on-surface-variant)"
+    elif delta_color == "off":
+        color = "var(--on-surface-variant)"
+    else:
+        color = "var(--green)" if delta_val > 0 else "var(--red)" if delta_val < 0 else "var(--on-surface-variant)"
+        
+    value_color = color if delta_text else "var(--primary)"
+    delta_html = f'<div class="op-card-delta" style="color: {color}; font-size: clamp(0.6rem, 6cqi, 0.7rem); font-weight:700; overflow-wrap: break-word; line-height: 1.2;">{delta_icon} {delta_text}</div>' if delta_text else ""
 
     pulse_css = "animation: pulse-amber 2s infinite;" if is_alert else ""
-    border_style = "2px solid #F59E0B" if is_alert else "1px solid var(--outline)"
+    border_style = "2px solid var(--warning)" if is_alert else "1px solid var(--outline)"
 
     st.markdown(
         f"""

@@ -1282,6 +1282,63 @@ def _build_daily_financials(returns_df: pd.DataFrame, sales_df: Optional[pd.Data
     columns = ["date", "gross_sales", "return_loss", "partial_loss", "total_loss", "net_sales"]
     
     try:
+        # --- POLARS FAST-PATH OPTIMIZATION ---
+        if POLARS_AVAILABLE and sales_df is not None and not sales_df.empty:
+            try:
+                import polars as pl
+                
+                # 1. Process Sales (Minimal footprint)
+                sales_cols = [c for c in ["order_date", "_line_revenue"] if c in sales_df.columns]
+                pl_sales = pl.from_pandas(sales_df[sales_cols].dropna(subset=["order_date"]))
+                pl_sales = pl_sales.with_columns(pl.col("order_date").dt.date().alias("date"))
+                
+                pl_sales_daily = pl_sales.group_by("date").agg(
+                    pl.col("_line_revenue").sum().alias("gross_sales")
+                )
+                
+                # 2. Process Returns (if available)
+                if not returns_df.empty and "date" in returns_df.columns:
+                    ret_cols = ["date", "issue_type"]
+                    if "_resolved_revenue_impact" in returns_df.columns:
+                        ret_cols.append("_resolved_revenue_impact")
+                        
+                    pl_returns = pl.from_pandas(returns_df[ret_cols].dropna(subset=["date"]))
+                    pl_returns = pl_returns.with_columns(pl.col("date").dt.date())
+                    
+                    if "_resolved_revenue_impact" not in pl_returns.columns:
+                        pl_returns = pl_returns.with_columns(pl.lit(0.0).alias("_resolved_revenue_impact"))
+                        
+                    pl_full = pl_returns.filter(pl.col("issue_type").is_in(["Paid Return", "Non Paid Return"])).group_by("date").agg(
+                        pl.col("_resolved_revenue_impact").sum().alias("return_loss")
+                    )
+                    pl_partial = pl_returns.filter(pl.col("issue_type") == "Partial").group_by("date").agg(
+                        pl.col("_resolved_revenue_impact").sum().alias("partial_loss")
+                    )
+                    pl_dates = pl.concat([pl_sales_daily.select("date"), pl_returns.select("date")]).unique().sort("date")
+                else:
+                    pl_dates = pl_sales_daily.select("date").sort("date")
+                    pl_full = pl.DataFrame(schema={"date": pl.Date, "return_loss": pl.Float64})
+                    pl_partial = pl.DataFrame(schema={"date": pl.Date, "partial_loss": pl.Float64})
+
+                # 3. Fast Joins & Net Math
+                pl_timeline = (
+                    pl_dates.join(pl_sales_daily, on="date", how="left")
+                            .join(pl_full, on="date", how="left")
+                            .join(pl_partial, on="date", how="left")
+                            .fill_null(0.0)
+                )
+                
+                pl_timeline = pl_timeline.with_columns((pl.col("return_loss") + pl.col("partial_loss")).alias("total_loss"))
+                pl_timeline = pl_timeline.with_columns(
+                    pl.when(pl.col("gross_sales") - pl.col("total_loss") < 0).then(0.0).otherwise(pl.col("gross_sales") - pl.col("total_loss")).alias("net_sales")
+                )
+                
+                final_df = pl_timeline.select(columns).to_pandas()
+                final_df["date"] = pd.to_datetime(final_df["date"]) # Ensure Pandas timestamp compatibility
+                return final_df
+            except Exception as e:
+                logger.warning(f"Polars fast-path failed in _build_daily_financials: {e}. Falling back to chunked Pandas.")
+        
         sales_daily = pd.DataFrame(columns=["date", "gross_sales"])
 
         if sales_df is not None and not sales_df.empty and "order_date" in sales_df.columns:

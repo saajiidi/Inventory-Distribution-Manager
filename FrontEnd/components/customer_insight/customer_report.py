@@ -16,6 +16,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+from FrontEnd.components import ui
 from BackEnd.utils.woocommerce_helpers import (
     format_currency,
     format_wc_date,
@@ -297,41 +298,30 @@ def _render_full_profile(profile: Dict[str, Any]) -> None:
         st.caption(f"Registered: {reg_date}")
 
 
-def _render_order_metrics(metrics: Dict[str, Any]) -> None:
+def _render_order_metrics(metrics: Dict[str, Any], customer_data: Dict[str, Any]) -> None:
     """Render order metrics summary.
     
     Args:
         metrics: Customer metrics dictionary
+        customer_data: Customer data dictionary containing return stats
     """
     st.markdown("### 📊 Order Metrics")
     
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric(
-            "Total Orders",
-            f"{metrics.get('total_orders', 0):,}",
-        )
+        ui.icon_metric("Total Orders", f"{metrics.get('total_orders', 0):,}", icon="🛒")
     
     with col2:
-        st.metric(
-            "Total Items",
-            f"{metrics.get('total_items', 0):,}",
-        )
+        ui.icon_metric("Total Items", f"{metrics.get('total_items', 0):,}", icon="📦")
     
     with col3:
         total_value = metrics.get("total_value", 0)
-        st.metric(
-            "Total Value",
-            format_currency(total_value),
-        )
+        ui.icon_metric("Total Value", format_currency(total_value), icon="💰")
     
     with col4:
         aov = metrics.get("avg_order_value", 0)
-        st.metric(
-            "Average Order",
-            format_currency(aov),
-        )
+        ui.icon_metric("Average Order", format_currency(aov), icon="💳")
     
     # Additional metrics
     col1, col2, col3, col4 = st.columns(4)
@@ -340,28 +330,27 @@ def _render_order_metrics(metrics: Dict[str, Any]) -> None:
         first_order = metrics.get("first_order_date")
         if first_order and not pd.isna(first_order):
             first_str = format_wc_date(first_order, "%Y-%m-%d")
-            st.metric("First Order Date", first_str)
+            ui.icon_metric("First Order Date", first_str, icon="🗓️")
     
     with col2:
         last_order = metrics.get("last_order_date")
         if last_order and not pd.isna(last_order):
             last_str = format_wc_date(last_order, "%Y-%m-%d")
-            st.metric("Last Order Date", last_str)
+            ui.icon_metric("Last Order Date", last_str, icon="🗓️")
             
     with col3:
         return_count = customer_data.get("return_count", 0)
         return_rate = customer_data.get("return_rate", 0.0)
-        st.metric(
-            "Return Rate", 
-            f"{return_rate:.1%}", 
-            delta=f"{return_count} orders",
-            delta_color="inverse" if return_rate > 0.15 else "normal"
+        ui.icon_metric(
+            "Return Rate", f"{return_rate:.1%}", icon="🔄",
+            delta=f"{return_count} orders", delta_val=return_count,
+            delta_color="inverse" if return_count > 0 else "off"
         )
 
     with col4:
         lifespan = metrics.get("customer_lifespan_days", 0)
         if lifespan > 0:
-            st.metric("Customer Lifespan", f"{lifespan} days")
+            ui.icon_metric("Customer Lifespan", f"{lifespan} days", icon="⏳")
     
     st.markdown("---")
 

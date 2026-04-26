@@ -49,8 +49,14 @@ def apply_plotly_theme(
         showlegend=showlegend,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="IBM Plex Sans, Segoe UI, sans-serif", color="#102132"),
-        title=dict(font=dict(size=16, color="#102132")),
+        font=dict(family="Inter, sans-serif"),
+        title=dict(font=dict(size=16)),
+        hoverlabel=dict(
+            bgcolor="rgba(15, 23, 42, 0.95)",
+            font=dict(family="Inter, sans-serif", color="white", size=12),
+            bordercolor="rgba(255, 255, 255, 0.1)",
+            namelength=-1,
+        ),
         legend=dict(
             bgcolor="rgba(255,255,255,0.0)",
             borderwidth=0,
@@ -58,7 +64,7 @@ def apply_plotly_theme(
         ),
     )
     fig.update_xaxes(showgrid=False, zeroline=False)
-    fig.update_yaxes(gridcolor="rgba(148, 163, 184, 0.18)", zeroline=False)
+    fig.update_yaxes(gridcolor="rgba(128, 128, 128, 0.15)", zeroline=False)
     return fig
 
 
@@ -146,18 +152,3 @@ def bar_chart(
     else:
         fig.update_layout(xaxis_title="", yaxis_title="")
     return apply_plotly_theme(fig, height=400)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

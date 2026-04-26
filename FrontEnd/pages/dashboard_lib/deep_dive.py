@@ -8,14 +8,18 @@ from BackEnd.core.geo import get_region_display
 def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev: pd.DataFrame = None, window_label: str = "period"):
 
     if "_variant_parsed" not in df_sales.columns:
-        df_sales[["_color", "_size"]] = df_sales["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
+        parsed_variants = df_sales["item_name"].apply(parse_sku_variants).tolist()
+        df_sales["_color"] = [p[0] for p in parsed_variants]
+        df_sales["_size"] = [p[1] for p in parsed_variants]
         df_sales["_clean_name"] = df_sales["item_name"].apply(get_clean_product_name)
         
         df_sales["_densed_name"] = df_sales.apply(lambda x: get_densed_name(x["_clean_name"], x["Category"]), axis=1)
         df_sales["_variant_parsed"] = True
         
     if df_prev is not None and not df_prev.empty and "_variant_parsed" not in df_prev.columns:
-        df_prev[["_color", "_size"]] = df_prev["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
+        parsed_variants_prev = df_prev["item_name"].apply(parse_sku_variants).tolist()
+        df_prev["_color"] = [p[0] for p in parsed_variants_prev]
+        df_prev["_size"] = [p[1] for p in parsed_variants_prev]
         df_prev["_clean_name"] = df_prev["item_name"].apply(get_clean_product_name)
         df_prev["_densed_name"] = df_prev.apply(lambda x: get_densed_name(x["_clean_name"], x["Category"]), axis=1)
         df_prev["_variant_parsed"] = True
@@ -249,11 +253,11 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
     st.markdown("#### ⚡ Strategic Pulse")
     p_c1, p_c2, p_c3, p_c4, p_c5 = st.columns(5)
     
-    with p_c1: st.metric("📦 Total Items Sold", f"{total_items_sold:,}", delta=d_items_label)
-    with p_c2: st.metric("🎯 Top Variation", top_var_display)
-    with p_c3: st.metric("💰 Gross Revenue", f"৳{total_revenue:,.0f}", delta=d_rev_label)
-    with p_c4: st.metric("🏷️ Avg Item Price", f"৳{avg_item_price:,.0f}", delta=d_price_label)
-    with p_c5: st.metric("👥 Unique Buyers", f"{unique_customers:,}", delta=d_cust_label)
+    with p_c1: ui.icon_metric("Total Items Sold", f"{total_items_sold:,}", icon="📦", delta=d_items_label, delta_val=d_items_val)
+    with p_c2: ui.icon_metric("Top Variation", top_var_display, icon="🎯")
+    with p_c3: ui.icon_metric("Gross Revenue", f"৳{total_revenue:,.0f}", icon="💰", delta=d_rev_label, delta_val=d_rev_val)
+    with p_c4: ui.icon_metric("Avg Item Price", f"৳{avg_item_price:,.0f}", icon="🏷️", delta=d_price_label, delta_val=d_price_val)
+    with p_c5: ui.icon_metric("Unique Buyers", f"{unique_customers:,}", icon="👥", delta=d_cust_label, delta_val=d_cust_val)
 
     st.markdown(f"🚩 **Strategic Intelligence:** This segment is powered by **{unique_customers:,}** unique customers across **{total_items_sold:,}** total units sold. The dominant variation is **{top_var_name}** accounting for **{top_var_units}** units.")
 

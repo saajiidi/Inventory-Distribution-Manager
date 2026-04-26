@@ -48,11 +48,38 @@ class InventoryIntelligence:
             
         return pd.DataFrame(results)
 
-    def detect_orphan_stock(self, lift_threshold=1.2):
+    def detect_orphan_stock(self, min_support=0.01, min_lift=1.2):
         """Finds items (Orphan Stock) where the affinity partner is OOS."""
-        # 1. Get high-lift associations (simplified here, in practice use affinity_engine)
-        # Assuming we have access to rule list...
-        pass # To be integrated with affinity_engine
+        try:
+            from BackEnd.services.affinity_engine import MarketBasketEngine
+        except ImportError:
+            return pd.DataFrame()
+            
+        engine = MarketBasketEngine(self.sales_df)
+        rules = engine.get_associations(min_support=min_support, min_lift=min_lift)
+        
+        if rules.empty:
+            return pd.DataFrame()
+            
+        orphans = []
+        for _, rule in rules.iterrows():
+            item_a = rule['Antecedent']
+            item_b = rule['Consequent']
+            
+            stock_a = self.stock_df[self.stock_df[self.stock_prod_col] == item_a][self.stock_qty_col].sum()
+            stock_b = self.stock_df[self.stock_df[self.stock_prod_col] == item_b][self.stock_qty_col].sum()
+            
+            # If A is in stock but B is out of stock, A is orphaned
+            if stock_a > 0 and stock_b <= 0:
+                orphans.append({
+                    "In_Stock_Item": item_a,
+                    "Stock_Qty": stock_a,
+                    "Missing_Partner": item_b,
+                    "Lift (Correlation)": round(rule['Lift'], 2),
+                    "Action": f"Restock {item_b} to unblock {item_a} sales"
+                })
+                
+        return pd.DataFrame(orphans).sort_values("Lift (Correlation)", ascending=False).drop_duplicates(subset=["In_Stock_Item"])
 
     def component_dependency_ratio(self, item_a: str, item_b: str):
         """Calculates how dependent Item A is on Item B for sales."""

@@ -44,9 +44,9 @@ def _get_sales_data() -> pd.DataFrame:
     # Parse variants if not already done
     if "_ci_variant_parsed" not in sales_df.columns:
         from BackEnd.core.categories import parse_sku_variants, get_clean_product_name
-        sales_df[["_color", "_size"]] = sales_df["item_name"].apply(
-            lambda x: pd.Series(parse_sku_variants(x))
-        )
+        parsed_variants = sales_df["item_name"].apply(parse_sku_variants).tolist()
+        sales_df["_color"] = [p[0] for p in parsed_variants]
+        sales_df["_size"] = [p[1] for p in parsed_variants]
         sales_df["_clean_name"] = sales_df["item_name"].apply(get_clean_product_name)
         sales_df["_ci_variant_parsed"] = True
     
@@ -397,7 +397,9 @@ def apply_customer_filters(
     if active_sizes:
         if "_size" not in df.columns:
             from BackEnd.core.categories import parse_sku_variants
-            df[["_color", "_size"]] = df["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
+            parsed_variants = df["item_name"].apply(parse_sku_variants).tolist()
+            df["_color"] = [p[0] for p in parsed_variants]
+            df["_size"] = [p[1] for p in parsed_variants]
         df = df[df["_size"].isin(active_sizes)]
     
     if df.empty:

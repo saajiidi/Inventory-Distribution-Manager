@@ -47,7 +47,6 @@ logger = get_logger("customer_insight_page")
 
 def _render_metric_cards(metrics: Dict[str, Any]) -> None:
     """Render consistent, modern metric cards using enterprise components."""
-    from FrontEnd.components import ui
     
     cols = st.columns(4)
     
@@ -235,6 +234,27 @@ def _on_filter_change(filters: Dict[str, Any]) -> None:
     logger.info(f"Filters applied: {filters}")
     st.session_state["ci_filters_applied"] = True
 
+def _get_global_date_range() -> tuple[date, date]:
+    """Get start and end dates from global time window."""
+    today = date.today()
+    window = st.session_state.get("time_window", "Last Month")
+    if window == "Custom Date Range":
+        start_dt = st.session_state.get("wc_sync_start_date", today - timedelta(days=30))
+        end_dt = st.session_state.get("wc_sync_end_date", today)
+    else:
+        window_map = {
+            "Last Day": 1, "Last 3 Days": 3, "Last 7 Days": 7,
+            "Last 15 Days": 15, "Last Month": 30, "Last 3 Months": 90,
+            "Last Quarter": 90, "Last Half Year": 180, "Last 9 Months": 270, "Last Year": 365
+        }
+        days_back = window_map.get(window, 30)
+        start_dt = today - timedelta(days=days_back)
+        end_dt = today
+        
+    # Ensure we return standard datetime.date objects, stripping off Pandas Timestamp metadata if present
+    if hasattr(start_dt, "date"): start_dt = start_dt.date()
+    if hasattr(end_dt, "date"): end_dt = end_dt.date()
+    return start_dt, end_dt
 
 def _render_main_content(filters: Dict[str, Any]) -> None:
     """Render the main content area using existing working API.
@@ -253,13 +273,8 @@ def _render_main_content(filters: Dict[str, Any]) -> None:
         st.info("📭 No sales data available. Please sync data first.")
         return
     
-    # Get date range from filters
-    date_range = filters.get("date_range")
-    if date_range and len(date_range) == 2:
-        start_date, end_date = date_range
-    else:
-        end_date = date.today()
-        start_date = end_date - timedelta(days=30)
+    # Get contextual date range from global operational bounds
+    start_date, end_date = _get_global_date_range()
 
     # 1. PRE-COMPUTED GLOBAL METRICS (Always show these)
     mapping_metrics = get_customer_metrics(start_date, end_date)
@@ -305,13 +320,13 @@ def _render_main_content(filters: Dict[str, Any]) -> None:
     col1, col2, col3 = st.columns(3)
     with col1:
         total_orders = customers_df["total_orders"].sum() if "total_orders" in customers_df.columns else 0
-        st.metric("Total Orders (Filtered)", f"{int(total_orders):,}")
+        ui.icon_metric("Total Orders (Filtered)", f"{int(total_orders):,}", icon="🛒")
     with col2:
         total_revenue = customers_df["total_revenue"].sum() if "total_revenue" in customers_df.columns else customers_df.get("total_value", pd.Series([0])).sum()
-        st.metric("Total Revenue (Filtered)", f"৳{total_revenue:,.0f}")
+        ui.icon_metric("Total Revenue (Filtered)", f"৳{total_revenue:,.0f}", icon="💰")
     with col3:
         avg_aov = customers_df["avg_order_value"].mean() if "avg_order_value" in customers_df.columns else 0
-        st.metric("Avg AOV (Filtered)", f"৳{avg_aov:,.0f}")
+        ui.icon_metric("Avg AOV (Filtered)", f"৳{avg_aov:,.0f}", icon="💳")
     
     # Export button
     export_col1, export_col2 = st.columns([1, 3])
@@ -413,14 +428,14 @@ def _show_global_stats() -> None:
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    st.metric("Total Customers", f"{unique_customers:,}")
+                    ui.icon_metric("Total Customers", f"{unique_customers:,}", icon="👥")
                 
                 with col2:
-                    st.metric("Total Revenue", f"৳{total_rev:,.0f}")
+                    ui.icon_metric("Total Revenue", f"৳{total_rev:,.0f}", icon="💰")
                 
                 with col3:
                     avg = total_orders / unique_customers if unique_customers > 0 else 0
-                    st.metric("Avg Orders/Customer", f"{avg:.1f}")
+                    ui.icon_metric("Avg Orders/Customer", f"{avg:.1f}", icon="🛒")
         else:
             st.info("Sync data to view global statistics")
     except Exception as e:
@@ -549,13 +564,13 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
     # Show stats
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Customers", len(customers_df))
+        ui.icon_metric("Customers", str(len(customers_df)), icon="👥")
     with col2:
         total = customers_df["total_revenue"].sum() if "total_revenue" in customers_df.columns else customers_df.get("total_value", pd.Series([0])).sum()
-        st.metric("Revenue", f"৳{total:,.0f}")
+        ui.icon_metric("Revenue", f"৳{total:,.0f}", icon="💰")
     with col3:
         orders = customers_df["total_orders"].sum() if "total_orders" in customers_df.columns else 0
-        st.metric("Orders", f"{int(orders):,}")
+        ui.icon_metric("Orders", f"{int(orders):,}", icon="🛒")
     
     # Export button for tab view
     export_col1, export_col2 = st.columns([1, 3])

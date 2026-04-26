@@ -172,7 +172,7 @@ def build_customer_mapping(orders_df: pd.DataFrame, gsheet_df: Optional[pd.DataF
     for root, cluster_rows in cluster_data.items():
         phones = sorted(list(set(r["phone"] for r in cluster_rows if r["phone"])))
         emails = sorted(list(set(r["email"] for r in cluster_rows if r["email"])))
-        names = sorted(list(set(r["name"] for r in cluster_rows if r["name"] and r["name"].lower() != 'nan')))
+        names = sorted(list(set(r["name"] for r in cluster_rows if r["name"] and str(r["name"]).lower() != 'nan')))
         dates = [r["date"] for r in cluster_rows if pd.notna(r["date"])]
         
         first_order = min(dates) if dates else pd.NaT

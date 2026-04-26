@@ -47,7 +47,9 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     
     # Clean Names, Categories & Variants
     inventory["_clean_name"] = inventory["Name"].apply(get_clean_product_name)
-    inventory[["_color", "_size"]] = inventory["Name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
+    parsed_variants = inventory["Name"].apply(parse_sku_variants).tolist()
+    inventory["_color"] = [p[0] for p in parsed_variants]
+    inventory["_size"] = [p[1] for p in parsed_variants]
     
     # Enforce DEEN-BI standard categories over raw WooCommerce tags
     inventory["Category"] = inventory.apply(lambda x: get_category_for_sales(str(x.get("Name", "")) + " " + str(x.get("SKU", ""))), axis=1)
@@ -77,9 +79,9 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     # Summary Metrics
     low_stock = inventory[inventory["Stock Quantity"] <= 5]
     m1, m2, m3 = st.columns(3)
-    with m1: st.metric("Unique SKU Records", f"{len(inventory):,}")
-    with m2: st.metric("Low Stock Alerts", f"{len(low_stock):,}")
-    with m3: st.metric("Inventory Asset Value", f"৳{inventory['Value'].sum():,.0f}")
+    with m1: ui.icon_metric("Unique SKU Records", f"{len(inventory):,}", icon="🏷️")
+    with m2: ui.icon_metric("Low Stock Alerts", f"{len(low_stock):,}", icon="⚠️")
+    with m3: ui.icon_metric("Inventory Asset Value", f"৳{inventory['Value'].sum():,.0f}", icon="💰")
     
     st.divider()
 
@@ -128,9 +130,9 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
             item_velocity = float(sniper_results["daily_velocity"].iloc[0])
             
             k1, k2, k3 = st.columns(3)
-            k1.metric("Current Stock Balance", f"{int(sniper_results['Stock Quantity'].sum())}")
-            k2.metric("Sales Velocity", f"{item_velocity:.2f} units/day")
-            k3.metric("Velocity Tier", item_trend)
+            with k1: ui.icon_metric("Current Stock Balance", f"{int(sniper_results['Stock Quantity'].sum())}", icon="📦")
+            with k2: ui.icon_metric("Sales Velocity", f"{item_velocity:.2f} units/day", icon="⚡")
+            with k3: ui.icon_metric("Velocity Tier", item_trend, icon="📈")
             
             # Stock-out Countdown
             if item_velocity > 0:
@@ -356,15 +358,28 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
                         orphan_pct = (len(set(orphan_skus)) / unique_clean_names * 100) if unique_clean_names > 0 else 0
                         
                         bm1, bm2, bm3 = st.columns(3)
-                        with bm1: st.metric("Bundle Fulfillment", f"{fulfillment_rate:.0f}%", help="Percentage of top 10 bundles where BOTH items are in stock.")
-                        with bm2: st.metric("Orphan Stock Rate", f"{orphan_pct:.1f}%", help="Percentage of catalog items stranded without their frequent paired product.", delta="Action Required" if orphan_pct > 10 else "Normal", delta_color="inverse")
-                        with bm3: st.metric("Dependency Links", f"{total_bundles}", help="Number of strong product correlations found.")
+                        with bm1: ui.icon_metric("Bundle Fulfillment", f"{fulfillment_rate:.0f}%", icon="📦")
+                        with bm2: ui.icon_metric("Orphan Stock Rate", f"{orphan_pct:.1f}%", icon="⚠️", delta="Action Required" if orphan_pct > 10 else "Normal", delta_color="inverse")
+                        with bm3: ui.icon_metric("Dependency Links", f"{total_bundles}", icon="🔗")
                         
                         if fulfillment_rate < 50:
                             st.error("⚠️ **Fulfillment Critical**: High rate of lost sales due to bundle imbalance (one item out of stock).")
                             
                         st.markdown("**Strategic Reorder Intelligence (Top Combinations)**")
                         st.dataframe(pd.DataFrame(bundle_data), width="stretch", hide_index=True)
+                        
+                        # Add Orphan Stock Intelligence
+                        st.markdown("---")
+                        st.markdown("##### 🚨 Critical Orphaned Stock")
+                        st.caption("Items you have in stock, but their highly correlated paired item is Out of Stock.")
+                        from BackEnd.services.inventory_intel import InventoryIntelligence
+                        intel = InventoryIntelligence(df_sales, inventory)
+                        orphans_df = intel.detect_orphan_stock()
+                        if not orphans_df.empty:
+                            st.error(f"Found {len(orphans_df)} stranded items due to out-of-stock partners.")
+                            st.dataframe(orphans_df, width="stretch", hide_index=True)
+                        else:
+                            st.success("No critical orphan stock dependencies detected.")
     else:
         st.info("Category-wise breakdown is not yet available in the stock cache.")
         

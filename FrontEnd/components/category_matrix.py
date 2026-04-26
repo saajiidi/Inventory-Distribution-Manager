@@ -63,26 +63,30 @@ def render_category_matrix(
         
     df['ret_qty'] = df[qty_col].where(df['is_returned'], 0)
 
-    # 2. Date grouping for Week-over-Week (WoW) Comparison
+    # 2. Date grouping mapping for Contextual Comparison based on active Time Window
     df['period'] = 'current'
-    if date_col in df.columns:
-        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-        valid_dates = df[df[date_col].notna()][date_col]
-        if not valid_dates.empty:
-            max_date = valid_dates.max()
-            current_period_start = max_date - timedelta(days=7)
-            prev_period_start = current_period_start - timedelta(days=7)
+    prev_df_mapped = pd.DataFrame()
+    if "dashboard_data" in st.session_state and "sales_prev" in st.session_state.dashboard_data:
+        prev_sales_df = st.session_state.dashboard_data["sales_prev"]
+        if not prev_sales_df.empty:
+            prev_df_mapped = prev_sales_df.copy()
+            if cat_col not in prev_df_mapped.columns: prev_df_mapped[cat_col] = "Uncategorized"
+            if subcat_col not in prev_df_mapped.columns: prev_df_mapped[subcat_col] = prev_df_mapped.get("item_name", "Unknown Product")
             
-            df['period'] = 'older'
-            df.loc[df[date_col] >= current_period_start, 'period'] = 'current'
-            df.loc[(df[date_col] >= prev_period_start) & (df[date_col] < current_period_start), 'period'] = 'previous'
+            v_col = val_col if val_col in prev_df_mapped.columns else ("order_total" if "order_total" in prev_df_mapped.columns else "line_total")
+            prev_df_mapped[val_col] = prev_df_mapped[v_col] if v_col in prev_df_mapped.columns else 0.0
+            
+            if qty_col not in prev_df_mapped.columns: prev_df_mapped[qty_col] = 1
+            
+            prev_df_mapped['_main_cat'] = prev_df_mapped[cat_col].apply(lambda x: str(x).split(' - ')[0].strip() if pd.notna(x) else 'Unknown')
+            prev_df_mapped['_sub_cat'] = prev_df_mapped[cat_col].apply(lambda x: str(x).split(' - ')[1].strip() if pd.notna(x) and ' - ' in str(x) else str(x).strip())
+            prev_df_mapped['period'] = 'previous'
 
     # 3. CSS Injection (Scoping generic classes slightly to avoid Streamlit conflicts)
     css = """
     <style>
         .matrix-dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
             align-items: start;
             width: 100%;
@@ -135,8 +139,8 @@ def render_category_matrix(
             font-size: 0.8rem;
             font-weight: 500;
         }
-        .matrix-positive { color: #10b981; background: rgba(16, 185, 129, 0.15); }
-        .matrix-negative { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+        .matrix-positive { color: var(--green); background: rgba(16, 185, 129, 0.15); }
+        .matrix-negative { color: var(--red); background: rgba(239, 68, 68, 0.15); }
         .matrix-neutral { color: var(--on-surface-variant, #64748b); background: rgba(100, 116, 139, 0.15); }
         .matrix-scroll {
             overflow-x: auto;
@@ -145,7 +149,7 @@ def render_category_matrix(
             scroll-behavior: smooth;
         }
         .matrix-table {
-            min-width: 400px;
+            min-width: 100%;
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
@@ -157,6 +161,11 @@ def render_category_matrix(
             white-space: nowrap;
             color: var(--on-surface-variant, #334155);
         }
+        .matrix-table td:first-child {
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .matrix-table th {
             background-color: var(--surface, #fafcff);
             font-weight: 600;
@@ -164,6 +173,12 @@ def render_category_matrix(
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+        }
+        .matrix-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        .matrix-table tbody tr:hover {
+            background-color: rgba(128, 128, 128, 0.05);
         }
         .matrix-revenue { font-weight: 700; color: var(--on-surface, #0f172a); }
         .matrix-trend {
@@ -176,8 +191,8 @@ def render_category_matrix(
             padding: 0.2rem 0.5rem;
             border-radius: 1rem;
         }
-        .matrix-trend-up { color: #10b981; }
-        .matrix-trend-down { color: #ef4444; }
+        .matrix-trend-up { color: var(--green); }
+        .matrix-trend-down { color: var(--red); }
         .matrix-view-icon { cursor: pointer; font-size: 1.2rem; opacity: 0.7; transition: 0.1s; }
         .matrix-view-icon:hover { opacity: 1; }
         .matrix-card-footer {
@@ -212,14 +227,17 @@ def render_category_matrix(
         cat_df = df[df['_main_cat'] == cat]
         
         curr_df = cat_df[cat_df['period'] == 'current']
-        prev_df = cat_df[cat_df['period'] == 'previous']
+        if not prev_df_mapped.empty:
+            prev_df = prev_df_mapped[prev_df_mapped['_main_cat'] == cat]
+        else:
+            prev_df = pd.DataFrame()
         
         curr_cat_rev = curr_df[val_col].sum()
         prev_cat_rev = prev_df[val_col].sum()
         
         cat_growth = ((curr_cat_rev - prev_cat_rev) / prev_cat_rev * 100) if prev_cat_rev > 0 else 0
         badge_class = "matrix-positive" if cat_growth >= 0 else "matrix-negative"
-        badge_text = f"+{cat_growth:.1f}% vs prev week" if cat_growth >= 0 else f"{cat_growth:.1f}% vs prev week"
+        badge_text = f"+{cat_growth:.1f}% vs prev period" if cat_growth >= 0 else f"{cat_growth:.1f}% vs prev period"
         
         if prev_cat_rev == 0 and curr_cat_rev > 0:
             badge_text, badge_class = "New Sales", "matrix-positive"
@@ -308,7 +326,7 @@ def render_category_matrix(
             f"<thead><tr><th>Sub-Category</th><th>Items Sold</th><th>Revenue</th><th>vs Prev week</th><th>View</th></tr></thead>"
             f"<tbody>{rows_html}</tbody>"
             f"</table></div>"
-            f"<div class='matrix-card-footer'>WoW comparison · Top Sub-Categories</div>"
+            f"<div class='matrix-card-footer'>Period-over-Period comparison · Top Sub-Categories</div>"
             f"</div>"
         )
 

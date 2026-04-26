@@ -34,6 +34,7 @@ def build_period_business_metrics(df_sales: pd.DataFrame, df_customers: pd.DataF
     return metrics.tail(limit).reset_index(drop=True)
 
 def render_today_vs_last_day_sales_chart(df_sales: pd.DataFrame, df_customers: pd.DataFrame):
+    from FrontEnd.components import ui
     st.markdown("#### Exact Order Status Breakdown")
     order_df = build_order_level_dataset(df_sales)
     if not order_df.empty and "order_status" in order_df.columns:
@@ -47,7 +48,8 @@ def render_today_vs_last_day_sales_chart(df_sales: pd.DataFrame, df_customers: p
                 idx = r * 4 + c
                 if idx < len(status_counts):
                     row = status_counts.iloc[idx]
-                    st.metric(status_map.get(row["Status"], row["Status"].title()), f"{row['Orders']:,}")
+                    with cols[c]:
+                        ui.icon_metric(status_map.get(row["Status"], row["Status"].title()), f"{row['Orders']:,}", icon="📋")
     st.divider()
     st.markdown("#### Today vs Previous Day Sales Comparison")
     sales = ensure_sales_schema(df_sales)
