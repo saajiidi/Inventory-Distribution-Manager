@@ -252,20 +252,6 @@ def _select_customer_columns(df: pd.DataFrame) -> pd.DataFrame:
     return sales[available].copy()
 
 
-def _build_customer_first_order_history(df: pd.DataFrame) -> pd.DataFrame:
-    if df is None or df.empty:
-        return pd.DataFrame(columns=["customer_id", "first_order"])
-    prepared = _prepare_customer_identity(df)
-    if prepared.empty:
-        res = pd.DataFrame(columns=["customer_id", "first_order"])
-        res["first_order"] = pd.to_datetime(res["first_order"])
-        return res
-    history = (
-        prepared.groupby("customer_id", dropna=False)
-        .agg(first_order=("order_date", "min"))
-        .reset_index()
-    )
-    return history
 
 
 

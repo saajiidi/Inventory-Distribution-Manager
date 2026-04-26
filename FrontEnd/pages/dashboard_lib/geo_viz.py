@@ -16,25 +16,6 @@ def load_bangladesh_geojson():
         st.error(f"Failed to load map data: {str(e)}")
     return None
 
-def normalize_district_name(name):
-    """Normalize district names for matching with GeoJSON properties."""
-    if not name or pd.isna(name):
-        return "Unknown"
-    
-    name = str(name).strip().title()
-    # Map common variations
-    mapping = {
-        "Chattogram": "Chittagong", # Highcharts/Mapbox often use legacy names
-        "Barishal": "Barisal",
-        "Bogura": "Bogra",
-        "Jashore": "Jessore",
-        "Cumilla": "Comilla",
-        "Cox'S Bazar": "Cox's Bazar",
-        "Chuadanga": "Chuadanga",
-        # Add more if discrepancies found
-    }
-    return mapping.get(name, name)
-
 def render_district_map(df_sales: pd.DataFrame):
     """Render a choropleth map of Bangladesh showing sales density."""
     st.markdown("### 🗺️ Market Hotspots: Regional Density")
@@ -45,17 +26,14 @@ def render_district_map(df_sales: pd.DataFrame):
         return
 
     # 1. Aggregate Data by Parent District (for Map Matching)
-    from BackEnd.core.geo import get_parent_district, get_region_display
+    from BackEnd.core.geo import get_parent_district, get_region_display, normalize_city_name
     
     df_map = df_sales.copy()
     
     # Standardize 'state' as parent district (No BD-** codes)
     df_map["District_Parent"] = df_map.apply(lambda x: get_parent_district(x.get("state", x.get("city", "Unknown"))), axis=1)
-    df_map["District_Parent"] = df_map["District_Parent"].apply(normalize_district_name)
+    df_map["District_Parent"] = df_map["District_Parent"].apply(normalize_city_name)
     
-    if "order_total" not in df_map.columns: df_map["order_total"] = 0.0
-    if "order_id" not in df_map.columns: df_map["order_id"] = df_map.index
-
     # Store refined label for deep intelligence
     df_map["Display_Region"] = df_map.apply(lambda x: get_region_display(x.get("city", ""), x.get("state", "")), axis=1)
     
@@ -102,7 +80,8 @@ def render_district_map(df_sales: pd.DataFrame):
             color="Value",
             color_continuous_scale=color_scale,
             range_color=(0, agg_df["Value"].max() if agg_df["Value"].max() > 0 else 100),
-            labels=labels
+            labels=labels,
+            template="plotly_dark"
         )
 
     fig.update_geos(
@@ -136,16 +115,15 @@ def render_district_map(df_sales: pd.DataFrame):
             spot_df, x="Value", y="Region",
             orientation='h', color="Value",
             color_continuous_scale=color_scale,
-            labels={"Value": map_metric, "Region": "Refined Area"}
+            labels={"Value": map_metric, "Region": "Refined Area"},
+            template="plotly_dark"
         )
         
         fig_spot.update_layout(
             height=600, margin=dict(l=0, r=0, t=0, b=0),
             coloraxis_showscale=False,
             xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=False, categoryorder="total ascending"),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)"
+            yaxis=dict(showgrid=False, categoryorder="total ascending")
         )
         st.plotly_chart(fig_spot, width="stretch")
     

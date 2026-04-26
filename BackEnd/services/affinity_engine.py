@@ -2,15 +2,16 @@ import pandas as pd
 import numpy as np
 from itertools import combinations
 from collections import Counter
+from BackEnd.utils.sales_schema import ensure_sales_schema
 
 class MarketBasketEngine:
     """Core logic for discovering product affinities and association rules."""
     
     def __init__(self, sales_df: pd.DataFrame):
-        self.df = sales_df.copy()
+        self.df = ensure_sales_schema(sales_df).copy()
         # Find product column
-        self.prod_col = "item_name" if "item_name" in self.df.columns else "Product Name"
-        self.order_col = "order_id" if "order_id" in self.df.columns else "Order ID"
+        self.prod_col = "item_name"
+        self.order_col = "order_id"
         
     def get_associations(self, min_support=0.01, min_lift=1.1):
         """Calculates association rules (Antecedent -> Consequent)."""

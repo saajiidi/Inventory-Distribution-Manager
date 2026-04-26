@@ -2,7 +2,8 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 from FrontEnd.components import ui
-from BackEnd.core.categories import parse_sku_variants, get_clean_product_name, get_master_category_list, format_category_label
+from BackEnd.core.categories import parse_sku_variants, get_clean_product_name, get_master_category_list, format_category_label, get_subcategory_name, classify_velocity_trend, get_densed_name
+from BackEnd.core.geo import get_region_display
 
 def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev: pd.DataFrame = None, window_label: str = "period"):
 
@@ -10,21 +11,6 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         df_sales[["_color", "_size"]] = df_sales["item_name"].apply(lambda x: pd.Series(parse_sku_variants(x)))
         df_sales["_clean_name"] = df_sales["item_name"].apply(get_clean_product_name)
         
-        # --- Robust Densed Name Logic ---
-        def get_densed_name(name, category):
-             name_str = str(name).strip()
-             cat_str = str(category).strip()
-             if len(name_str) > 22 and " - " in cat_str:
-                 main, sub = cat_str.split(" - ", 1)
-                 # Exclude main category (case-insensitive word match)
-                 import re
-                 densed = re.sub(rf"\b{re.escape(main)}\b", "", name_str, flags=re.IGNORECASE).strip("- ")
-                 # Include sub-category if not already present
-                 if sub.lower() not in densed.lower():
-                     return f"{sub} {densed}".strip()
-                 return densed
-             return name_str
-
         df_sales["_densed_name"] = df_sales.apply(lambda x: get_densed_name(x["_clean_name"], x["Category"]), axis=1)
         df_sales["_variant_parsed"] = True
         
@@ -40,13 +26,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
     v_agg = df_sales.groupby("item_name")["qty"].sum().reset_index()
     v_agg["v_rate"] = v_agg["qty"] / days_active
     
-    def classify_trend(rate):
-        if rate > 3.0: return "🔥 Fast Moving"
-        if rate > 0.8: return "⚖️ Regular"
-        if rate > 0: return "🐌 Slow Moving"
-        return "❄️ Non-Moving"
-
-    v_agg["Trend"] = v_agg["v_rate"].apply(classify_trend)
+    v_agg["Trend"] = classify_velocity_trend(v_agg["v_rate"])
     if "Trend" not in df_sales.columns:
         df_sales = df_sales.merge(v_agg[["item_name", "Trend"]], on="item_name", how="left")
 
@@ -54,41 +34,8 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
     if "Coupons" not in df_sales.columns:
         df_sales["Coupons"] = "None"
 
-    # --- Market Regions Mapping (Official BD Districts) ---
-    bd_states = {
-        "BD-01": "Bandarban", "BD-02": "Barguna", "BD-03": "Bogura",
-        "BD-04": "Brahmanbaria", "BD-05": "Bagerhat", "BD-06": "Barishal",
-        "BD-07": "Bhola", "BD-08": "Cumilla", "BD-09": "Chandpur",
-        "BD-10": "Chattogram", "BD-11": "Cox's Bazar", "BD-12": "Chuadanga",
-        "BD-13": "Dhaka", "BD-14": "Dinajpur", "BD-15": "Faridpur",
-        "BD-16": "Feni", "BD-17": "Gopalganj", "BD-18": "Gazipur",
-        "BD-19": "Gaibandha", "BD-20": "Habiganj", "BD-21": "Jamalpur",
-        "BD-22": "Jashore", "BD-23": "Jhenaidah", "BD-24": "Joypurhat",
-        "BD-25": "Jhalokathi", "BD-26": "Kishoreganj", "BD-27": "Khulna",
-        "BD-28": "Kurigram", "BD-29": "Khagrachhari", "BD-30": "Kushtia",
-        "BD-31": "Lakshmipur", "BD-32": "Lalmonirhat", "BD-33": "Manikganj",
-        "BD-34": "Mymensingh", "BD-35": "Munshiganj", "BD-36": "Madaripur",
-        "BD-37": "Magura", "BD-38": "Moulvibazar", "BD-39": "Meherpur",
-        "BD-40": "Narayanganj", "BD-41": "Netrakona", "BD-42": "Narsingdi",
-        "BD-43": "Narail", "BD-44": "Natore", "BD-45": "Chapai Nawabganj",
-        "BD-46": "Nilphamari", "BD-47": "Noakhali", "BD-48": "Naogaon",
-        "BD-49": "Pabna", "BD-50": "Pirojpur", "BD-51": "Patuakhali",
-        "BD-52": "Panchagarh", "BD-53": "Rajbari", "BD-54": "Rajshahi",
-        "BD-55": "Rangpur", "BD-56": "Rangamati", "BD-57": "Sherpur",
-        "BD-58": "Satkhira", "BD-59": "Sirajganj", "BD-60": "Sylhet",
-        "BD-61": "Sunamganj", "BD-62": "Shariatpur", "BD-63": "Tangail",
-        "BD-64": "Thakurgaon"
-    }
-    
-    # Pre-map regions for display
-    def get_region_name(row):
-        code = str(row.get("state", "")).strip()
-        if code in bd_states: return bd_states[code]
-        city = str(row.get("city", "")).strip()
-        # Fallback to city or stay as code
-        return bd_states.get(city, city if city else code)
-
-    df_sales["_region_display"] = df_sales.apply(get_region_name, axis=1)
+    # Map precise regions via core geography engine
+    df_sales["_region_display"] = df_sales.apply(lambda x: get_region_display(x.get("city", ""), x.get("state", "")), axis=1)
 
     # MAIN UI LAYOUT
     st.markdown("### 📥 Sales Data Ingestion & Analysis")
@@ -161,7 +108,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         merged["ASP Trend"] = merged.apply(lambda x: format_trend(x["ASP"], x["Prev_ASP"]), axis=1)
         
         merged["Master Category"] = merged["Category"].apply(lambda x: str(x).split(" - ")[0] if " - " in str(x) else str(x))
-        merged["Sub Category"] = merged["Category"].apply(lambda x: str(x).split(" - ")[1] if " - " in str(x) else str(x))
+        merged["Sub Category"] = merged["Category"].apply(get_subcategory_name)
         
         merged = merged.sort_values(["Total_Revenue", "Master Category"], ascending=[False, True])
         
@@ -443,7 +390,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         leader_df["Revenue Share %"] = (leader_df["Revenue"] / total_cluster_rev * 100).round(1) if total_cluster_rev > 0 else 0
             
         # Strip parent for sub-category hover
-        leader_df["Sub-Category"] = leader_df["Category"].apply(lambda x: x.split(" - ")[1] if " - " in str(x) else x)
+        leader_df["Sub-Category"] = leader_df["Category"].apply(get_subcategory_name)
         
         hover_label = "Product Name" if granularity == "📦 Master Product" else "Product (SKU)"
         
@@ -476,8 +423,6 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         st.divider()
         st.markdown("##### 📦 Operational Sub-Category Performance")
         occ1, occ2 = st.columns(2)
-        
-        from BackEnd.core.categories import get_subcategory_name
         
         cat_intell = w_df.copy()
         cat_intell["Sub-Cat"] = cat_intell["Category"].apply(get_subcategory_name)

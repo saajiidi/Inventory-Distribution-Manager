@@ -902,18 +902,10 @@ def _normalize_product_names(details: str, stock_df: Optional[pd.DataFrame] = No
         # --- Clean up ---
         name = name.strip(' -_')
 
+        from BackEnd.core.categories import parse_sku_variants
         # --- Infer Category ---
-        category = "General"
-        cat_keywords = {
-            "Jeans": ["jeans", "denim", "pant"],
-            "Shirt": ["shirt", "flannel", "polo", "tshirt", "t-shirt"],
-            "Jacket": ["jacket", "hoodie", "sweater", "blazer"],
-            "Accessories": ["belt", "wallet", "socks", "cap"],
-        }
-        for cat, keywords in cat_keywords.items():
-            if any(k in name.lower() for k in keywords):
-                category = cat
-                break
+        from BackEnd.core.categories import get_category_for_sales
+        category = get_category_for_sales(name)
 
         if len(name) > 2:
             processed.append({
@@ -969,7 +961,7 @@ def _verify_and_correct_product(
             stock_lookup[clean_name] = {
                 "name": stock_name,
                 "sku": stock_sku,
-                "size": _extract_size_from_name(stock_name),
+                "size": parse_sku_variants(stock_name)[1],
                 "category": row.get("Category", "General")
             }
 
@@ -985,7 +977,7 @@ def _verify_and_correct_product(
                 partial_sku_index[partial].append({
                     "full_sku": stock_sku,
                     "name": stock_name,
-                    "size": _extract_size_from_name(stock_name),
+                    "size": parse_sku_variants(stock_name)[1],
                     "category": row.get("Category", "General")
                 })
 
@@ -1080,25 +1072,6 @@ def _verify_and_correct_product(
     return item
 
 
-def _extract_size_from_name(name: str) -> str:
-    """Extract size from product name using common patterns."""
-    if not name:
-        return "N/A"
-
-    # Pattern: "Product Name - Size" or "Product Name (Size)"
-    size_patterns = [
-        r'\s*-\s*(XS|S|M|L|XL|XXL|3XL|4XL)\s*$',  # Dash before size at end
-        r'\s*\(\s*(XS|S|M|L|XL|XXL|3XL|4XL)\s*\)',  # Size in parentheses
-        r'\s+(XS|S|M|L|XL|XXL|3XL|4XL)\s*$',  # Size at end without dash
-        r'\s*-\s*([0-9]{2,3})\s*$',  # Numeric size like 30, 32, 38
-    ]
-
-    for pattern in size_patterns:
-        match = re.search(pattern, name, re.IGNORECASE)
-        if match:
-            return match.group(1).strip().upper()
-
-    return "N/A"
 
 
 def _verify_products_with_stock(
@@ -1175,6 +1148,7 @@ def get_order_items_breakdown(order_id: str, returned_items: list[dict[str, Any]
     if order_sales.empty:
         return {"returned": returned_with_skus, "delivered": []}
 
+    from BackEnd.core.categories import parse_sku_variants, get_category_for_sales
     delivered_records = []
     remaining_sales = order_sales.copy()
     
@@ -1186,79 +1160,21 @@ def get_order_items_breakdown(order_id: str, returned_items: list[dict[str, Any]
             remaining_sales = remaining_sales.drop(match_idx[0])
             
     for _, row in remaining_sales.iterrows():
+        name = str(row["item_name"])
+        color, size = parse_sku_variants(name)
+        cat = get_category_for_sales(name)
         delivered_records.append({
-            "name": row["item_name"],
+            "name": name,
             "sku": row.get("sku", "N/A"),
-            "size": "N/A", # Size info might not be parsed in sales_df similarly
+            "size": size,
             "qty": row.get("qty", 1),
-            "category": "N/A"
+            "category": cat
         })
         
     return {
         "returned": returned_with_skus,
         "delivered": delivered_records
     }
-
-
-def _estimate_sales_line_revenue(sales_df: pd.DataFrame) -> pd.Series:
-    """Estimate line revenue using the best available columns.
-    
-    Memory-safe implementation with chunked processing for large datasets.
-    """
-    if sales_df is None or sales_df.empty:
-        return pd.Series(dtype="float64")
-    
-    # Use optimized dtypes to reduce memory
-    sales_df = optimize_dtypes(sales_df)
-
-    try:
-        qty = pd.to_numeric(sales_df.get("qty", 0), errors="coerce").fillna(0)
-
-        for col in ["item_revenue", "line_total", "total"]:
-            if col in sales_df.columns:
-                values = pd.to_numeric(sales_df[col], errors="coerce")
-                if values.notna().any() and values.sum() > 0:
-                    return values.fillna(0.0)
-
-        for col in ["item_cost", "price"]:
-            if col in sales_df.columns:
-                unit_price = pd.to_numeric(sales_df[col], errors="coerce").fillna(0.0)
-                if unit_price.sum() > 0:
-                    return unit_price * qty
-
-        order_total = pd.to_numeric(sales_df.get("order_total", 0), errors="coerce").fillna(0.0)
-        
-        # Memory-safe groupby using fallback for large DataFrames
-        if "order_id" in sales_df.columns:
-            group_key = sales_df["order_id"]
-            # Use simple arithmetic fallback for large datasets
-            if len(sales_df) > 100000:
-                # Approximate allocation by dividing order total by line count per order
-                order_line_counts = sales_df.groupby("order_id").size()
-                line_counts = sales_df["order_id"].map(order_line_counts).replace(0, 1)
-                qty_totals = qty.groupby(sales_df["order_id"]).transform("sum").replace(0, 1)
-                gc.collect()  # Force cleanup after groupby
-                return (order_total * (qty / qty_totals)).fillna(order_total / line_counts).fillna(order_total)
-            else:
-                qty_totals = qty.groupby(group_key).transform("sum").replace(0, 1)
-                line_counts = sales_df.groupby(group_key).cumcount() * 0 + 1
-                line_counts = line_counts.groupby(group_key).transform("sum").replace(0, 1)
-                return (order_total * (qty / qty_totals)).fillna(order_total / line_counts).fillna(order_total)
-        else:
-            # No order_id, distribute evenly
-            line_count = len(sales_df)
-            return order_total / line_count if line_count > 0 else order_total
-            
-    except MemoryError as e:
-        logger.warning(f"Memory error in revenue estimation, using fallback: {e}")
-        gc.collect()
-        # Fallback: return order_total divided evenly
-        order_total = pd.to_numeric(sales_df.get("order_total", 0), errors="coerce").fillna(0.0)
-        line_count = len(sales_df)
-        return order_total / line_count if line_count > 0 else order_total
-    except Exception as e:
-        logger.error(f"Error estimating line revenue: {e}")
-        return pd.Series(0.0, index=sales_df.index)
 
 
 def _normalize_match_text(value: Any) -> str:
@@ -1282,8 +1198,9 @@ def _prepare_sales_context(sales_df: Optional[pd.DataFrame]) -> pd.DataFrame:
         sales["order_id"] = sales["order_id"].astype(str).str.strip()
         sales["qty"] = pd.to_numeric(sales.get("qty", 1), errors="coerce").fillna(1).clip(lower=1)
         
+        from BackEnd.utils.sales_schema import estimate_line_revenue
         # Memory-safe revenue estimation
-        sales["_line_revenue"] = _estimate_sales_line_revenue(sales).fillna(0.0)
+        sales["_line_revenue"] = estimate_line_revenue(sales).fillna(0.0)
         
         # Use vectorized operations instead of apply for memory efficiency
         item_names = sales["item_name"] if "item_name" in sales.columns else pd.Series("", index=sales.index)
@@ -1371,7 +1288,8 @@ def _build_daily_financials(returns_df: pd.DataFrame, sales_df: Optional[pd.Data
             # Optimize dtypes to reduce memory
             sales_local = optimize_dtypes(sales_df).copy()
             sales_local["order_date"] = pd.to_datetime(sales_local["order_date"], errors="coerce")
-            sales_local["_line_revenue"] = _estimate_sales_line_revenue(sales_local).fillna(0.0)
+            from BackEnd.utils.sales_schema import estimate_line_revenue
+            sales_local["_line_revenue"] = estimate_line_revenue(sales_local).fillna(0.0)
             sales_local = sales_local.dropna(subset=["order_date"])
             if not sales_local.empty:
                 # Use safe groupby for large datasets

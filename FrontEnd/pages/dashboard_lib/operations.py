@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
+from BackEnd.utils.sales_schema import ensure_sales_schema
 
 def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
     """
@@ -14,7 +15,7 @@ def render_operational_health(df_sales: pd.DataFrame, stock_df: pd.DataFrame):
     st.markdown("#### 🚚 Logistics Velocity")
     
     # Ensure date types and strip timezones to prevent subtraction crashes
-    df = df_sales.copy()
+    df = ensure_sales_schema(df_sales).copy()
     df['order_date'] = pd.to_datetime(df.get('order_date'), errors='coerce').dt.tz_localize(None)
     df['shipped_date'] = pd.to_datetime(df.get('shipped_date'), errors='coerce').dt.tz_localize(None)
     

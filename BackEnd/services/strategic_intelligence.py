@@ -116,31 +116,30 @@ def calculate_rfm_churn_risk(
     vip_freq_threshold: int = 3,
     churn_days: int = 30
 ) -> pd.DataFrame:
-    """Computes RFM scores and identifies Churn Risk for VIPs."""
+    """Computes RFM scores and identifies Churn Risk using centralized Customer Insights engine."""
+    from BackEnd.services.customer_insights import generate_customer_insights_from_sales
+    
     if sales_df.empty or 'customer_key' not in sales_df.columns:
         return pd.DataFrame()
 
-    today = datetime.now()
-    sales_df = sales_df.copy()
-    sales_df['order_date'] = pd.to_datetime(sales_df.get('order_date'), errors='coerce').dt.tz_localize(None)
+    # Use the single source of truth for customer metrics!
+    customers = generate_customer_insights_from_sales(sales_df, include_rfm=True)
+    if customers.empty:
+        return pd.DataFrame()
+        
+    customers['status'] = customers['segment'].apply(lambda x: 'VIP' if x == 'VIP' else 'Standard')
     
-    # Aggregate by customer
-    rfm = sales_df.groupby('customer_key').agg({
-        'order_date': lambda x: (today - x.max()).days, # Recency
-        'order_id': 'nunique',                         # Frequency
-        'item_revenue': 'sum'                          # Monetary
-    }).reset_index()
-    
-    rfm.columns = ['customer_key', 'recency', 'frequency', 'monetary']
-    
-    # Define VIPs (e.g., spent > 10,000 or bought > 3 times)
-    is_vip = (rfm['monetary'] > vip_monetary_threshold) | (rfm['frequency'] >= vip_freq_threshold)
-    rfm['status'] = 'Standard'
-    rfm.loc[is_vip, 'status'] = 'VIP'
+    # Override strict thresholds if provided to match War Room sliders
+    is_vip = (customers['total_revenue'] > vip_monetary_threshold) | (customers['total_orders'] >= vip_freq_threshold)
+    customers.loc[is_vip, 'status'] = 'VIP'
     
     # Churn Risk: VIP and Recency > 30 days
-    rfm['risk_level'] = 'Low'
-    rfm.loc[(rfm['status'] == 'VIP') & (rfm['recency'] > churn_days), 'risk_level'] = 'High (Churn Risk)'
-    rfm.loc[(rfm['status'] == 'VIP') & (rfm['recency'] > churn_days * 2), 'risk_level'] = 'CRITICAL (Lost VIP?)'
+    customers['risk_level'] = 'Low'
+    customers.loc[(customers['status'] == 'VIP') & (customers['recency_days'] > churn_days), 'risk_level'] = 'High (Churn Risk)'
+    customers.loc[(customers['status'] == 'VIP') & (customers['recency_days'] > churn_days * 2), 'risk_level'] = 'CRITICAL (Lost VIP?)'
     
-    return rfm[rfm['status'] == 'VIP'].sort_values('recency', ascending=False)
+    # Format for output
+    result = customers[customers['status'] == 'VIP'].copy()
+    result = result[['customer_id', 'last_order', 'total_orders', 'total_revenue', 'segment', 'risk_level', 'recency_days']]
+    result = result.rename(columns={'recency_days': 'recency'})
+    return result.sort_values('recency', ascending=False)

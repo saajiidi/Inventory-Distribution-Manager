@@ -38,7 +38,6 @@ from BackEnd.services.returns_tracker import (
     get_order_items_breakdown,
     track_reordering_customers,
 )
-from BackEnd.commerce_ops.ui_components import premium_metric_card, small_metric_card
 from FrontEnd.components import ui
 from FrontEnd.utils.config import DATA_SYNC_MODE
 from FrontEnd.utils.error_handler import log_error
@@ -245,33 +244,8 @@ def render_returns_tracker_page() -> None:
 
 def _render_date_filter(df: pd.DataFrame) -> pd.DataFrame:
     """Apply global date range filter mapping from Business Intelligence dashboard window."""
-    today = date.today()
     window = st.session_state.get("time_window", "Last Month")
-
-    start_dt = end_dt = today
-    if window == "MTD":
-        start_dt = today.replace(day=1)
-    elif window == "YTD":
-        start_dt = today.replace(month=1, day=1)
-    elif window == "Custom Date Range":
-        start_dt = st.session_state.get("wc_sync_start_date", today - timedelta(days=30))
-        end_dt = st.session_state.get("wc_sync_end_date", today)
-    else:
-        window_map = {
-            "Last Day": 1,
-            "Last 3 Days": 3,
-            "Last 4 Days": 4,
-            "Last 7 Days": 7,
-            "Last 15 Days": 15,
-            "Last Month": 30,
-            "Last 3 Months": 90,
-            "Last Quarter": 90,
-            "Last Half Year": 180,
-            "Last 9 Months": 270,
-            "Last Year": 365
-        }
-        days_back = window_map.get(window, 30)
-        start_dt = today - timedelta(days=days_back)
+    start_dt, end_dt = _get_date_range_from_window()
 
     # Issue type filter - only if column exists
     if "issue_type" in df.columns:
@@ -332,41 +306,41 @@ def _render_kpi_cards(metrics: dict) -> None:
     
     def format_pct(val):
         if t_ord > 0:
-            return f"{val:,} <span style='font-size:0.9rem; color:#64748b; font-weight:500;'>({(val / t_ord * 100):.1f}%)</span>"
+            return f"{val:,} ({(val / t_ord * 100):.1f}%)"
         return f"{val:,}"
 
     cols = st.columns(4)
     
     with cols[0]:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Total Issues",
             value=format_pct(metrics.get('total_issues', 0)),
             help_text=f"Out of {t_ord:,} total orders",
-            icon="📦", border_color="#3b82f6"
+            icon="📦"
         )
 
     with cols[1]:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Returns",
             value=format_pct(metrics.get('return_count', 0)),
             help_text=f"Paid: {metrics.get('paid_return_count', 0)} | Non-Paid: {metrics.get('non_paid_return_count', 0)}",
-            icon="🔴", border_color="#ef4444"
+            icon="🔴"
         )
 
     with cols[2]:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Partials",
             value=format_pct(metrics.get('partial_count', 0)),
             help_text=f"৳{metrics.get('partial_amounts', 0):,.0f} impact",
-            icon="🟡", border_color="#eab308"
+            icon="🟡"
         )
 
     with cols[3]:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Exchanges",
             value=format_pct(metrics.get('exchange_count', 0)),
             help_text="Product/Size swaps",
-            icon="🟣", border_color="#8b5cf6"
+            icon="🟣"
         )
 
 
@@ -388,50 +362,50 @@ def _render_financial_impact_summary(metrics: dict) -> None:
     # Primary Row: High-level financial outcome
     c1, c2, c3 = st.columns(3)
     with c1:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Net Settled Sales",
             value=f"৳{net_sales:,.0f}",
             help_text=f"After {metrics.get('return_count', 0)} returns & {metrics.get('partial_count', 0)} partials",
-            icon="💰", border_color="#10b981"
+            icon="💰"
         )
     with c2:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Net Revenue Yield",
             value=f"{net_yield_pct:.1f}%",
             help_text=f"Efficiency: ৳{net_sales:,.0f} / ৳{gross:,.0f}",
-            icon="📊", border_color="#3b82f6"
+            icon="📊"
         )
     with c3:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Total Loss Attribution",
             value=f"৳{(metrics.get('return_value_extracted', 0) + partial_loss):,.0f}",
             help_text="Revenue lost to returns and partials",
-            icon="📉", border_color="#ef4444"
+            icon="📉"
         )
 
     # Secondary Row: Operational impact
     c4, c5, c6 = st.columns(3)
     with c4:
         items_pct_text = f"{total_returned_items_pct:.1f}% of {total_items_sold:,} units" if total_items_sold > 0 else "0% items returned"
-        premium_metric_card(
+        ui.metric_highlight(
             label="Returned Item Volume",
             value=f"{total_ret_qty} Units",
             help_text=items_pct_text,
-            icon="📦", border_color="#f59e0b"
+            icon="📦"
         )
     with c5:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Returned Order Share",
             value=f"{returned_orders_pct:.1f}%",
             help_text=f"1 in every {int(100/returned_orders_pct) if returned_orders_pct > 0 else 'N/A'} orders",
-            icon="📈", border_color="#ec4899"
+            icon="📈"
         )
     with c6:
-        premium_metric_card(
+        ui.metric_highlight(
             label="Exchanged Items",
             value=f"{metrics.get('total_exchanged_items', 0)} Units",
             help_text="Product swaps (No revenue loss)",
-            icon="🔄", border_color="#8b5cf6"
+            icon="🔄"
         )
 
     # Financial Integrity Chart
@@ -795,40 +769,15 @@ def _render_product_heatmap(df: pd.DataFrame) -> None:
 
 def _extract_product_category(details: str) -> str:
     """Extract a rough product category from product details text."""
+    from BackEnd.core.categories import get_category_for_sales
     if not details or details.strip() == "":
         return "Unknown"
 
-    det = details.lower()
-
-    categories = [
-        ("Jeans", ["jeans", "denim pant"]),
-        ("Flannel Shirt", ["flannel"]),
-        ("Kaftan Shirt", ["kaftan"]),
-        ("Contrast Shirt", ["contrast stitch"]),
-        ("HS Shirt", ["half shirt", "hs-shirt", "hs shirt", "cotton shirt"]),
-        ("FS Shirt", ["full sleeve shirt", "fs shirt", "polka dot", "denim shirt"]),
-        ("Polo Shirt", ["polo"]),
-        ("T-Shirt", ["tshirt", "t-shirt", "active wear"]),
-        ("FS T-Shirt", ["fs-tshirt", "fs tshirt", "full sleeve.*t-shirt",
-                         "full sleeve.*tshirt", "fs-t-shirt"]),
-        ("Sweatshirt", ["sweatshirt"]),
-        ("Turtleneck", ["turtleneck"]),
-        ("Panjabi", ["panjabi"]),
-        ("Trouser", ["trousers", "trouser"]),
-        ("Twill/Chino", ["twill", "chino", "jogger"]),
-        ("Wallet", ["wallet"]),
-        ("Belt", ["belt"]),
-        ("Bag", ["bagpack", "bag"]),
-        ("Boxer", ["boxer"]),
-        ("Bundle", ["pack", "combo", "deal", "dbb"]),
-    ]
-
-    for cat_name, keywords in categories:
-        for kw in keywords:
-            if kw in det:
-                return cat_name
-
-    return "Other"
+    cat = get_category_for_sales(details)
+    if cat == "Others":
+        return "Other"
+    
+    return cat.split(" - ")[0] if " - " in cat else cat
 
 
 def _render_customer_recovery(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
@@ -848,9 +797,9 @@ def _render_customer_recovery(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
     
     c1, c2 = st.columns(2)
     with c1:
-        small_metric_card("Successfully Recovered", f"{total_reordered}", "🛡️")
+        ui.metric_highlight("Successfully Recovered", f"{total_reordered}", icon="🛡️")
     with c2:
-        small_metric_card("Avg. Recovery Days", f"{avg_days:.1f} days", "⏳")
+        ui.metric_highlight("Avg. Recovery Days", f"{avg_days:.1f} days", icon="⏳")
         
     st.markdown("##### 📋 Recovery Ledger")
     st.dataframe(
@@ -1038,14 +987,14 @@ def _render_returned_items_list(df: pd.DataFrame) -> None:
     # Summary row
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        small_metric_card("Total Items", f"{total_items}", "📦")
+        ui.metric_highlight("Total Items", f"{total_items}", icon="📦")
     with m2:
-        small_metric_card("Total Qty", f"{total_qty}", "🔢")
+        ui.metric_highlight("Total Qty", f"{total_qty}", icon="🔢")
     with m3:
-        small_metric_card("Unique Orders", f"{unique_orders}", "📋")
+        ui.metric_highlight("Unique Orders", f"{unique_orders}", icon="📋")
     with m4:
         unique_skus = items_df[items_df["SKU"] != "N/A"]["SKU"].nunique()
-        small_metric_card("Unique SKUs", f"{unique_skus}", "🏷️")
+        ui.metric_highlight("Unique SKUs", f"{unique_skus}", icon="🏷️")
 
     st.markdown("---")
 
@@ -1266,11 +1215,47 @@ def _render_details_table(df: pd.DataFrame, sales_df: pd.DataFrame) -> None:
 
 def _render_export(df: pd.DataFrame, metrics: dict) -> None:
     """Export returns data to Excel with summary sheet."""
-    from io import BytesIO
-
     st.markdown("### 📤 Export Report")
 
-    buffer = _generate_excel_report(df, metrics)
+    summary_data = {
+        "Metric": [
+            "Total Issues Tracked", "Total Returns (Paid + Non-Paid)",
+            "  ├─ Paid Returns", "  └─ Non-Paid Returns",
+            "Partial Orders", "Exchanges", "",
+            "Return Rate (%)", "Partial Amounts (৳)",
+        ],
+        "Value": [
+            int(metrics.get("total_issues", 0)), int(metrics.get("return_count", 0)),
+            int(metrics.get("paid_return_count", 0)), int(metrics.get("non_paid_return_count", 0)),
+            int(metrics.get("partial_count", 0)), int(metrics.get("exchange_count", 0)),
+            "", float(metrics.get("return_rate", 0.0)), float(metrics.get("partial_amounts", 0.0)),
+        ]
+    }
+    summary_df = pd.DataFrame(summary_data)
+
+    reasons = metrics.get("reason_counts", {})
+    reason_df = pd.DataFrame([{"Reason": k, "Count": v} for k, v in reasons.items()]).sort_values("Count", ascending=False) if reasons else pd.DataFrame()
+
+    insights_list = [
+        f"FINANCIAL INTEGRITY: ৳{float(metrics.get('total_loss', 0)):,.0f} total lost to {int(metrics.get('return_count', 0))} returns and {int(metrics.get('partial_count', 0))} partials.",
+        f"REVENUE YIELD: {float(metrics.get('net_yield_pct', 0)):.1f}% net yield efficiency.",
+        f"ATTRIBUTION: {float(metrics.get('attribution_confidence_pct', 0)):.1f}% financial attribution confidence to actual WooCommerce orders."
+    ]
+    if reasons:
+        top_reason = list(reasons.keys())[0]
+        insights_list.append(f"PREDICTION: '{top_reason}' is the dominant return reason. Address this to recapture up to ৳{float(metrics.get('full_return_loss', 0)) * 0.3:,.0f} monthly.")
+    insights_df = pd.DataFrame({"AI Analytics & Recommendations": insights_list})
+
+    export_cols = ["date", "order_id_raw", "order_id", "issue_type", "return_reason", "product_details", "customer_reason", "courier_reason", "courier", "fu_status", "inventory_updated", "partial_amount"]
+    detail_df = df[[c for c in export_cols if c in df.columns]].copy()
+    if "date" in detail_df.columns:
+        detail_df["date"] = detail_df["date"].dt.strftime("%Y-%m-%d")
+
+    sheets = {"Summary": summary_df}
+    if not reason_df.empty: sheets["Reason Analysis"] = reason_df
+    sheets["AI Insights"] = insights_df
+
+    buffer = ui.export_to_excel(detail_df, sheet_name="Detailed Ledger", additional_sheets=sheets)
     st.download_button(
         label="📊 Download Excel Report",
         data=buffer,
@@ -1279,127 +1264,6 @@ def _render_export(df: pd.DataFrame, metrics: dict) -> None:
         type="primary",
         key="returns_excel_export_btn"
     )
-
-
-def _safe_scalar(value, default=0, cast_type=int):
-    """Safely convert a value to scalar, handling Series/arrays."""
-    if value is None:
-        return default
-    if hasattr(value, '__len__') and not isinstance(value, str):
-        # It's a Series/array - get first element or default
-        try:
-            value = value.iloc[0] if hasattr(value, 'iloc') else value[0]
-        except (IndexError, TypeError):
-            return default
-    try:
-        return cast_type(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _generate_excel_report(df: pd.DataFrame, metrics: dict) -> bytes:
-    """Generate a multi-sheet Excel report."""
-    from io import BytesIO
-
-    try:
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    except ImportError:
-        pass
-
-    buffer = BytesIO()
-
-    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        # ── Summary Sheet ──
-        summary_data = {
-            "Metric": [
-                "Total Issues Tracked",
-                "Total Returns (Paid + Non-Paid)",
-                "  ├─ Paid Returns",
-                "  └─ Non-Paid Returns",
-                "Partial Orders",
-                "Exchanges",
-                "",
-                "Return Rate (%)",
-                "Partial Amounts (৳)",
-            ],
-            "Value": [
-                _safe_scalar(metrics.get("total_issues", 0), 0, int),
-                _safe_scalar(metrics.get("return_count", 0), 0, int),
-                _safe_scalar(metrics.get("paid_return_count", 0), 0, int),
-                _safe_scalar(metrics.get("non_paid_return_count", 0), 0, int),
-                _safe_scalar(metrics.get("partial_count", 0), 0, int),
-                _safe_scalar(metrics.get("exchange_count", 0), 0, int),
-                "",
-                _safe_scalar(metrics.get("return_rate", 0.0), 0.0, float),
-                _safe_scalar(metrics.get("partial_amounts", 0.0), 0.0, float),
-            ],
-        }
-        summary_df = pd.DataFrame(summary_data)
-        summary_df.to_excel(writer, sheet_name="Summary", index=False)
-
-        # ── Reason Breakdown ──
-        reasons = metrics.get("reason_counts", {})
-        if isinstance(reasons, dict) and len(reasons) > 0:
-            reason_df = pd.DataFrame([
-                {"Reason": k, "Count": v} for k, v in reasons.items()
-            ]).sort_values("Count", ascending=False)
-            reason_df.to_excel(writer, sheet_name="Reason Analysis", index=False)
-
-        # ── Detailed Data ──
-        export_cols = [
-            "date", "order_id_raw", "order_id", "issue_type", "return_reason",
-            "product_details", "customer_reason", "courier_reason",
-            "courier", "fu_status", "inventory_updated", "partial_amount",
-        ]
-        available = [c for c in export_cols if c in df.columns]
-        detail_df = df[available].copy()
-        if "date" in detail_df.columns:
-            detail_df["date"] = detail_df["date"].dt.strftime("%Y-%m-%d")
-        detail_df.to_excel(writer, sheet_name="Detailed Ledger", index=False)
-
-        # ── AI Insights & Analytics ──
-        insights_list = [
-            f"FINANCIAL INTEGRITY: ৳{_safe_scalar(metrics.get('total_loss', 0), 0.0, float):,.0f} total lost to {_safe_scalar(metrics.get('return_count', 0), 0, int)} returns and {_safe_scalar(metrics.get('partial_count', 0), 0, int)} partials.",
-            f"REVENUE YIELD: {_safe_scalar(metrics.get('net_yield_pct', 0), 0.0, float):.1f}% net yield efficiency.",
-            f"ATTRIBUTION: {_safe_scalar(metrics.get('attribution_confidence_pct', 0), 0.0, float):.1f}% financial attribution confidence to actual WooCommerce orders."
-        ]
-        
-        if isinstance(reasons, dict) and len(reasons) > 0:
-            top_reason = list(reasons.keys())[0]
-            insights_list.append(f"PREDICTION: '{top_reason}' is the dominant return reason. Address this to recapture up to ৳{_safe_scalar(metrics.get('full_return_loss', 0), 0.0, float) * 0.3:,.0f} monthly.")
-            
-        insights_df = pd.DataFrame({"AI Analytics & Recommendations": insights_list})
-        insights_df.to_excel(writer, sheet_name="AI Insights", index=False)
-
-        # ── Style sheets ──
-        try:
-            wb = writer.book
-            header_fill = PatternFill(start_color="1a1a2e", end_color="1a1a2e", fill_type="solid")
-            header_font = Font(name="Calibri", bold=True, color="FFFFFF", size=11)
-            thin_border = Border(
-                left=Side(style="thin"),
-                right=Side(style="thin"),
-                top=Side(style="thin"),
-                bottom=Side(style="thin"),
-            )
-
-            for sheet_name in wb.sheetnames:
-                ws = wb[sheet_name]
-                for cell in ws[1]:
-                    cell.fill = header_fill
-                    cell.font = header_font
-                    cell.alignment = Alignment(horizontal="center")
-                    cell.border = thin_border
-
-                for col in ws.columns:
-                    max_len = max(len(str(cell.value) if cell.value is not None else "") for cell in col)
-                    ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 50)
-
-                ws.freeze_panes = "A2"
-        except Exception:
-            pass
-
-    return buffer.getvalue()
 
 
 # ═══════════════════════════════════════════════════════════════════

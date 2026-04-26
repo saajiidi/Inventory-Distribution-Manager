@@ -131,3 +131,145 @@ def get_region_display(city: str, district: str) -> str:
             return f"{clean_city}, {district_name}"
             
     return district_name
+
+
+# -----------------------------------------------------------------------------
+# MERGED FROM zones.py & data.py
+# -----------------------------------------------------------------------------
+
+KNOWN_ZONES = [
+    # --- Dhaka City & Periphery ---
+    "Adabor", "Agargaon", "Aftabnagar", "Badda", "Merul Badda", "Middle Badda",
+    "South Badda", "North Badda", "Bailey Road", "Banani", "Banglamotor",
+    "Bangshal", "Baridhara", "Baridhara DOHS", "Bashaboo", "Bashundhara",
+    "Bashundhara R/A", "Bawnia", "Berybidh", "Bimanbandar", "Bijoy Sarani",
+    "Bosila", "Cantonment", "Chakbazar", "Changkharpool", "Chawkbazar",
+    "Dakshinkhan", "Darus Salam", "Demra", "Dhanmondi", "Dolaikhal",
+    "Doyaganj", "Elephant Road", "Eskaton", "Farmgate", "Fakirapool",
+    "Gandaria", "Gendaria", "Gabtoli", "Goran", "Green Road", "Gulistan",
+    "Gulshan", "Gulshan-1", "Gulshan-2", "Hazaribagh", "Hatirpool",
+    "Hatirjnill", "Ibrahimpur", "Islampur", "Jatrabari", "Jurain",
+    "Kadamtali", "Kafrul", "Kalabagan", "Kallyanpur", "Kamalapur",
+    "Kamarpara", "Kamrangirchar", "Kathalbagan", "Kawran Bazar", "Kazipara",
+    "Keraniganj", "Khilgaon", "Khilkhet", "Kotwali", "Kuril", "Lalbagh",
+    "Lalmatia", "Malibagh", "Maniknagar", "Mandarina", "Munsiganj",
+    "Matuail", "Mirpur", "Mirpur DOHS", "Mirpur-1", "Mirpur-2", "Mirpur-10",
+    "Mirpur-11", "Mirpur-12", "Mirpur-14", "Moghbazar", "Mohakhali",
+    "Mohakhali DOHS", "Mohammadpur", "Mohammedpur", "Motijheel", "Mugda",
+    "Mugdapara", "Narayanganj", "Nawabganj", "New Eskaton", "New Market",
+    "Niketon", "Nikunja", "Nilkhet", "Pallabi", "Paltan", "Panthapath",
+    "Paribagh", "Puran Dhaka", "Postogola", "Purana Paltan", "Raja Bazar",
+    "Rajarbagh", "Ramna", "Rampura", "Rayerbagh", "Rayer Bazar", "Rupnagar",
+    "Sabujbagh", "Sadarghat", "Sangsad Bhaban", "Satarkul", "Segunbagicha",
+    "Shah Ali", "Shahbag", "Shahjahanpur", "Shajahanpur", "Shampur",
+    "Shantinagar", "Sher-e-Bangla Nagar", "Shewrapara", "Shiddheswari",
+    "Shyampur", "Siddhesuree", "Sutrapur", "Tejgaon", "Tejgaon I/A",
+    "Tikatuli", "Tongi", "Turag", "Uttar Khan", "Uttara", "Vatara", "Wari",
+    "Zigatola", "Savar", "Ashulia", "Dhamrai", "Hemayetpur", "EPZ",
+    
+    # --- Chittagong (Chattogram) ---
+    "Agrabad", "Akbar Shah", "Anderkilla", "Bakalia", "Bandar", "Bayazid",
+    "Boalkhali", "Chandgaon", "Chawkbazar", "Chittagong Cantonment",
+    "Double Mooring", "EPZ", "Halishahar", "Hathazari", "Jamalkhan",
+    "Karnafuli", "Khulshi", "Kotwali", "Lalkhan Bazar", "Muradpur",
+    "Nasirabad", "New Market", "Oxygen", "Pahartali", "Panchlaish",
+    "Patenga", "Patiya", "Raozan", "Sadarghat", "Sitakunda", "WASA", "GEC",
+    
+    # --- Rajshahi ---
+    "Boalia", "Chandrima", "Katakhali", "Motiher", "Rajpara", "Shah Makhdum",
+    "Rajshahi Sadar", "Paba",
+    
+    # --- Khulna ---
+    "Daulatpur", "Khalishpur", "Khan Jahan Ali", "Khulna Sadar", "Sonadanga",
+    "Boyra", "Gollamari",
+    
+    # --- Sylhet ---
+    "Ambarkhana", "Airport", "Bandar Bazar", "Jalalabad", "Kotwali",
+    "Moglabazar", "Osmani Nagar", "Shah Paran", "South Surma", "Sylhet Sadar",
+    "Zindabazar", "Uposhahar",
+    
+    # --- Barisal ---
+    "Agailjhara", "Babuganj", "Bakerganj", "Banaripara", "Barisal Sadar",
+    "Gournadi", "Hizla", "Mehendiganj", "Muladi", "Wazirpur",
+    
+    # --- Rangpur ---
+    "Badarganj", "Gangachara", "Kaunia", "Mithapukur", "Pirgacha", "Pirganj",
+    "Rangpur Sadar", "Taraganj",
+    
+    # --- Mymensingh ---
+    "Bhaluka", "Dhobaura", "Fulbaria", "Gaffargaon", "Gauripur", "Haluaghat",
+    "Ishwarganj", "Mymensingh Sadar", "Muktagacha", "Nandail", "Phulpur",
+    "Trishal",
+    
+    # --- Cumilla (Comilla) ---
+    "Barura", "Brahmanpara", "Burichang", "Chandina", "Chauddagram",
+    "Cumilla Sadar", "Cumilla Sadar Dakshin", "Daudkandi", "Debidwar",
+    "Homna", "Laksam", "Lalmai", "Meghna", "Monohargonj", "Muradnagar",
+    "Nangalkot", "Titas", "Kandirpar", "Tomson Bridge", "Police Line",
+    "Race Course",
+    
+    # --- Gazipur ---
+    "Gazipur Sadar", "Kaliakair", "Kaliganj", "Kapasia", "Sreepur", "Tongi",
+    "Board Bazar", "Chowrasta", "Joydebpur", "Konabari",
+    
+    # --- Narayanganj ---
+    "Araihazar", "Bandar", "Narayanganj Sadar", "Rupganj", "Sonargaon",
+    "Siddhirganj", "Fatullah", "Chashara",
+    
+    # --- Bogura (Bogra) ---
+    "Adamdighi", "Bogura Sadar", "Dhunat", "Dhupchanchia", "Gabtali",
+    "Kahaloo", "Nandigram", "Sariakandi", "Sherpur", "Shibganj", "Sonatala",
+    
+    # --- Generic Terms ---
+    "Kotwali", "Sadar", "Pourashava", "Municipality",
+]
+
+def normalize_city_name(city_name):
+    if not city_name:
+        return ""
+    c = str(city_name).strip().lower()
+    if "brahmanbaria" in c: return "B. Baria"
+    if "narsingdi" in c or "narsinghdi" in c: return "Narshingdi"
+    if "bagura" in c or "bogura" in c: return "Bogra"
+    if "chattogram" in c: return "Chittagong"
+    if "cox" in c and "bazar" in c: return "Cox's Bazar"
+    if "barishal" in c: return "Barisal"
+    if "jashore" in c: return "Jessore"
+    if "cumilla" in c: return "Comilla"
+    return str(city_name).strip().title()
+
+def extract_best_zone(address, known_zones=None):
+    if known_zones is None:
+        known_zones = KNOWN_ZONES
+    if not isinstance(address, str) or not address:
+        return ""
+    addr_l = address.lower()
+    matches = [z for z in known_zones if z.lower() in addr_l]
+    if not matches:
+        return ""
+    matches.sort(key=len, reverse=True)
+    return matches[0]
+
+def format_address_logic(raw_addr, city_norm, extracted_zone, raw_city_val):
+    addr = " ".join(str(raw_addr).split()).title()
+    if raw_city_val and city_norm and str(raw_city_val).lower() != city_norm.lower():
+        addr = re.compile(re.escape(str(raw_city_val)), re.IGNORECASE).sub(city_norm, addr)
+    parts = [p.strip() for p in re.split(r"[,;]\s*", addr) if p.strip()]
+    cleaned = []
+    seen = set()
+    for p in parts:
+        pl = p.lower()
+        if (
+            pl in seen
+            or (city_norm and pl == city_norm.lower())
+            or (extracted_zone and pl == extracted_zone.lower())
+        ):
+            continue
+        cleaned.append(p)
+        seen.add(pl)
+    if extracted_zone and (extracted_zone.lower() not in ["sadar", "city"] or not cleaned):
+        if not any(extracted_zone.lower() in p.lower() for p in cleaned):
+            cleaned.append(extracted_zone)
+    if city_norm:
+        cleaned.append(city_norm)
+    return ", ".join(cleaned)

@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+import numpy as np
 
 
 def _normalize(value) -> str:
@@ -49,6 +50,18 @@ def sort_categories(cats):
         except (ValueError, KeyError):
             return 999
     return sorted(cats, key=sort_key)
+
+def classify_velocity_trend(velocity_series: pd.Series) -> pd.Series:
+    """Standardized global velocity trend classification."""
+    return pd.Series(np.select(
+        [
+            velocity_series > 3.0,
+            velocity_series > 0.8,
+            velocity_series > 0.01
+        ],
+        ["🔥 Fast Moving", "⚖️ Regular", "🐌 Slow Moving"],
+        default="❄️ Non-Moving"
+    ), index=velocity_series.index)
 
 
 def get_master_category_list() -> list[str]:
@@ -271,6 +284,20 @@ def get_clean_product_name(name):
             return parts[0]
             
     return clean.strip("- ")
+
+def get_densed_name(name: str, category: str) -> str:
+    """Robust density formatting for long product names on charts."""
+    name_str = str(name).strip()
+    cat_str = str(category).strip()
+    if len(name_str) > 22 and " - " in cat_str:
+        main, sub = cat_str.split(" - ", 1)
+        densed = re.sub(rf"\b{re.escape(main)}\b", "", name_str, flags=re.IGNORECASE).strip("- ")
+        # Include sub-category if not already present
+        if sub.lower() not in densed.lower():
+            return f"{sub} {densed}".strip()
+        return densed
+    return name_str
+
 
 def apply_category_expert_rules(df: pd.DataFrame, name_col: str = "item_name") -> pd.DataFrame:
     """

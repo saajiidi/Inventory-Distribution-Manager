@@ -6,7 +6,7 @@ from datetime import datetime
 from itertools import combinations
 from collections import Counter
 from FrontEnd.components import ui
-from BackEnd.core.categories import get_category_for_sales, parse_sku_variants, get_clean_product_name, get_master_category_list, format_category_label
+from BackEnd.core.categories import get_category_for_sales, parse_sku_variants, get_clean_product_name, get_master_category_list, format_category_label, get_subcategory_name, classify_velocity_trend
 
 def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, df_sales: pd.DataFrame = None):
     c1, c2 = st.columns([3, 1])
@@ -72,15 +72,7 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         inventory["daily_velocity"] = 0.0
 
     # Vectorized Trend Classification
-    inventory["Trend"] = np.select(
-        [
-            inventory["daily_velocity"] > 3.0,
-            inventory["daily_velocity"] > 0.8,
-            inventory["daily_velocity"] > 0.01
-        ],
-        ["🔥 Fast Moving", "⚖️ Regular", "🐌 Slow Moving"],
-        default="❄️ Non-Moving"
-    )
+    inventory["Trend"] = classify_velocity_trend(inventory["daily_velocity"])
 
     # Summary Metrics
     low_stock = inventory[inventory["Stock Quantity"] <= 5]
@@ -192,7 +184,7 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         valid_cats = list(get_master_category_list())
         inventory["Category"] = np.where(inventory["Category"].isin(valid_cats), inventory["Category"], "Others")
         inventory["Main Category"] = inventory["Category"].astype(str).str.split(" - ").str[0]
-        inventory["Sub Category"] = inventory["Category"].apply(lambda x: str(x).split(" - ")[1] if " - " in str(x) else str(x))
+        inventory["Sub Category"] = inventory["Category"].apply(get_subcategory_name)
         inventory["Master Product"] = inventory["_clean_name"] + " [" + inventory["SKU"].astype(str) + "]"
         inventory["Variant"] = inventory["Name"]
         

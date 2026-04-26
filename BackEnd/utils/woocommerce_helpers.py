@@ -207,134 +207,6 @@ def generate_customer_key(
     return f"anon_{anon_id}"
 
 
-def calculate_customer_metrics(orders_df: pd.DataFrame) -> dict:
-    """Calculate comprehensive customer metrics from orders.
-    
-    Args:
-        orders_df: DataFrame of customer orders
-        
-    Returns:
-        Dictionary with calculated metrics:
-        - total_orders: Number of orders
-        - total_items: Total quantity of items
-        - total_value: Sum of order totals
-        - avg_order_value: Average order value
-        - first_order_date: Date of first order
-        - last_order_date: Date of last order
-        - days_between_orders: Average days between orders
-        - customer_lifespan_days: Days from first to last order
-    """
-    if orders_df.empty:
-        return {
-            "total_orders": 0,
-            "total_items": 0,
-            "total_value": 0.0,
-            "avg_order_value": 0.0,
-            "first_order_date": None,
-            "last_order_date": None,
-            "days_between_orders": None,
-            "customer_lifespan_days": 0,
-        }
-    
-    # Ensure date columns are parsed
-    if "date_created" in orders_df.columns:
-        orders_df = orders_df.copy()
-        orders_df["date_created"] = pd.to_datetime(orders_df["date_created"], errors="coerce")
-    
-    # Calculate metrics
-    total_orders = len(orders_df)
-    total_items = orders_df["items_count"].sum() if "items_count" in orders_df.columns else 0
-    total_value = orders_df["total"].sum() if "total" in orders_df.columns else 0.0
-    
-    avg_order_value = total_value / total_orders if total_orders > 0 else 0.0
-    
-    # Date calculations
-    if "date_created" in orders_df.columns:
-        dates = orders_df["date_created"].dropna()
-        first_order_date = dates.min() if not dates.empty else None
-        last_order_date = dates.max() if not dates.empty else None
-        
-        if first_order_date and last_order_date:
-            lifespan = (last_order_date - first_order_date).days
-            days_between = lifespan / (total_orders - 1) if total_orders > 1 else 0
-        else:
-            lifespan = 0
-            days_between = None
-    else:
-        first_order_date = None
-        last_order_date = None
-        lifespan = 0
-        days_between = None
-    
-    return {
-        "total_orders": total_orders,
-        "total_items": int(total_items),
-        "total_value": round(float(total_value), 2),
-        "avg_order_value": round(float(avg_order_value), 2),
-        "first_order_date": first_order_date,
-        "last_order_date": last_order_date,
-        "days_between_orders": round(days_between, 1) if days_between else None,
-        "customer_lifespan_days": lifespan,
-    }
-
-
-def aggregate_customer_orders(orders_df: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate orders to customer level.
-    
-    Args:
-        orders_df: DataFrame with orders data
-        
-    Returns:
-        DataFrame with one row per customer and aggregated metrics
-    """
-    if orders_df.empty:
-        return pd.DataFrame(columns=[
-            "customer_key", "total_orders", "total_items", "total_value",
-            "avg_order_value", "first_order_date", "last_order_date",
-            "unique_emails", "unique_phones"
-        ])
-    
-    # Generate customer keys
-    orders_df = orders_df.copy()
-    orders_df["customer_key"] = orders_df.apply(
-        lambda row: generate_customer_key(
-            row.get("customer_id"),
-            row.get("billing_email"),
-            row.get("billing_phone"),
-            str(row.get("order_id"))
-        ),
-        axis=1
-    )
-    
-    # Aggregate by customer key
-    grouped = orders_df.groupby("customer_key").agg({
-        "order_id": "count",
-        "items_count": "sum",
-        "total": "sum",
-        "date_created": ["min", "max"],
-        "billing_email": lambda x: ", ".join(x.dropna().unique()),
-        "billing_phone": lambda x: ", ".join(x.dropna().unique()),
-        "billing_name": "first",
-    }).reset_index()
-    
-    # Flatten column names
-    grouped.columns = [
-        "customer_key", "total_orders", "total_items", "total_value",
-        "first_order_date", "last_order_date", "unique_emails", "unique_phones", "name"
-    ]
-    
-    # Calculate derived metrics
-    grouped["avg_order_value"] = (
-        grouped["total_value"] / grouped["total_orders"]
-    ).round(2)
-    
-    # Parse dates
-    grouped["first_order_date"] = pd.to_datetime(grouped["first_order_date"], errors="coerce")
-    grouped["last_order_date"] = pd.to_datetime(grouped["last_order_date"], errors="coerce")
-    
-    return grouped
-
-
 def filter_orders_by_date_range(
     orders_df: pd.DataFrame,
     start_date: Optional[Union[datetime, date, str]] = None,
@@ -444,11 +316,14 @@ def calculate_date_range(window: str) -> tuple[Optional[date], date]:
     window_map = {
         "Last Day": 1,
         "Last 3 Days": 3,
+        "Last 4 Days": 4,
         "Last 7 Days": 7,
         "Last 15 Days": 15,
         "Last Month": 30,
         "Last 3 Months": 90,
-        "Last 6 Months": 180,
+        "Last Quarter": 90,
+        "Last Half Year": 180,
+        "Last 9 Months": 270,
         "Last Year": 365,
     }
     

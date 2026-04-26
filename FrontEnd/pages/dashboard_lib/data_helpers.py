@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from BackEnd.utils.sales_schema import ensure_sales_schema
+from BackEnd.utils.sales_schema import ensure_sales_schema, estimate_line_revenue
 
 def apply_global_filters(df: pd.DataFrame, categories: list[str] = None, statuses: list[str] = None) -> pd.DataFrame:
     """Applies global filters with hierarchical matching for categories and strict matching for statuses."""
@@ -117,29 +117,3 @@ def sum_order_level_revenue(df: pd.DataFrame, order_df: pd.DataFrame = None) -> 
     if orders.empty:
         return 0.0
     return float(pd.to_numeric(orders["order_total"], errors="coerce").fillna(0).sum())
-
-def estimate_line_revenue(df: pd.DataFrame) -> pd.Series:
-    sales = ensure_sales_schema(df)
-    if sales.empty:
-        return pd.Series(dtype="float64")
-    qty = pd.to_numeric(sales.get("qty", 0), errors="coerce").fillna(0)
-    direct_candidates = []
-    for col in ["item_revenue", "Item Revenue", "line_total", "Line Total"]:
-        if col in sales.columns:
-            vals = pd.to_numeric(sales[col], errors="coerce")
-            if vals.notna().any() and vals.sum() > 0:
-                return vals.fillna(0)
-    
-    # Fallback to Unit Price * Qty
-    for col in ["item_cost", "Item Cost", "price", "Price"]:
-        if col in sales.columns:
-            unit_price = pd.to_numeric(sales[col], errors="coerce").fillna(0)
-            if unit_price.sum() > 0:
-                return unit_price * qty
-                
-    # Pro-rata Distribution of Order Total
-    line_counts = sales.groupby("order_id")["order_id"].transform("size").replace(0, 1)
-    qty_totals = sales.groupby("order_id")["qty"].transform("sum").replace(0, 1)
-    order_total = pd.to_numeric(sales.get("order_total", 0), errors="coerce").fillna(0)
-    
-    return (order_total * (qty / qty_totals)).fillna(order_total / line_counts).fillna(order_total)
