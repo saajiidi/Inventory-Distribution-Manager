@@ -1,6 +1,6 @@
 {
   "kind": "orders",
-  "state": "complete",
-  "updated_at": "2026-04-25 21:29:28",
-  "rows": 1367
+  "state": "failed",
+  "updated_at": "2026-04-27 23:57:30",
+  "error": "HTTPSConnectionPool(host='deencommerce.com', port=443): Max retries exceeded with url: /wp-json/wc/v3/orders?page=1&per_page=100&status=any&after=2026-04-26T00%3A00%3A00&before=2026-04-27T23%3A59%3A59 (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x0000015A2BE4B250>: Failed to resolve 'deencommerce.com' ([Errno 11001] getaddrinfo failed)\"))"
 }

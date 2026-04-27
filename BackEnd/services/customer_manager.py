@@ -37,10 +37,13 @@ class UnionFind:
             self.parent[i] = i
             self.rank[i] = 0
             return i
-        if self.parent[i] == i:
-            return i
-        self.parent[i] = self.find(self.parent[i])
-        return self.parent[i]
+            
+        # Iterative path compression (path halving) to avoid recursion limits
+        root = i
+        while root != self.parent[root]:
+            self.parent[root] = self.parent[self.parent[root]]
+            root = self.parent[root]
+        return root
 
     def union(self, i, j):
         root_i = self.find(i)
@@ -223,6 +226,9 @@ def update_customer_mapping(new_orders_df: pd.DataFrame) -> pd.DataFrame:
         for e in str(row["emails"]).split(", "):
             if e: email_to_id[e] = cid
             
+    # Set index to customer_id for O(1) lookups during updates
+    existing_df.set_index('customer_id', inplace=True)
+
     updates = []
     new_customers = []
     
@@ -233,12 +239,11 @@ def update_customer_mapping(new_orders_df: pd.DataFrame) -> pd.DataFrame:
         
         cid = phone_to_id.get(phone) or email_to_id.get(email)
         
-        if cid:
+        if cid and cid in existing_df.index:
             # Update existing
-            idx = existing_df.index[existing_df['customer_id'] == cid].tolist()[0]
-            if pd.isna(existing_df.at[idx, 'last_order_date']) or date > existing_df.at[idx, 'last_order_date']:
-                existing_df.at[idx, 'last_order_date'] = date
-            existing_df.at[idx, 'total_orders'] += 1
+            if pd.isna(existing_df.at[cid, 'last_order_date']) or (pd.notna(date) and date > existing_df.at[cid, 'last_order_date']):
+                existing_df.at[cid, 'last_order_date'] = date
+            existing_df.at[cid, 'total_orders'] += 1
         else:
             # New customer
             new_cid = hashlib.md5(f"p:{phone}e:{email}".encode()).hexdigest()[:12]
@@ -261,6 +266,8 @@ def update_customer_mapping(new_orders_df: pd.DataFrame) -> pd.DataFrame:
             # Update lookups to avoid duplicates in this batch
             if phone: phone_to_id[phone] = new_cid
             if email: email_to_id[email] = new_cid
+
+    existing_df.reset_index(inplace=True)
 
     if new_customers:
         existing_df = pd.concat([existing_df, pd.DataFrame(new_customers)], ignore_index=True)

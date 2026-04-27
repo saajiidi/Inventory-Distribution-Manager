@@ -64,9 +64,16 @@ class MarketBasketEngine:
 
     def get_attachment_rate(self, target_product: str):
         """Calculates the attachment rate KPI for a specific product."""
+        empty_result = {
+            "target": target_product,
+            "top_attachment": "N/A",
+            "rate": 0.0,
+            "orders_count": 0
+        }
+        
         order_ids_with_target = self.df[self.df[self.prod_col] == target_product][self.order_col].unique()
         if len(order_ids_with_target) == 0:
-            return 0.0
+            return empty_result
             
         # Orders containing the target
         df_target_orders = self.df[self.df[self.order_col].isin(order_ids_with_target)]
@@ -75,7 +82,7 @@ class MarketBasketEngine:
         attachments = df_target_orders[df_target_orders[self.prod_col] != target_product][self.prod_col].value_counts()
         
         if attachments.empty:
-            return 0.0
+            return empty_result
             
         # Top attached item rate
         top_item = attachments.index[0]

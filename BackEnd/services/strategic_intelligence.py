@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
@@ -107,39 +106,6 @@ def generate_executive_narrative(sales_df: pd.DataFrame, returns_df: pd.DataFram
         pct_partial = (partial_ret / total_ret * 100) if total_ret > 0 else 0
         if pct_partial > 15:
             narrative.append(f"💡 **Efficiency Idea:** High 'Partial' order volume ({pct_partial:.1f}%) suggests customers are hesitant. Consider post-purchase reassurance calls.")
-
-        # 4. Operational Dispatch Metrics (WhatsApp Briefing)
-        if 'order_id' in sales_df.columns and not sales_df.empty:
-            shipped_mask = sales_df['order_status'].astype(str).str.lower().isin(['shipped', 'completed'])
-            shipped_df = sales_df[shipped_mask]
-            
-            if not shipped_df.empty:
-                # Last Shipped Order (Max Order ID value)
-                valid_ids = pd.to_numeric(shipped_df['order_id'], errors='coerce')
-                if not valid_ids.isna().all():
-                    last_shipped_order = str(int(valid_ids.max()))
-                else:
-                    last_shipped_order = str(shipped_df['order_id'].max())
-                
-                # Last Pathao Print (Most recent by shipped_date timing)
-                latest_idx = pd.NA
-                if 'shipped_date' in shipped_df.columns and not shipped_df['shipped_date'].isna().all():
-                    shipped_dt = pd.to_datetime(shipped_df['shipped_date'], errors='coerce')
-                    if not shipped_dt.isna().all():
-                        latest_idx = shipped_dt.idxmax()
-                
-                if pd.isna(latest_idx):
-                    order_dt = pd.to_datetime(shipped_df['order_date'], errors='coerce')
-                    if not order_dt.isna().all():
-                        latest_idx = order_dt.idxmax()
-                
-                last_pathao_print = str(shipped_df.loc[latest_idx, 'order_id']) if pd.notna(latest_idx) else last_shipped_order
-                total_orders = sales_df['order_id'].nunique()
-                
-                narrative.append(f"📦 **Last Shipped Order:** **{last_shipped_order}**")
-                narrative.append(f"🖨️ **Last Pathao Print:** **{last_pathao_print}**")
-                narrative.append(f"🛒 **Total Orders:** **{total_orders:,}**")
-                narrative.append(f"🚚 **Ecom Dispatch:** **{total_orders:,}**")
 
     return narrative
 

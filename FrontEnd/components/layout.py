@@ -232,14 +232,14 @@ def setup_theme():
         }
 
         /* Mobile Responsiveness for 6-pillar metrics */
-        @media (max-width: 1250px) {
+        @media (max-width: 1440px) {
             [data-testid="stHorizontalBlock"] {
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
             }
             [data-testid="stColumn"] {
-                min-width: calc(33.33% - 0.5rem) !important;
-                flex: 1 1 calc(33.33% - 0.5rem) !important;
+                min-width: calc(33.33% - 1rem) !important;
+                flex: 1 1 calc(33.33% - 1rem) !important;
             }
             .hub-card, [data-testid="stMetricContainer"] {
                 padding: 0.8rem !important;
@@ -633,7 +633,7 @@ def setup_theme():
         }
         
         /* Tablet / Small Laptop */
-        @media (min-width: 769px) and (max-width: 1250px) {
+        @media (min-width: 769px) and (max-width: 1440px) {
             .main .block-container {
                 padding-left: 1rem !important;
                 padding-right: 1rem !important;
@@ -838,11 +838,10 @@ def page_footer():
                     <a href="https://deencommerce.com/" target="_blank" style="color:var(--on-surface); text-decoration:none; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px;">
                         <span style="font-size:0.9rem; opacity:0.9;">Powered by</span>
                         <img src="{logo_src}" width="18" height="18" style="border-radius:4px; margin-top:-2px;" onerror="this.style.display='none'">
-                        <span style="font-size:0.9rem; opacity:0.9;"><b>DEEN Commerce Ltd.</b></span>
-                    </a>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )

@@ -576,16 +576,6 @@ def render_intelligence_hub_page():
                 unsafe_allow_html=True,
             )
 
-            # Format for WhatsApp (WhatsApp uses * for bold instead of **)
-            whatsapp_text = f"📊 *DEEN-BI Executive Briefing ({window})*\n\n"
-            for point in all_points:
-                clean_point = point.replace("**", "*")
-                whatsapp_text += f"• {clean_point}\n\n"
-                
-            with st.expander("📱 Click to Copy WhatsApp Briefing"):
-                st.caption("Click the copy icon in the top-right corner of the block below to copy.")
-                st.code(whatsapp_text.strip(), language="markdown")
-
         st.divider()
         
         from .dashboard_lib.bi_analytics import render_sales_overview_timeseries
