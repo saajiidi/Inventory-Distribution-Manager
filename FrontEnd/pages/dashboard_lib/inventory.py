@@ -50,16 +50,18 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     inventory["Value"] = inventory["Stock Quantity"] * inventory["Price"]
     
     # Clean Names, Categories & Variants
-    inventory["_clean_name"] = inventory["Name"].apply(get_clean_product_name)
-    parsed_variants = inventory["Name"].apply(parse_sku_variants).tolist()
+    inventory["_clean_name"] = inventory["Name"].astype(str).apply(get_clean_product_name)
+    parsed_variants = inventory["Name"].astype(str).apply(parse_sku_variants).tolist()
     inventory["_color"] = [p[0] for p in parsed_variants]
     inventory["_size"] = [p[1] for p in parsed_variants]
     
     # Enforce DEEN-BI standard categories over raw WooCommerce tags
-    inventory["Category"] = inventory.apply(lambda x: get_category_for_sales(str(x.get("Name", "")) + " " + str(x.get("SKU", ""))), axis=1)
+    names = inventory["Name"].fillna("").astype(str)
+    skus = inventory["SKU"].fillna("").astype(str)
+    inventory["Category"] = [get_category_for_sales(n + " " + s) for n, s in zip(names, skus)]
         
     # --- Real Velocity & Trend Calculation ---
-    if df_sales is not None and not df_sales.empty:
+    if df_sales is not None and not df_sales.empty and all(c in df_sales.columns for c in ["order_date", "sku", "qty"]):
         # Calculate days in selected window safely
         valid_dates = df_sales["order_date"].dropna()
         if not valid_dates.empty:
@@ -80,7 +82,7 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     # Vectorized Trend Classification
     inventory["Trend"] = classify_velocity_trend(inventory["daily_velocity"])
 
-    show_exact = st.session_state.get("global_show_exact", False)
+    show_exact = st.session_state.get("inventory_show_exact", False)
 
     def format_val(num):
         if show_exact: return f"{num:,}"
@@ -97,16 +99,13 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     # Summary Metrics
     low_stock = inventory[inventory["Stock Quantity"] <= 5]
     m1, m2, m3 = st.columns(3)
-    with m1: ui.icon_metric("Unique SKU Records", f"{len(inventory):,}", icon="🏷️")
-    with m2: ui.icon_metric("Low Stock Alerts", f"{len(low_stock):,}", icon="⚠️")
-    with m3: ui.icon_metric("Inventory Asset Value", f"৳{inventory['Value'].sum():,.0f}", icon="💰")
     with m1: ui.icon_metric("Unique SKU Records", format_val(len(inventory)), icon="🏷️")
     with m2: ui.icon_metric("Low Stock Alerts", format_val(len(low_stock)), icon="⚠️")
     with m3: ui.icon_metric("Inventory Asset Value", format_curr(inventory['Value'].sum()), icon="💰")
     
     t_col1, t_col2 = st.columns([8, 2])
     with t_col2:
-        st.toggle("Show Exact Values", key="global_show_exact")
+        st.toggle("Show Exact Values", key="inventory_show_exact")
 
     st.divider()
 
@@ -329,13 +328,13 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
             st.markdown("##### 🤝 Bundle-Aware Inventory Intelligence")
             st.caption("Analyzes frequent product combinations to detect missing components (Orphan Stock).")
             
-            if df_sales is None or df_sales.empty:
+            if df_sales is None or df_sales.empty or "order_id" not in df_sales.columns or "item_name" not in df_sales.columns:
                 st.info("Sales data is required to compute bundle intelligence.")
             else:
                 # 1. Identify Top Bundles (Frequent Pairs)
                 basket_df = df_sales.copy()
                 if "_clean_name" not in basket_df.columns:
-                    basket_df["_clean_name"] = basket_df["item_name"].apply(get_clean_product_name)
+                    basket_df["_clean_name"] = basket_df["item_name"].astype(str).apply(get_clean_product_name)
                 
                 basket_df = basket_df.groupby("order_id")["_clean_name"].apply(list).reset_index()
                 basket_df = basket_df[basket_df["_clean_name"].apply(len) > 1]
