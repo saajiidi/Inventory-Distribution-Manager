@@ -41,6 +41,7 @@ from BackEnd.services.returns_tracker import (
 from FrontEnd.components import ui
 from FrontEnd.utils.config import DATA_SYNC_MODE
 from FrontEnd.utils.error_handler import log_error
+from BackEnd.commerce_ops.persistence import KeyManager
 from BackEnd.core.logging_config import get_logger
 
 logger = get_logger("returns_tracker_page")
@@ -166,7 +167,7 @@ def render_returns_tracker_page() -> None:
         _render_skeleton()
         # Poll for completion
         from streamlit_autorefresh import st_autorefresh
-        st_autorefresh(interval=3000, key="returns_sync_refresh")
+        st_autorefresh(interval=3000, key=KeyManager.get_key("returns", "sync_refresh"))
         return
 
     # 2. Handle missing data case
@@ -181,7 +182,7 @@ def render_returns_tracker_page() -> None:
     if is_loading:
         st.caption("🔄 Background sync in progress... ensuring data fidelity.")
         from streamlit_autorefresh import st_autorefresh
-        st_autorefresh(interval=5000, key="returns_background_refresh")
+        st_autorefresh(interval=5000, key=KeyManager.get_key("returns", "bg_refresh"))
 
     df = st.session_state.returns_data.copy()
 
@@ -209,11 +210,15 @@ def render_returns_tracker_page() -> None:
     ])
 
     with tab_dash:
-        show_exact = st.session_state.get("returns_show_exact", False)
+        show_exact = st.session_state.get(KeyManager.get_key("returns", "show_exact"), False)
 
         # ── KPI Cards ──
         _render_kpi_cards(metrics, show_exact=show_exact)
         _render_financial_impact_summary(metrics, show_exact=show_exact)
+        
+        t_col1, t_col2 = st.columns([8, 2])
+        with t_col2:
+            st.toggle("Show Exact Values", key=KeyManager.get_key("returns", "show_exact"))
 
         if df.empty:
             st.info("No returns logged within this specific time frame.")
@@ -256,7 +261,7 @@ def _render_date_filter(df: pd.DataFrame) -> pd.DataFrame:
             "Filter by Issue Type",
             options=all_types,
             default=all_types,
-            key="ledger_issue_type_filter"
+            key=KeyManager.get_key("returns", "issue_type_filter")
         )
     else:
         selected_types = []
@@ -894,11 +899,11 @@ def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame, key_prefi
         master_cats = get_master_category_list()
         # Filter to only categories present in data but preserve master order
         available_cats = [c for c in master_cats if c in item_df["Category"].values]
-        cat_filter = st.multiselect("Filter Category", options=available_cats, format_func=format_category_label, key=f"{key_prefix}_returns_inventory_cat_filter")
+        cat_filter = st.multiselect("Filter Category", options=available_cats, format_func=format_category_label, key=KeyManager.get_key("returns", f"{key_prefix}_inv_cat"))
     with c2:
-        type_filter = st.multiselect("Filter Issue Type", options=sorted(item_df["Type"].unique()), key=f"{key_prefix}_inventory_analysis_type_filter")
+        type_filter = st.multiselect("Filter Issue Type", options=sorted(item_df["Type"].unique()), key=KeyManager.get_key("returns", f"{key_prefix}_inv_type"))
     with c3:
-        search_query = st.text_input("🔍 Search Product/SKU", placeholder="Enter name or SKU...", key=f"{key_prefix}_inventory_analysis_search")
+        search_query = st.text_input("🔍 Search Product/SKU", placeholder="Enter name or SKU...", key=KeyManager.get_key("returns", f"{key_prefix}_inv_search"))
 
     # Apply filters
     if cat_filter:
@@ -930,7 +935,7 @@ def _render_return_inventory(df: pd.DataFrame, sales_df: pd.DataFrame, key_prefi
         data=csv,
         file_name=f"return_inventory_{datetime.now().strftime('%Y%m%d')}.csv",
         mime='text/csv',
-        key=f"{key_prefix}_return_inventory_csv"
+        key=KeyManager.get_key("returns", f"{key_prefix}_inv_csv")
     )
 
 
@@ -1025,13 +1030,13 @@ def _render_returned_items_list(df: pd.DataFrame) -> None:
         from BackEnd.core.categories import get_master_category_list, format_category_label
         master_cats = get_master_category_list()
         available_cats = [c for c in master_cats if c in items_df["Category"].values]
-        cat_filter = st.multiselect("Filter Category", options=available_cats, format_func=format_category_label, key="returned_items_cat")
+        cat_filter = st.multiselect("Filter Category", options=available_cats, format_func=format_category_label, key=KeyManager.get_key("returns", "items_cat"))
     with c2:
-        search_product = st.text_input("🔍 Search Product", placeholder="Enter product name...", key="returned_items_product")
+        search_product = st.text_input("🔍 Search Product", placeholder="Enter product name...", key=KeyManager.get_key("returns", "items_product"))
     with c3:
-        search_sku = st.text_input("🔍 Search SKU", placeholder="Enter SKU...", key="returned_items_sku")
+        search_sku = st.text_input("🔍 Search SKU", placeholder="Enter SKU...", key=KeyManager.get_key("returns", "items_sku"))
     with c4:
-        search_order = st.text_input("🔍 Search Order ID", placeholder="Enter order ID...", key="returned_items_order")
+        search_order = st.text_input("🔍 Search Order ID", placeholder="Enter order ID...", key=KeyManager.get_key("returns", "items_order"))
 
     # Apply filters
     filtered_df = items_df.copy()
@@ -1076,7 +1081,7 @@ def _render_returned_items_list(df: pd.DataFrame) -> None:
         data=csv,
         file_name=f"returned_items_{datetime.now().strftime('%Y%m%d')}.csv",
         mime='text/csv',
-        key="returned_items_csv"
+        key=KeyManager.get_key("returns", "items_csv")
     )
 
     # ── RETURN REASON ANALYSIS ──
@@ -1283,7 +1288,7 @@ def _render_export(df: pd.DataFrame, metrics: dict) -> None:
         file_name=f"deen_returns_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         type="primary",
-        key="returns_excel_export_btn"
+        key=KeyManager.get_key("returns", "excel_export_btn")
     )
 
 

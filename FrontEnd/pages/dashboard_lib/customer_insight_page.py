@@ -37,6 +37,7 @@ from BackEnd.services.customer_manager import (
     save_mapping,
     build_customer_mapping
 )
+from BackEnd.commerce_ops.persistence import KeyManager
 
 from FrontEnd.components import ui
 from BackEnd.core.logging_config import get_logger
@@ -132,7 +133,7 @@ def _render_analysis_tab() -> None:
     with col_f:
         filters = render_customer_filters(
             on_filter_change=_on_filter_change,
-            key_prefix="ci_page",
+            key_prefix=KeyManager.get_key("ci", "page"),
         )
     
     with col_s:
@@ -194,7 +195,7 @@ def _render_consolidation_tab() -> None:
             return
 
         # Search and Filter for Ledger
-        l_search = st.text_input("🔍 Search Ledger by Name, Phone, or Email", placeholder="Start typing...", key="ledger_search")
+        l_search = st.text_input("🔍 Search Ledger by Name, Phone, or Email", placeholder="Start typing...", key=KeyManager.get_key("ci", "ledger_search"))
         
         # Apply Filters
         filtered_df = df.copy()
@@ -236,7 +237,7 @@ def _render_consolidation_tab() -> None:
             file_name=f"customer_ledger_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             width="stretch",
-            key="customer_ledger_export_btn"
+            key=KeyManager.get_key("ci", "ledger_export_btn")
         )
         
 
@@ -248,7 +249,7 @@ def _on_filter_change(filters: Dict[str, Any]) -> None:
         filters: Updated filter dictionary
     """
     logger.info(f"Filters applied: {filters}")
-    st.session_state["ci_filters_applied"] = True
+    st.session_state[KeyManager.get_key("ci", "filters_applied")] = True
 
 def _get_global_date_range() -> tuple[date, date]:
     """Get start and end dates from global time window."""
@@ -491,12 +492,12 @@ def _render_filtered_results(sales_df: pd.DataFrame, filters: Dict[str, Any]) ->
     selected_customer = render_customer_selector(
         customers_df=customers_df,
         on_select=_on_customer_select,
-        key_prefix="ci_page",
+        key_prefix=KeyManager.get_key("ci", "page"),
     )
     
     # Store in session state
     if selected_customer:
-        st.session_state["ci_selected_customer"] = selected_customer
+        st.session_state[KeyManager.get_key("ci", "selected_customer")] = selected_customer
     
     # Show report if customer selected
     if selected_customer:
@@ -504,7 +505,7 @@ def _render_filtered_results(sales_df: pd.DataFrame, filters: Dict[str, Any]) ->
         render_customer_report(
             customer_key=selected_customer,
             customers_df=customers_df,
-            key_prefix="ci_page",
+            key_prefix=KeyManager.get_key("ci", "page"),
         )
 
 
@@ -595,7 +596,7 @@ def render_enhanced_customer_insight_tab(
     
     # HORIZONTAL LAYOUT: Filters at top (full width), results below
     filters = render_customer_filters(
-        key_prefix="ci_tab",
+        key_prefix=KeyManager.get_key("ci", "tab"),
     )
     
     # Results section below filters
@@ -749,7 +750,7 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
             file_name=f"filtered_customers_{len(customers_df)}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
-            key="ci_tab_export",
+            key=KeyManager.get_key("ci", "tab_export"),
         )
     with export_col2:
         st.caption(f"Export {len(customers_df)} customers")
@@ -762,7 +763,7 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
         "Select a customer to view details",
         options=customers_df[id_col].tolist() if id_col in customers_df.columns else [],
         format_func=lambda x: _format_customer_option(x, customers_df, id_col),
-        key="ci_tab_selector",
+        key=KeyManager.get_key("ci", "tab_selector"),
     )
     
     if selected:
@@ -771,7 +772,7 @@ def _render_compact_results(filters: Dict[str, Any]) -> None:
             render_customer_report(
                 customer_key=selected,
                 customers_df=customers_df,
-                key_prefix="ci_tab",
+                key_prefix=KeyManager.get_key("ci", "tab"),
             )
 
 
