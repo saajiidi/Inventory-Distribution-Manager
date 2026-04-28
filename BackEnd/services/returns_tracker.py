@@ -758,16 +758,7 @@ def _extract_partial_amount(details: str) -> float:
 
 
 def _normalize_product_names(details: str, stock_df: Optional[pd.DataFrame] = None) -> list[dict[str, Any]]:
-    """Granular extraction of product details (Name, Size, SKU, Qty, Category).
-
-    NEW APPROACH:
-    1. Detect FULL SKU first (pattern: XXX-XXXX-XXX before ;)
-    2. Fetch product name from WooCommerce using SKU
-    3. Extract size from the string (between name and SKU)
-
-    Format: Product name – size – SKU-XXX-XXX ;
-    Multiple items separated by semicolon (;)
-    """
+    """Granular extraction of product details using unified category helpers."""
     if not details or details.lower() == "nan":
         return []
 
@@ -786,10 +777,12 @@ def _normalize_product_names(details: str, stock_df: Optional[pd.DataFrame] = No
     sku_to_name = {}
     if stock_df is not None and not stock_df.empty:
         for _, row in stock_df.iterrows():
-            sku = str(row.get("SKU", "")).strip()
-            name = str(row.get("Name", "")).strip()
-            if sku and name:
-                sku_to_name[sku.lower()] = name
+            stock_sku = str(row.get("SKU", "")).strip()
+            stock_name = str(row.get("Name", "")).strip()
+            if stock_sku and stock_name:
+                sku_to_name[stock_sku.lower()] = stock_name
+                
+    from BackEnd.core.categories import parse_sku_variants, get_clean_product_name, get_category_for_sales
 
     for item in raw_items:
         item = item.strip()
@@ -797,119 +790,50 @@ def _normalize_product_names(details: str, stock_df: Optional[pd.DataFrame] = No
             continue
 
         qty = 1
-        name = "N/A"
-        size = "N/A"
         sku = "N/A"
 
-        # --- STEP 1: Try to detect FULL SKU with 3-dash pattern ---
-        # Pattern: something-XXX-XXXX-XXX (at end before optional qty)
-        # SKU has format: prefix-size_code-variant (3 parts separated by -)
-        full_sku_match = re.search(
-            r'([A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+)\s*(?:[x×]\s*\d+)?$',
-            item,
-            re.IGNORECASE
-        )
+        # --- STEP 1: Extract Qty ---
+        qty_match = re.search(r'\s*[x×]\s*(\d+)$', item, re.IGNORECASE)
+        if qty_match:
+            qty = int(qty_match.group(1))
+            item = item[:qty_match.start()].strip()
 
+        # --- STEP 2: Detect SKU ---
+        # Pattern: something-XXX-XXXX-XXX
+        full_sku_match = re.search(r'-?\s*([A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+)$', item, re.IGNORECASE)
         if full_sku_match:
-            # Found full SKU with 3 parts
             sku = full_sku_match.group(1).strip()
-
-            # Remove SKU and any qty from item to get name-size part
-            name_size_part = item[:full_sku_match.start()].strip()
-
-            # --- STEP 2: Extract qty if present ---
-            qty_match = re.search(r'\s*[x×]\s*(\d+)$', name_size_part, re.IGNORECASE)
-            if qty_match:
-                qty = int(qty_match.group(1))
-                name_size_part = name_size_part[:qty_match.start()].strip()
-
-            # --- STEP 3: Split name and size from remaining part ---
-            # Last dash usually separates name from size
-            last_dash_idx = name_size_part.rfind('-')
-            if last_dash_idx > 0:
-                size = name_size_part[last_dash_idx + 1:].strip()
-                extracted_name = name_size_part[:last_dash_idx].strip()
-            else:
-                # No dash - size might be at end without dash
-                size_match = re.search(r'\s+(XS|S|M|L|XL|XXL|3XL|4XL|[0-9]{2})\s*$', name_size_part, re.IGNORECASE)
-                if size_match:
-                    size = size_match.group(1).strip()
-                    extracted_name = name_size_part[:size_match.start()].strip()
-                else:
-                    extracted_name = name_size_part
-
-            # --- STEP 4: Fetch name from WooCommerce using SKU ---
-            if sku != "N/A":
-                sku_lower = sku.lower()
-                if sku_lower in sku_to_name:
-                    name = sku_to_name[sku_lower]
-                else:
-                    # Fallback: use extracted name if WC lookup fails
-                    name = extracted_name if extracted_name else "N/A"
-            else:
-                name = extracted_name if extracted_name else "N/A"
-
+            item = item[:full_sku_match.start()].strip("- ")
         else:
-            # --- FALLBACK: Old logic for items without 3-part SKU ---
+            # Fallback: check if the last dash-separated part is a known partial SKU
             dash_parts = [p.strip() for p in item.split('-') if p.strip()]
-
-            # Extract qty from any part
-            for i, part in enumerate(dash_parts):
-                qty_match = re.search(r'\s*[x×]\s*(\d+)$', part, re.IGNORECASE)
-                if qty_match:
-                    qty = int(qty_match.group(1))
-                    dash_parts[i] = re.sub(r'\s*[x×]\s*\d+$', '', part).strip()
-                    break
-
-            if len(dash_parts) >= 3:
-                # Assume last part is SKU, second-to-last is size
-                potential_sku = dash_parts[-1]
-                # Check if it looks like a partial SKU we can look up
-                potential_sku_lower = potential_sku.lower()
-
-                # Try to find full SKU from stock
-                full_sku = None
+            if len(dash_parts) >= 2:
+                potential_sku = dash_parts[-1].lower()
                 for stock_sku in sku_to_name.keys():
-                    if stock_sku.startswith(potential_sku_lower + '-') or stock_sku == potential_sku_lower:
-                        full_sku = stock_sku
+                    if stock_sku.startswith(potential_sku + '-') or stock_sku == potential_sku:
+                        sku = stock_sku
+                        item = '-'.join(dash_parts[:-1]).strip()
                         break
 
-                if full_sku:
-                    sku = full_sku
-                    name = sku_to_name[full_sku]
-                else:
-                    sku = potential_sku
-                    name = ' - '.join(dash_parts[:-2])
+        # --- STEP 3: Extract Size & Clean Name ---
+        _, size = parse_sku_variants(item)
+        size = size if size != "Unknown" else "N/A"
+        
+        # Fetch official name from WooCommerce using SKU if possible
+        if sku != "N/A" and sku.lower() in sku_to_name:
+            name = sku_to_name[sku.lower()]
+            # If size wasn't in the raw text, try extracting from the official name
+            if size == "N/A":
+                _, size_from_name = parse_sku_variants(name)
+                size = size_from_name if size_from_name != "Unknown" else "N/A"
+        else:
+            name = get_clean_product_name(item)
 
-                size = dash_parts[-2]
-
-            elif len(dash_parts) == 2:
-                last_part = dash_parts[-1]
-                if re.match(r'^[A-Z0-9]{3,}$', last_part):
-                    sku = last_part
-                    name = dash_parts[0]
-                else:
-                    size = last_part
-                    name = dash_parts[0]
-            else:
-                name = item.strip()
-                # Try to extract size from brackets or end
-                size_match = re.search(r'[\(\[\{](.*?)[\)\]\}]', item)
-                if size_match:
-                    size = size_match.group(1).strip()
-                    name = item[:size_match.start()].strip()
-                else:
-                    size_match_alt = re.search(r'\s+(XS|S|M|L|XL|XXL|3XL|4XL|[0-9]{2})\s*$', item, re.IGNORECASE)
-                    if size_match_alt:
-                        size = size_match_alt.group(1).strip()
-                        name = item[:size_match_alt.start()].strip()
-
-        # --- Clean up ---
+        # --- Clean up & Categorize ---
         name = name.strip(' -_')
-
-        from BackEnd.core.categories import parse_sku_variants
-        # --- Infer Category ---
-        from BackEnd.core.categories import get_category_for_sales
+        if not name:
+            name = item.strip(' -_')  # Fallback if cleaning stripped everything
+            
         category = get_category_for_sales(name)
 
         if len(name) > 2:
@@ -936,143 +860,69 @@ def _verify_and_correct_product(
     This function looks up WooCommerce stock data and handles partial SKU matching
     to get the full correct SKU.
     """
-    if stock_df is None or stock_df.empty:
+    if stock_df is None or stock_df.empty or not extracted_item.get("name"):
         return extracted_item
+
+    from BackEnd.core.categories import get_clean_product_name, parse_sku_variants
 
     item = extracted_item.copy()
     name = item.get("name", "")
     extracted_size = item.get("size", "N/A")
     extracted_sku = item.get("sku", "N/A")
 
-    if not name:
-        return item
+    clean_extracted = get_clean_product_name(name).lower()
+    extracted_sku_lower = extracted_sku.lower()
 
-    # Build a lookup index from stock data
-    # Index by: cleaned name, SKU, and partial SKU prefixes
-    stock_lookup = {}
-    sku_lookup = {}
-    partial_sku_index = {}  # Maps partial SKUs to full SKUs
+    best_match = None
+    best_score = 0.0
 
     for _, row in stock_df.iterrows():
-        stock_name = str(row.get("Name", "")).strip()
         stock_sku = str(row.get("SKU", "")).strip()
+        stock_name = str(row.get("Name", "")).strip()
+        if not stock_name:
+            continue
 
-        if stock_name:
-            # Index by cleaned name (remove common size patterns)
-            clean_name = re.sub(r'\s*-\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*$', '', stock_name, flags=re.IGNORECASE)
-            clean_name = re.sub(r'\s*\(\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*\)', '', clean_name, flags=re.IGNORECASE)
-            clean_name = clean_name.strip().lower()
+        stock_sku_lower = stock_sku.lower()
+        clean_stock = get_clean_product_name(stock_name).lower()
 
-            stock_lookup[clean_name] = {
-                "name": stock_name,
-                "sku": stock_sku,
-                "size": parse_sku_variants(stock_name)[1],
-                "category": row.get("Category", "General")
-            }
+        # 1. Exact or Partial SKU Match
+        if extracted_sku != "N/A" and (stock_sku_lower == extracted_sku_lower or stock_sku_lower.startswith(extracted_sku_lower + "-")):
+            best_match = row
+            break
 
-        if stock_sku and stock_sku != "nan":
-            sku_lookup[stock_sku.lower()] = stock_name
+        # 2. Clean Name Match
+        if clean_stock == clean_extracted:
+            best_match = row
+            break
 
-            # Build partial SKU index (e.g., "102-0302-006" → "102", "102-0302")
-            sku_parts = stock_sku.split('-')
-            for i in range(1, len(sku_parts) + 1):
-                partial = '-'.join(sku_parts[:i]).lower()
-                if partial not in partial_sku_index:
-                    partial_sku_index[partial] = []
-                partial_sku_index[partial].append({
-                    "full_sku": stock_sku,
-                    "name": stock_name,
-                    "size": parse_sku_variants(stock_name)[1],
-                    "category": row.get("Category", "General")
-                })
+        # 3. Fuzzy Word Overlap (Fallback)
+        extracted_words = set(clean_extracted.split())
+        stock_words = set(clean_stock.split())
+        if extracted_words and stock_words:
+            score = len(extracted_words & stock_words) / max(len(extracted_words), len(stock_words))
+            if score > best_score and score > 0.6:
+                best_score = score
+                best_match = row
 
-    # Try to match extracted name to stock
-    # Clean the extracted name same way
-    clean_extracted = re.sub(r'\s*-\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*$', '', name, flags=re.IGNORECASE)
-    clean_extracted = re.sub(r'\s*\(\s*(XS|S|M|L|XL|XXL|3XL|[0-9]+)\s*\)', '', clean_extracted, flags=re.IGNORECASE)
-    clean_extracted = clean_extracted.strip().lower()
-
-    matched = False
-
-    # 1. Direct match by cleaned name
-    if clean_extracted in stock_lookup:
-        stock_info = stock_lookup[clean_extracted]
-        matched = True
-
-        # Only update if extracted values look wrong
-        # Size: if extracted is numeric (like "0302") but stock has proper size
-        if extracted_size.isdigit() or extracted_size in ["N/A", ""]:
-            stock_size = stock_info.get("size")
-            if stock_size and stock_size != "N/A":
-                item["size"] = stock_size
-                logger.debug(f"Corrected size from '{extracted_size}' to '{stock_size}' for {name}")
-
-        # SKU: if extracted looks wrong (numeric only) or is a partial match
-        extracted_sku_lower = extracted_sku.lower()
-        stock_sku = stock_info.get("sku", "")
-
-        # Check if extracted is a partial SKU prefix of the full SKU
-        if (extracted_sku.isdigit() or extracted_sku in ["N/A", ""] or
-            (stock_sku and stock_sku.lower().startswith(extracted_sku_lower + '-')) or
-            (extracted_sku_lower in partial_sku_index and len(partial_sku_index[extracted_sku_lower]) == 1)):
-
-            if stock_sku and stock_sku != extracted_sku:
+    if best_match is not None:
+        stock_sku = str(best_match.get("SKU", ""))
+        stock_name = str(best_match.get("Name", ""))
+        
+        # Update SKU if it was partial, missing, or numeric-only
+        if extracted_sku.isdigit() or extracted_sku in ["N/A", ""] or stock_sku.lower().startswith(extracted_sku_lower):
+            if stock_sku and stock_sku != "nan":
                 item["sku"] = stock_sku
-                logger.debug(f"Corrected SKU from '{extracted_sku}' to '{stock_sku}' for {name}")
 
-        # Category from stock if we have it
-        stock_cat = stock_info.get("category")
-        if stock_cat and stock_cat != "":
+        # Update Size if extracted was missing or purely numeric
+        if extracted_size.isdigit() or extracted_size in ["N/A", ""]:
+            _, stock_size = parse_sku_variants(stock_name)
+            if stock_size != "Unknown":
+                item["size"] = stock_size
+
+        # Update Category
+        stock_cat = best_match.get("Category")
+        if pd.notna(stock_cat) and stock_cat:
             item["category"] = stock_cat
-
-    # 2. Fuzzy match if no direct match
-    if not matched:
-        best_match = None
-        best_score = 0
-
-        for clean_stock_name, stock_info in stock_lookup.items():
-            # Simple word overlap score
-            extracted_words = set(clean_extracted.split())
-            stock_words = set(clean_stock_name.split())
-            if extracted_words and stock_words:
-                overlap = len(extracted_words & stock_words)
-                score = overlap / max(len(extracted_words), len(stock_words))
-
-                if score > best_score and score > 0.6:  # 60% word overlap threshold
-                    best_score = score
-                    best_match = stock_info
-
-        if best_match:
-            stock_size = best_match.get("size")
-            stock_sku = best_match.get("sku")
-
-            # Update size if extracted looks wrong
-            if extracted_size.isdigit() or extracted_size in ["N/A", ""]:
-                if stock_size and stock_size != "N/A":
-                    item["size"] = stock_size
-
-            # Update SKU if extracted looks wrong or is partial
-            extracted_sku_lower = extracted_sku.lower()
-            if (extracted_sku.isdigit() or extracted_sku in ["N/A", ""] or
-                (stock_sku and stock_sku.lower().startswith(extracted_sku_lower + '-'))):
-                if stock_sku and stock_sku != extracted_sku:
-                    item["sku"] = stock_sku
-
-    # 3. Direct partial SKU match (e.g., "102" → "102-0302-006")
-    if not matched and extracted_sku not in ["N/A", ""]:
-        extracted_sku_lower = extracted_sku.lower()
-        if extracted_sku_lower in partial_sku_index:
-            candidates = partial_sku_index[extracted_sku_lower]
-            # If only one match, use it
-            if len(candidates) == 1:
-                stock_info = candidates[0]
-                item["sku"] = stock_info["full_sku"]
-                logger.debug(f"Matched partial SKU '{extracted_sku}' to full SKU '{stock_info['full_sku']}'")
-
-                # Also update size if available
-                stock_size = stock_info.get("size")
-                if stock_size and stock_size != "N/A" and (extracted_size.isdigit() or extracted_size in ["N/A", ""]):
-                    item["size"] = stock_size
 
     return item
 
@@ -1087,99 +937,75 @@ def _verify_products_with_stock(
     if not items or stock_df is None or stock_df.empty:
         return items
 
-    verified = []
-    for item in items:
-        verified_item = _verify_and_correct_product(item, stock_df)
-        verified.append(verified_item)
-
-    return verified
+    return [_verify_and_correct_product(item, stock_df) for item in items]
 
 
-def map_items_to_skus(order_id: str, items: list[dict[str, Any]], sales_df: pd.DataFrame) -> list[dict[str, Any]]:
-    """Map granular item details to SKUs."""
-    if not items or sales_df is None or sales_df.empty:
-        for item in items: item["sku"] = "N/A"
-        return items
-
-    results = []
-    for item in items:
-        # Safety for old string format
-        if isinstance(item, dict):
-            name = str(item.get("name") or "Unknown")
-            item_copy = item.copy()
-        else:
-            name = str(item)
-            item_copy = {"name": name, "sku": "N/A", "size": "N/A", "qty": 1, "category": "N/A"}
+def get_order_items_breakdown(returns_df: pd.DataFrame, sales_df: pd.DataFrame) -> pd.Series:
+    """Categorize items with granular details using a vectorized strategy."""
+    if returns_df.empty:
+        return pd.Series(dtype=object)
         
-        # Filter sales for this specific order
-        order_sales = sales_df[sales_df["order_id"].astype(str) == str(order_id)]
+    sales_by_order = {}
+    if sales_df is not None and not sales_df.empty:
+        sales_df_copy = sales_df.copy()
+        sales_df_copy["_oid_str"] = sales_df_copy["order_id"].astype(str)
+        sales_by_order = {oid: group for oid, group in sales_df_copy.groupby("_oid_str")}
         
-        # Match - using regex=False
-        match = pd.DataFrame()
-        if not order_sales.empty:
-            match = order_sales[order_sales["item_name"].str.contains(name, case=False, na=False, regex=False)]
-        
-        if match.empty:
-            # Global fallback
-            match = sales_df[sales_df["item_name"].str.contains(name, case=False, na=False, regex=False)]
-            
-        if not match.empty:
-            item_copy["sku"] = match.iloc[0].get("sku", "N/A")
-        else:
-            item_copy["sku"] = "N/A"
-            
-        results.append(item_copy)
-                
-    return results
-
-
-def get_order_items_breakdown(order_id: str, returned_items: list[dict[str, Any]], sales_df: pd.DataFrame) -> dict[str, list[dict[str, Any]]]:
-    """Categorize items with granular details."""
-    # Safety for old string format in input
-    returned_names = []
-    for i in returned_items:
-        if isinstance(i, dict):
-            returned_names.append(i.get("name", "Unknown"))
-        else:
-            returned_names.append(str(i))
-    
-    # Use existing helper to find SKUs for returned items
-    returned_with_skus = map_items_to_skus(order_id, returned_items, sales_df)
-    
-    if sales_df is None or sales_df.empty:
-        return {"returned": returned_with_skus, "delivered": []}
-
-    order_sales = sales_df[sales_df["order_id"].astype(str) == str(order_id)].copy()
-    if order_sales.empty:
-        return {"returned": returned_with_skus, "delivered": []}
-
     from BackEnd.core.categories import parse_sku_variants, get_category_for_sales
-    delivered_records = []
-    remaining_sales = order_sales.copy()
     
-    # Remove matched returned items from remaining
-    for item in returned_with_skus:
-        name = item["name"]
-        match_idx = remaining_sales[remaining_sales["item_name"].str.contains(name, case=False, na=False, regex=False)].index
-        if not match_idx.empty:
-            remaining_sales = remaining_sales.drop(match_idx[0])
+    results = []
+    for _, row in returns_df.iterrows():
+        order_id = str(row.get("order_id", ""))
+        returned_items = row.get("returned_items", [])
+        
+        order_sales = sales_by_order.get(order_id, pd.DataFrame()).copy()
+        
+        returned_with_skus = []
+        delivered_records = []
+        
+        if not isinstance(returned_items, list):
+            returned_items = []
             
-    for _, row in remaining_sales.iterrows():
-        name = str(row["item_name"])
-        color, size = parse_sku_variants(name)
-        cat = get_category_for_sales(name)
-        delivered_records.append({
-            "name": name,
-            "sku": row.get("sku", "N/A"),
-            "size": size,
-            "qty": row.get("qty", 1),
-            "category": cat
+        for item in returned_items:
+            if isinstance(item, dict):
+                item_copy = item.copy()
+                name = str(item.get("name", "Unknown"))
+            else:
+                name = str(item)
+                item_copy = {"name": name, "sku": "N/A", "size": "N/A", "qty": 1, "category": "N/A"}
+                
+            if not order_sales.empty and "item_name" in order_sales.columns:
+                match_mask = order_sales["item_name"].str.contains(name, case=False, na=False, regex=False)
+                if match_mask.any():
+                    match_idx = match_mask.idxmax()
+                    item_copy["sku"] = order_sales.loc[match_idx, "sku"] if "sku" in order_sales.columns else "N/A"
+                    order_sales = order_sales.drop(match_idx)
+                else:
+                    item_copy["sku"] = "N/A"
+            else:
+                item_copy["sku"] = "N/A"
+                
+            returned_with_skus.append(item_copy)
+            
+        if not order_sales.empty and "item_name" in order_sales.columns:
+            for _, s_row in order_sales.iterrows():
+                s_name = str(s_row.get("item_name", ""))
+                color, size = parse_sku_variants(s_name)
+                cat = get_category_for_sales(s_name)
+                delivered_records.append({
+                    "name": s_name,
+                    "sku": s_row.get("sku", "N/A"),
+                    "size": size,
+                    "qty": s_row.get("qty", 1),
+                    "category": cat
+                })
+                
+        results.append({
+            "returned": returned_with_skus,
+            "delivered": delivered_records
         })
         
-    return {
-        "returned": returned_with_skus,
-        "delivered": delivered_records
-    }
+    return pd.Series(results, index=returns_df.index)
 
 
 def _normalize_match_text(value: Any) -> str:

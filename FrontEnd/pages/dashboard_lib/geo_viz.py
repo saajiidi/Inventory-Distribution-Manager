@@ -104,7 +104,7 @@ def render_district_map(df_sales: pd.DataFrame):
         )
     )
 
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("geo", "district_choropleth"))
     
     with gv2:
         st.markdown(f"#### 🔥 Top 20 Hotspots")
@@ -126,7 +126,7 @@ def render_district_map(df_sales: pd.DataFrame):
             xaxis=dict(showgrid=False),
             yaxis=dict(showgrid=False, categoryorder="total ascending")
         )
-        st.plotly_chart(fig_spot, width="stretch")
+    st.plotly_chart(fig_spot, width="stretch", key=KeyManager.get_key("geo", "top_hotspots_bar"))
     
     # 📝 Summary Insight
     if not spot_raw.empty:

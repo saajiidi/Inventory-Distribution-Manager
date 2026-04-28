@@ -294,7 +294,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)"
     )
-    st.plotly_chart(fig_ts, width="stretch")
+    st.plotly_chart(fig_ts, width="stretch", key=KeyManager.get_key("deep_dive", "daily_rev_trend"))
 
     # --- Strategic Visuals & Breakdown ---
     st.divider()
@@ -406,7 +406,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
                      labels={group_col: hover_label, "Revenue": "Gross Revenue (৳)", "Units": "Qty Sold"})
         
         fig.update_layout(yaxis={'categoryorder': sort_order}, height=max(400, limit*25))
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "products_spotlight"))
         
         c1, c2 = st.columns(2)
         with c1:
@@ -414,7 +414,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             t_rev = w_df.groupby("Trend")["item_revenue"].sum().reset_index().sort_values("item_revenue", ascending=False)
             fig = px.pie(t_rev, values="item_revenue", names="Trend", title="Revenue Contribution by Moving Type",
                          hole=0.4, color_discrete_sequence=px.colors.qualitative.Prism)
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "rev_contrib_pie"))
             
         with c2:
             # Source/Platform Bar - Descending
@@ -422,7 +422,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             fig = px.bar(s_rev, x="source", y="item_revenue", title="Revenue by Platform Source",
                          color="item_revenue", color_continuous_scale="Tealgrn")
             fig.update_layout(xaxis={'categoryorder': 'total descending'})
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "rev_by_source_bar"))
 
         # Operational Category Mix (Sub-Category Focus)
         st.divider()
@@ -440,13 +440,13 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
         with occ1:
             fig_cat_pie = px.pie(cat_agg, values="Revenue", names="Sub-Cat", title="Revenue Mix by Sub-Segment",
                                 hole=0.4, color_discrete_sequence=px.colors.qualitative.T10)
-            st.plotly_chart(fig_cat_pie, width="stretch")
+            st.plotly_chart(fig_cat_pie, width="stretch", key=KeyManager.get_key("deep_dive", "rev_mix_subcat_pie"))
             
         with occ2:
             fig_cat_bar = px.bar(cat_agg.sort_values("Units", ascending=True), x="Units", y="Sub-Cat", 
                                  title="Unit Volume per Sub-Segment",
                                  orientation='h', color="Units", color_continuous_scale="Agsunset")
-            st.plotly_chart(fig_cat_bar, width="stretch")
+            st.plotly_chart(fig_cat_bar, width="stretch", key=KeyManager.get_key("deep_dive", "unit_vol_subcat_bar"))
 
     with cluster_t2:
         v_c1, v_c2 = st.columns(2)
@@ -455,13 +455,13 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             sz_df = w_df.groupby("_size")["qty"].sum().reset_index()
             fig = px.bar(sz_df, x="_size", y="qty", title="Unit Volume by Size Cluster", 
                          color="qty", color_continuous_scale="Portland")
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "unit_vol_size_bar"))
         with v_c2:
             # Color Distribution
             clr_df = w_df.groupby("_color")["item_revenue"].sum().reset_index()
             fig = px.pie(clr_df, values="item_revenue", names="_color", title="Revenue by Color Palette",
                          color_discrete_sequence=px.colors.qualitative.Safe)
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "rev_by_color_pie"))
 
     with cluster_t3:
         # --- ML Analytics: Bulk Purchase Dynamics ---
@@ -484,7 +484,7 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
                              color_discrete_map={"Single Piece (1)": "#6366f1", "Bulk (3+)": "#10b981", "Mid-Tier (2)": "#f59e0b"},
                              title=f"Basket Size Propensity: {sel_cats[0] if sel_cats and 'All' not in sel_cats else 'Filtered Cluster'}")
             fig_prop.update_layout(height=350, margin=dict(t=30, b=0, l=0, r=0))
-            st.plotly_chart(fig_prop, width="stretch")
+            st.plotly_chart(fig_prop, width="stretch", key=KeyManager.get_key("deep_dive", "basket_size_prop_pie"))
         
         st.divider()
         b_c1, b_c2 = st.columns(2)
@@ -494,14 +494,14 @@ def render_deep_dive_tab(df_sales: pd.DataFrame, stock_df: pd.DataFrame, df_prev
             q_dist.columns = ["Items in Line", "Orders"]
             fig = px.bar(q_dist, x="Items in Line", y="Orders", title="Distribution of Units per Line Item",
                          text_auto=True, color_discrete_sequence=["#F59E0B"])
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "dist_units_per_line_bar"))
         with b_c2:
             # City/Region Mix within this cluster
             city_mix = w_df.groupby("_region_display")["item_revenue"].sum().reset_index().sort_values("item_revenue", ascending=False).head(10)
             fig = px.bar(city_mix, x="item_revenue", y="_region_display", title="Market Hotspots (Regional Density)", 
                          orientation='h', color="item_revenue", color_continuous_scale="Agsunset",
                          labels={"_region_display": "Region/District", "item_revenue": "Revenue (৳)"})
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("deep_dive", "market_hotspots_bar"))
 
     with cluster_t4:
         # Categorization Health Diagnostic

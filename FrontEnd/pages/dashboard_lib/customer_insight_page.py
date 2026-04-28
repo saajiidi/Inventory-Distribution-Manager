@@ -637,14 +637,14 @@ def _render_legacy_insights(df_sales: pd.DataFrame) -> None:
         c1, c2 = st.columns(2)
         with c1:
             st.plotly_chart(
-                ui.donut_chart(mix_df, values="Count", names="Segment", title="Segment Distribution"),
-                width="stretch"
+            ui.donut_chart(mix_df, values="Count", names="Segment", title="Segment Distribution"),
+            width="stretch", key=KeyManager.get_key("ci", "segment_dist_donut")
             )
         with c2:
             rev_df = df.groupby("segment")["total_revenue"].sum().reset_index().sort_values("total_revenue", ascending=False)
             st.plotly_chart(
-                ui.bar_chart(rev_df, x="total_revenue", y="segment", title="Revenue by Segment", color_scale="Tealgrn"),
-                width="stretch"
+            ui.bar_chart(rev_df, x="total_revenue", y="segment", title="Revenue by Segment", color_scale="Tealgrn"),
+            width="stretch", key=KeyManager.get_key("ci", "rev_by_segment_bar")
             )
             
     with t_coh:
@@ -659,7 +659,7 @@ def _render_legacy_insights(df_sales: pd.DataFrame) -> None:
                 labels=dict(x="Months Since First Order", y="Cohort Month", color="Retention %"),
             )
             fig_coh.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig_coh, use_container_width=True)
+            st.plotly_chart(fig_coh, use_container_width=True, key=KeyManager.get_key("ci", "retention_cohorts_matrix"))
         else:
             st.info("Insufficient longitudinal data to generate retention cohorts.")
 

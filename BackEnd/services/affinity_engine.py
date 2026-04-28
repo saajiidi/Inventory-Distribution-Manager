@@ -13,67 +13,58 @@ class MarketBasketEngine:
         self.prod_col = "item_name"
         self.order_col = "order_id"
         
-    def get_associations(self, min_support=0.01, min_lift=1.1):
+    def get_associations(self, min_support=0.005, min_lift=1.1):
         """Calculates association rules (Antecedent -> Consequent)."""
+        empty_df = pd.DataFrame(columns=["Antecedent", "Consequent", "Support", "Confidence", "Lift", "Frequency"])
+        
         if self.df.empty or self.prod_col not in self.df.columns:
-            return pd.DataFrame()
+            return empty_df
             
-        # Group by order to get baskets
-        baskets = self.df.groupby(self.order_col)[self.prod_col].apply(set).tolist()
-        total_orders = len(baskets)
-        
+        total_orders = self.df[self.order_col].nunique()
         if total_orders == 0:
-            return pd.DataFrame()
+            return empty_df
             
-        # 1. Frequency of individual items
-        item_counts = Counter()
-        for basket in baskets:
-            item_counts.update(basket)
-            
-        # 2. Frequency of pairs
-        pair_counts = Counter()
-        for basket in baskets:
-            if len(basket) > 1:
-                pair_counts.update(combinations(sorted(basket), 2))
-                
-        # 3. Calculate metrics
-        rules = []
-        for (item_a, item_b), count in pair_counts.items():
-            support = count / total_orders
-            if support < min_support:
-                continue
-                
-            support_a = item_counts[item_a] / total_orders
-            support_b = item_counts[item_b] / total_orders
-            
-            # Rule A -> B
-            conf_a_to_b = count / item_counts[item_a]
-            lift = conf_a_to_b / support_b
-            
-            if lift >= min_lift:
-                rules.append({
-                    "Antecedent": item_a,
-                    "Consequent": item_b,
-                    "Support": support,
-                    "Confidence": conf_a_to_b,
-                    "Lift": lift,
-                    "Frequency": count
-                })
+        # 1. Base Basket Setup & Item Frequencies
+        basket_df = self.df[[self.order_col, self.prod_col]].drop_duplicates()
+        item_counts = basket_df[self.prod_col].value_counts()
         
+        # 2. Vectorized Self-Join to get pairs directly
+        pairs = pd.merge(basket_df, basket_df, on=self.order_col)
+        pairs = pairs[pairs[f"{self.prod_col}_x"] != pairs[f"{self.prod_col}_y"]]
+        
+        if pairs.empty:
+            return empty_df
+            
+        # Count pair frequencies
+        pair_counts = pairs.groupby([f"{self.prod_col}_x", f"{self.prod_col}_y"]).size().reset_index(name="Frequency")
+        pair_counts.rename(columns={f"{self.prod_col}_x": "Antecedent", f"{self.prod_col}_y": "Consequent"}, inplace=True)
+        
+        # 3. Calculate Metrics
+        pair_counts["Support"] = pair_counts["Frequency"] / total_orders
+        rules = pair_counts[pair_counts["Support"] >= min_support].copy()
+        
+        if rules.empty:
+            return empty_df
+            
+        rules["Support_A"] = rules["Antecedent"].map(item_counts) / total_orders
+        rules["Support_B"] = rules["Consequent"].map(item_counts) / total_orders
+        
+        rules["Confidence"] = rules["Support"] / rules["Support_A"]
+        rules["Lift"] = rules["Confidence"] / rules["Support_B"]
+        
+        rules = rules[rules["Lift"] >= min_lift]
+        rules.drop(columns=["Support_A", "Support_B"], inplace=True)
+        
+        if rules.empty:
+            return empty_df
+
         return pd.DataFrame(rules).sort_values("Lift", ascending=False)
 
     def get_attachment_rate(self, target_product: str):
         """Calculates the attachment rate KPI for a specific product."""
-        empty_result = {
-            "target": target_product,
-            "top_attachment": "N/A",
-            "rate": 0.0,
-            "orders_count": 0
-        }
-        
         order_ids_with_target = self.df[self.df[self.prod_col] == target_product][self.order_col].unique()
         if len(order_ids_with_target) == 0:
-            return empty_result
+            return 0.0
             
         # Orders containing the target
         df_target_orders = self.df[self.df[self.order_col].isin(order_ids_with_target)]
@@ -82,7 +73,7 @@ class MarketBasketEngine:
         attachments = df_target_orders[df_target_orders[self.prod_col] != target_product][self.prod_col].value_counts()
         
         if attachments.empty:
-            return empty_result
+            return 0.0
             
         # Top attached item rate
         top_item = attachments.index[0]

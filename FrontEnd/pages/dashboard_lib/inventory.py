@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import numpy as np
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from itertools import combinations
 from collections import Counter
 from FrontEnd.components import ui
@@ -83,7 +83,7 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     # Vectorized Trend Classification
     inventory["Trend"] = classify_velocity_trend(inventory["daily_velocity"])
 
-    show_exact = st.session_state.get(KeyManager.get_key("inventory", "show_exact"), False)
+    show_exact = st.session_state.get("global_show_exact", False)
 
     def format_val(num):
         if show_exact: return f"{num:,}"
@@ -104,17 +104,19 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     with m2: ui.icon_metric("Low Stock Alerts", format_val(len(low_stock)), icon="⚠️")
     with m3: ui.icon_metric("Inventory Asset Value", format_curr(inventory['Value'].sum()), icon="💰")
     
-    t_col1, t_col2 = st.columns([8, 2])
-    with t_col2:
-        st.toggle("Show Exact Values", key=KeyManager.get_key("inventory", "show_exact"))
-
     st.divider()
 
     # 2. Inventory Sniper (Structured Search)
     st.markdown("#### 🎯 Inventory Sniper")
     st.caption("Search across categories and velocity trends to isolate specific SKU health.")
     
-    f_c1, f_c2, f_c3 = st.columns(3)
+    # Initialize active filter variables to None for broader scope usage
+    active_cat = None
+    active_prod = None
+    active_size = None
+    active_trend = None
+
+    f_c1, f_c2, f_c3, f_c4 = st.columns(4)
     
     with f_c1:
         # Use master category list for consistent hierarchy display
@@ -123,29 +125,45 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         active_cat = None if sel_cat == "All" else sel_cat
 
     with f_c2:
-        avail_trends = sorted(inventory["Trend"].unique())
-        sel_trend = st.selectbox("Trend Classification", ["All"] + avail_trends, index=0, key=KeyManager.get_key("inventory", "sniper_trend"))
-        active_trend = None if sel_trend == "All" else sel_trend
-
-    with f_c3:
-        # Filter products by category & trend
+        # Filter products by category
         prod_options = inventory.copy()
         if active_cat: prod_options = prod_options[prod_options["Category"].str.startswith(active_cat, na=False)]
-        if active_trend: prod_options = prod_options[prod_options["Trend"] == active_trend]
         
-        # Build unique Name + SKU display entries
-        prod_options["_display_name"] = prod_options["_clean_name"] + " [" + prod_options["SKU"].astype(str) + "]"
+        prod_options["_display_name"] = prod_options["_clean_name"]
         
         avail_prods = sorted([str(p) for p in prod_options["_display_name"].unique() if str(p).strip()])
         sel_prod = st.selectbox("Product Selection", ["All"] + avail_prods, index=0, key=KeyManager.get_key("inventory", "sniper_prod"))
         active_prod = None if sel_prod == "All" else sel_prod
 
+    with f_c3:
+        size_options = prod_options.copy()
+        if active_prod:
+            size_options = size_options[size_options["_display_name"] == active_prod]
+            
+        avail_sizes = sorted([str(s) for s in size_options["_size"].unique() if str(s).strip() and str(s) != "Unknown"])
+        sel_size = st.selectbox("Size Selection", ["All"] + avail_sizes, index=0, key=KeyManager.get_key("inventory", "sniper_size"))
+        active_size = None if sel_size == "All" else sel_size
+        
+    with f_c4:
+        trend_options = size_options.copy()
+        if active_size:
+            trend_options = trend_options[trend_options["_size"] == active_size]
+            
+        avail_trends = sorted([str(t) for t in trend_options["Trend"].dropna().unique()])
+        sel_trend = st.selectbox("Trend Classification", ["All"] + avail_trends, index=0, key=KeyManager.get_key("inventory", "sniper_trend"))
+        active_trend = None if sel_trend == "All" else sel_trend
+
     # Determine Sniper Results
     if active_prod:
-        # Match using the display name (which includes SKU) against the filtered options
+        # Match using the display name against the filtered options
         sniper_results = inventory.copy()
-        sniper_results["_display_name"] = sniper_results["_clean_name"] + " [" + sniper_results["SKU"].astype(str) + "]"
+        sniper_results["_display_name"] = sniper_results["_clean_name"]
         sniper_results = sniper_results[sniper_results["_display_name"] == active_prod]
+        
+        if active_size:
+            sniper_results = sniper_results[sniper_results["_size"] == active_size]
+        if active_trend:
+            sniper_results = sniper_results[sniper_results["Trend"] == active_trend]
         
         st.markdown(f"**Detailed Analysis for:** `{active_prod}`")
         
@@ -158,7 +176,27 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
             with k1: ui.icon_metric("Current Stock Balance", f"{int(sniper_results['Stock Quantity'].sum())}", icon="📦")
             with k2: ui.icon_metric("Sales Velocity", f"{item_velocity:.2f} units/day", icon="⚡")
             with k3: ui.icon_metric("Velocity Tier", item_trend, icon="📈")
+
+            # Display product creation and modification timestamps
+            k4, k5 = st.columns(2)
+            with k4:
+                date_created = sniper_results["Date Created"].iloc[0] if "Date Created" in sniper_results.columns and not sniper_results.empty else "N/A"
+                ui.icon_metric("First Published", str(date_created), icon="📅")
+            with k5:
+                date_modified = sniper_results["Date Modified"].iloc[0] if "Date Modified" in sniper_results.columns and not sniper_results.empty else "N/A"
+                if int(sniper_results['Stock Quantity'].sum()) <= 0 and date_modified != "N/A":
+                    ui.icon_metric("OOS Since (Est.)", str(date_modified), icon="🛑")
+                else:
+                    ui.icon_metric("Last Updated", str(date_modified), icon="🔄")
             
+            k6, k7 = st.columns(2)
+            with k6:
+                reg_price = float(sniper_results["Regular Price"].iloc[0]) if "Regular Price" in sniper_results.columns and not sniper_results.empty else 0.0
+                ui.icon_metric("Regular Price", f"৳{reg_price:,.0f}", icon="💵")
+            with k7:
+                sale_price = float(sniper_results["Sale Price"].iloc[0]) if "Sale Price" in sniper_results.columns and not sniper_results.empty else 0.0
+                ui.icon_metric("Sale Price", f"৳{sale_price:,.0f}", icon="🏷️")
+
             # Stock-out Countdown
             if item_velocity > 0:
                 days_left = float(sniper_results['Stock Quantity'].sum()) / item_velocity
@@ -184,16 +222,20 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         inventory["Sale Value"] = inventory["Stock Quantity"] * inventory["Sale Price"]
 
         # 2. Controls for dynamic visualization
-        group_basis = st.radio(
-            "Aggregation Level",
-            ["Main Category", "Sub-Category", "Master Product", "Variant"],
-            index=1,
-            horizontal=True,
-            key=KeyManager.get_key("inventory", "group_basis")
-        )
+        ctrl_col1, ctrl_col2 = st.columns([3, 1])
+        with ctrl_col1:
+            group_basis = st.radio(
+                "Aggregation Level",
+                ["Main Category", "Sub-Category", "Master Product", "Variant"],
+                index=1,
+                horizontal=True,
+                key=KeyManager.get_key("inventory", "group_basis")
+            )
+        with ctrl_col2:
+            use_sale_price = st.toggle("Graph: Use Sale Price", value=False, key=KeyManager.get_key("inventory", "use_sale_price_graph"))
         
-        val_basis = "Market Value"
-        val_col = "Value"
+        val_basis = "Sale Value" if use_sale_price else "Regular Value"
+        val_col = "Sale Value" if use_sale_price else "Regular Value"
 
         # 3. Data Preparation
         valid_cats = list(get_master_category_list())
@@ -228,6 +270,8 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         in_stock_inv = filtered_inv[(filtered_inv["Stock Quantity"] > 0) | (filtered_inv["Stock Status"].astype(str).str.lower().str.strip() == "instock")]
         cat_agg = in_stock_inv.groupby(group_col).agg(
             Selected_Value=(val_col, "sum"),
+            Regular_Value=("Regular Value", "sum"),
+            Sale_Value=("Sale Value", "sum"),
             Total_Units=("Stock Quantity", "sum"),
             SKU_Count=("Name", "count")
         ).reset_index()
@@ -243,20 +287,20 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         top_sku_df = cat_agg.sort_values("SKU_Count", ascending=False).head(display_limit).sort_values("SKU_Count", ascending=True)
 
         # 4. Interactive Visuals
-        t1, t2, t3, t4, t5 = st.tabs(["💰 Value & Volume", "📦 Breadth Analysis", "🛒 Smart Restock", "📉 Dead Stock", "🤝 Bundle Intel"])
+        t1, t2, t3, t4, t5, t6 = st.tabs(["💰 Value & Volume", "📦 Breadth Analysis", "🛒 Smart Restock", "📉 Dead Stock", "🤝 Bundle Intel", "⏳ Stock Timeline"])
         
         with t1:
             v1, v2 = st.columns(2)
             with v1:
                 fig_unit_bar = ui.bar_chart(top_unit_df, x="Total_Units", y=group_label, title=f"Total Unit Volume per {group_label}", color="Total_Units")
-                fig_unit_bar.update_traces(texttemplate="%{x:,} Units", textposition="auto")
+                fig_unit_bar.update_traces(texttemplate="%{x:,} Units", textposition="auto") # Moved texttemplate here
                 fig_unit_bar.update_layout(height=max(450, len(top_unit_df) * 30), yaxis_title=group_label)
-                st.plotly_chart(fig_unit_bar, width="stretch")
+                st.plotly_chart(fig_unit_bar, width="stretch", key=KeyManager.get_key("inventory", "unit_volume_bar"))
             with v2:
                 fig_val_bar = ui.bar_chart(top_val_df, x="Selected_Value", y=group_label, title=f"Absolute {val_basis} per {group_label}", color="Selected_Value")
-                fig_val_bar.update_traces(texttemplate="৳%{x:,.0f}", textposition="auto")
+                fig_val_bar.update_traces(texttemplate="৳%{x:,.0f}", textposition="auto") # Moved texttemplate here
                 fig_val_bar.update_layout(height=max(450, len(top_val_df) * 30), yaxis_title=group_label)
-                st.plotly_chart(fig_val_bar, width="stretch")
+                st.plotly_chart(fig_val_bar, width="stretch", key=KeyManager.get_key("inventory", "value_volume_bar"))
                 
             st.divider()
             st.markdown(f"##### 📋 Detailed {group_label} Ledger")
@@ -267,7 +311,9 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
                 hide_index=True,
                 column_config={
                     group_label: st.column_config.TextColumn(group_label),
-                    "Selected_Value": st.column_config.NumberColumn(val_basis, format="৳%.0f"),
+                    "Selected_Value": None, # Hide dynamic col, explicitly display both below
+                    "Regular_Value": st.column_config.NumberColumn("Regular Value", format="৳%.0f"),
+                    "Sale_Value": st.column_config.NumberColumn("Sale Value", format="৳%.0f"),
                     "Total_Units": st.column_config.NumberColumn("Total Units", format="%d"),
                     "SKU_Count": st.column_config.NumberColumn("In-Stock SKUs", format="%d")
                 }
@@ -277,8 +323,8 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
             breadth_label = "In-Stock Variants" if group_basis == "Variant" else "In-Stock SKUs"
             fig_sku_bar = ui.bar_chart(top_sku_df, x="SKU_Count", y=group_label, title=f"{breadth_label} Breadth per {group_label}", color="SKU_Count")
             fig_sku_bar.update_traces(texttemplate=f"%{{x:,}} {breadth_label}", textposition="auto")
-            fig_sku_bar.update_layout(height=max(450, len(top_sku_df) * 30), xaxis_title=breadth_label, yaxis_title=group_label)
-            st.plotly_chart(fig_sku_bar, width="stretch")
+            fig_sku_bar.update_layout(height=max(450, len(top_sku_df) * 30), xaxis_title=breadth_label, yaxis_title=group_label) # Moved texttemplate here
+            st.plotly_chart(fig_sku_bar, width="stretch", key=KeyManager.get_key("inventory", "sku_breadth_bar"))
 
         with t3:
             st.markdown("##### 🚀 Velocity-Based Inventory Planning")
@@ -413,6 +459,10 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
     else:
         st.info("Category-wise breakdown is not yet available in the stock cache.")
         
+        with t6:
+            returns_df = st.session_state.get("returns_data", pd.DataFrame())
+            _render_stock_timeline(inventory, df_sales, returns_df)
+        
     st.markdown("---")
     
     # 3. Report Summary & Download
@@ -428,27 +478,119 @@ def render_inventory_health(stock_df: pd.DataFrame, forecast_df: pd.DataFrame, d
         if active_prod:
             export_inv["_display_name"] = export_inv["_clean_name"] + " [" + export_inv["SKU"].astype(str) + "]"
             export_inv = export_inv[export_inv["_display_name"] == active_prod]
-        
-        summary_metrics = {
-            "Total SKU Records": len(export_inv),
-            "Total Stock Quantity": export_inv["Stock Quantity"].sum(),
-            "Total Asset Value (৳)": f"{export_inv['Value'].sum():,.2f}",
-            "Low Stock Items": len(export_inv[export_inv["Stock Quantity"] <= 5]),
-            "Fast Moving Items": len(export_inv[export_inv["Trend"] == "🔥 Fast Moving"]),
-            "Dead Stock Items": len(export_inv[export_inv["Trend"] == "❄️ Non-Moving"]),
-            "Report Generated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _get_global_date_range() -> tuple[date, date]:
+    """Get start and end dates from global time window."""
+    today = date.today()
+    window = st.session_state.get("time_window", "Last Month")
+
+    if window == "MTD":
+        start_dt = today.replace(day=1)
+        end_dt = today
+    elif window == "YTD":
+        start_dt = today.replace(month=1, day=1)
+        end_dt = today
+    elif window == "Custom Date Range":
+        start_dt = st.session_state.get("wc_sync_start_date", today - timedelta(days=30))
+        end_dt = st.session_state.get("wc_sync_end_date", today)
+    else:
+        window_map = {
+            "Last Day": 1,
+            "Last 3 Days": 3,
+            "Last 4 Days": 4,
+            "Last 7 Days": 7,
+            "Last 15 Days": 15,
+            "Last Month": 30,
+            "Last 3 Months": 90,
+            "Last Quarter": 90,
+            "Last Half Year": 180,
+            "Last 9 Months": 270,
+            "Last Year": 365
         }
-        
-        excel_bytes = ui.export_to_excel(
-            export_inv.drop(columns=[c for c in export_inv.columns if c.startswith("_")], errors="ignore"), 
-            sheet_name="Inventory Data",
-            summary_metrics=summary_metrics
-        )
-        st.download_button(
-            label="📊 Download Custom Report",
-            data=excel_bytes,
-            file_name=f"deen_inventory_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True,
-            key=KeyManager.get_key("inventory", "custom_export_btn")
-        )
+        days_back = window_map.get(window, 30)
+        start_dt = today - timedelta(days=days_back)
+        end_dt = today
+
+    return start_dt, end_dt
+
+
+def _render_stock_timeline(inventory_df: pd.DataFrame, sales_df: pd.DataFrame, returns_df: pd.DataFrame):
+    """Renders a historical stock timeline and availability checker."""
+    st.markdown("#### ⏳ Stock Timeline & Availability")
+    st.caption("Analyze historical stock levels and see which products were available on a specific date.")
+
+    # Part 1: Recent Stock-In Events (from returns)
+    st.markdown("##### Recent Restocking Events (from Returns)")
+    if returns_df.empty or 'returned_items' not in returns_df.columns:
+        st.info("No returns data available to track restocking events.")
+    else:
+        restocked = returns_df[
+            returns_df['inventory_updated'].astype(str).str.lower().isin(['yes', 'true', '1'])
+        ].copy()
+
+        if restocked.empty:
+            st.info("No items marked as restocked from returns in the current dataset.")
+        else:
+            restocked_items = []
+            for _, row in restocked.iterrows():
+                items = row.get('returned_items', [])
+                if not isinstance(items, list): continue
+                for item in items:
+                    if not isinstance(item, dict): continue
+                    restocked_items.append({
+                        "Date": row['date'],
+                        "Order ID": row['order_id_raw'],
+                        "Product": item.get('name', 'Unknown'),
+                        "SKU": item.get('sku', 'N/A'),
+                        "Qty": item.get('qty', 1)
+                    })
+            
+            if restocked_items:
+                restock_df = pd.DataFrame(restocked_items).sort_values("Date", ascending=False)
+                st.dataframe(restock_df.head(10), hide_index=True, use_container_width=True, column_config={"Date": st.column_config.DateColumn("Date")})
+            else:
+                st.info("No individual items found in restocked returns.")
+
+    st.divider()
+
+    # Part 2: Historical Availability Snapshot
+    st.markdown("##### Historical Stock Snapshot")
+    
+    start_dt, end_dt = _get_global_date_range()
+
+    snapshot_date = st.date_input(
+        "Select a date to view stock availability",
+        value=end_dt,
+        min_value=start_dt,
+        max_value=end_dt,
+        key=KeyManager.get_key("inventory", "snapshot_date")
+    )
+    snapshot_ts = pd.to_datetime(snapshot_date)
+
+    if st.button("Show Stock on Selected Date", key=KeyManager.get_key("inventory", "show_snapshot_btn"), type="primary"):
+        with st.spinner(f"Reconstructing stock levels for {snapshot_date.strftime('%Y-%m-%d')}..."):
+            current_stock = inventory_df.set_index('SKU')['Stock Quantity'].to_dict()
+
+            sales_after = pd.DataFrame()
+            if sales_df is not None and not sales_df.empty and 'order_date' in sales_df.columns:
+                sales_df['order_date'] = pd.to_datetime(sales_df['order_date'], errors='coerce').dt.tz_localize(None)
+                sales_after = sales_df[sales_df['order_date'] > snapshot_ts].copy()
+            sales_qty_after = sales_after.groupby('SKU')['qty'].sum() if not sales_after.empty else pd.Series(dtype='float64')
+
+            returns_qty_after = pd.Series(dtype='float64')
+            if not returns_df.empty and 'date' in returns_df.columns:
+                returns_df['date'] = pd.to_datetime(returns_df['date'], errors='coerce').dt.tz_localize(None)
+                restocked_after = returns_df[(returns_df['date'] > snapshot_ts) & (returns_df['inventory_updated'].astype(str).str.lower().isin(['yes', 'true', '1']))].copy()
+                if not restocked_after.empty:
+                    returned_items_after = [{'SKU': item['sku'], 'qty': item.get('qty', 1)} for _, row in restocked_after.iterrows() for item in (row.get('returned_items', []) if isinstance(row.get('returned_items', []), list) else []) if isinstance(item, dict) and 'sku' in item]
+                    if returned_items_after:
+                        returns_df_after = pd.DataFrame(returned_items_after)
+                        returns_qty_after = returns_df_after.groupby('SKU')['qty'].sum()
+
+            historical_stock_df = inventory_df[['Name', 'SKU', 'Category']].copy().set_index('SKU')
+            historical_stock_df['stock_on_date'] = (historical_stock_df.index.map(current_stock).fillna(0) + historical_stock_df.index.map(sales_qty_after).fillna(0) - historical_stock_df.index.map(returns_qty_after).fillna(0)).astype(int)
+
+            st.success(f"Found {len(historical_stock_df[historical_stock_df['stock_on_date'] > 0])} products available on {snapshot_date.strftime('%Y-%m-%d')}.")
+            display_df = historical_stock_df[historical_stock_df['stock_on_date'] > 0].copy().reset_index()
+            st.dataframe(display_df[['Name', 'SKU', 'Category', 'stock_on_date']].rename(columns={'stock_on_date': 'Estimated Stock'}), hide_index=True, use_container_width=True)

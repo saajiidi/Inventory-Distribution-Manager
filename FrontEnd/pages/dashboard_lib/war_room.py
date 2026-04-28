@@ -97,7 +97,7 @@ def render_war_room_page(sales_df: pd.DataFrame, returns_df: pd.DataFrame):
         # Display as a clean table with action button
         display_df = churn_df.copy()
         display_df['recency'] = display_df['recency'].astype(str) + " days ago"
-        display_df.columns = ["Customer Key", "Last Purchase", "Orders", "Total Value", "Segments", "Risk Level"]
+        display_df.columns = ["Customer Key", "Last Purchase", "Orders", "Total Value", "Segments", "Risk Level", "Recency"]
         
         st.dataframe(display_df, width="stretch", hide_index=True)
         
