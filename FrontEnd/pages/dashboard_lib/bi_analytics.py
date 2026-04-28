@@ -167,7 +167,7 @@ def render_sales_overview_timeseries(df_sales: pd.DataFrame, ml_bundle: dict = N
                           markers=True, line_shape="spline",
                           color_discrete_sequence=["#EC4899"])
         fig_aov.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-    st.plotly_chart(fig_aov, width="stretch", key=KeyManager.get_key("bi", "daily_aov_trend_line"))
+        st.plotly_chart(fig_aov, width="stretch", key=KeyManager.get_key("bi", "daily_aov_trend_line"))
 
     st.divider()
     render_ml_forecast_charts(daily, ml_bundle=ml_bundle)
@@ -267,4 +267,4 @@ def render_ml_forecast_charts(daily: pd.DataFrame, ml_bundle: dict = None):
                     trace.opacity = 0.6
                      
             fig.update_layout(height=400, margin=dict(l=0, r=0, t=60, b=0), hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", showlegend=False)
-        st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("bi", f"forecast_{metric_key}"))
+            st.plotly_chart(fig, width="stretch", key=KeyManager.get_key("bi", f"forecast_{metric_key}"))
