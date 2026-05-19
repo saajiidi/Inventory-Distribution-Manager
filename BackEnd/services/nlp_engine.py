@@ -71,6 +71,9 @@ class DataNLPInterpreter:
                  if not cat_sums.empty:
                      low = cat_sums.idxmin()
                      return f"⚠️ The lowest performing category **{time_label}** is **{low}**. You might want to review its stock or marketing."
+                     
+        if "why" in query or "root cause" in query:
+            return ("🧠 **Root Cause Analysis Mode:** To understand why metrics changed, I look at Order Volume, Average Order Value (AOV), and Return Rates. If you notice a drop, it is typically driven by a decrease in traffic (fewer orders) or lower basket sizes (AOV). Try asking me for 'revenue yesterday' vs 'revenue last week' to compare!")
 
         # Fallback for complex queries
         return ("🔍 I've analyzed your data and found that your overall performance is stable. "

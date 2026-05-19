@@ -142,3 +142,40 @@ def calculate_rfm_churn_risk(
     result = result[['customer_id', 'last_order', 'total_orders', 'total_revenue', 'segment', 'risk_level', 'recency_days']]
     result = result.rename(columns={'recency_days': 'recency'})
     return result.sort_values('recency', ascending=False)
+
+def generate_root_cause_analysis(
+    current_sales: pd.DataFrame, 
+    previous_sales: pd.DataFrame, 
+    returns_df: pd.DataFrame
+) -> List[Dict[str, Any]]:
+    """Assisted Root-Cause Analysis (Feature 11): Explains WHY metrics changed."""
+    causes = []
+    if current_sales.empty or previous_sales.empty:
+        return causes
+        
+    curr_rev = current_sales['item_revenue'].sum() if 'item_revenue' in current_sales.columns else 0
+    prev_rev = previous_sales['item_revenue'].sum() if 'item_revenue' in previous_sales.columns else 0
+    
+    if prev_rev > 0 and curr_rev < prev_rev:
+        drop_pct = (prev_rev - curr_rev) / prev_rev * 100
+        if drop_pct > 3: # Analyze noticeable drops
+            curr_orders = current_sales['order_id'].nunique() if 'order_id' in current_sales.columns else 0
+            prev_orders = previous_sales['order_id'].nunique() if 'order_id' in previous_sales.columns else 0
+            
+            curr_aov = curr_rev / curr_orders if curr_orders > 0 else 0
+            prev_aov = prev_rev / prev_orders if prev_orders > 0 else 0
+            
+            ret_loss = 0
+            if not returns_df.empty and 'issue_type' in returns_df.columns:
+                ret_loss = len(returns_df[returns_df['issue_type'].isin(['Paid Return', 'Non Paid Return'])]) * curr_aov
+            
+            causes.append({
+                "insight": f"Revenue dropped by {drop_pct:.1f}% vs previous period.",
+                "drivers": [
+                    f"Order Volume: {'Decreased' if curr_orders < prev_orders else 'Increased'} from {prev_orders} to {curr_orders}.",
+                    f"Average Order Value: {'Dropped' if curr_aov < prev_aov else 'Rose'} from ৳{prev_aov:,.0f} to ৳{curr_aov:,.0f}.",
+                    f"Estimated Return Impact: ৳{ret_loss:,.0f} in potential lost revenue during this window."
+                ],
+                "recommendation": "Launch a targeted win-back campaign offering a limited-time discount to compensate for the traffic dip." if curr_orders < prev_orders else "Consider bundling products to increase AOV."
+            })
+    return causes
