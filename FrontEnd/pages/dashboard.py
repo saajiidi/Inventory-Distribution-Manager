@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import TypedDict, Any
 
 import pandas as pd
 import streamlit as st
@@ -91,7 +92,16 @@ def _serialize_context_value(value) -> str:
     return str(value)
 
 
-def _get_window_config(window: str) -> dict[str, str | int | date]:
+class WindowConfig(TypedDict):
+    days_back: int
+    start_dt: date
+    end_dt: date
+    start_date_str: str
+    end_date_str: str
+    prev_start_date_str: str
+    prev_end_date_str: str
+
+def _get_window_config(window: str) -> WindowConfig:
     today = date.today()
     start_dt = today
     end_dt = today
@@ -193,7 +203,7 @@ def _render_initial_sync_placeholder(start_date_str: str, end_date_str: str, sta
 def _build_core_dashboard_data(
     *,
     window: str,
-    window_config: dict[str, str | int | date],
+    window_config: WindowConfig,
     global_sync: bool,
     needs_history: bool,
     orders_status: dict,
@@ -365,11 +375,11 @@ def render_intelligence_hub_page():
 
     context_key = "|".join(
         [
-            window,
-            window_config["start_date_str"],
-            window_config["end_date_str"],
-            window_config["prev_start_date_str"],
-            window_config["prev_end_date_str"],
+            str(window),
+            str(window_config["start_date_str"]),
+            str(window_config["end_date_str"]),
+            str(window_config["prev_start_date_str"]),
+            str(window_config["prev_end_date_str"]),
             _serialize_context_value(global_cats),
             _serialize_context_value(global_stats),
             str(orders_status.get("last_refresh") or ""),
@@ -658,7 +668,7 @@ def render_intelligence_hub_page():
             base_df = data["sales_active"].copy()
             if "Return_Loss" not in base_df.columns:
                 returns_df = st.session_state.get("returns_data", pd.DataFrame())
-                order_sku_returns = {}
+                order_sku_returns: dict[str, float] = {}
                 if not returns_df.empty and "order_id" in returns_df.columns:
                     for _, r_row in returns_df.iterrows():
                         if r_row.get("issue_type") in ["Paid Return", "Non Paid Return", "Partial"]:
