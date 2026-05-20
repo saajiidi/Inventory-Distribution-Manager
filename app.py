@@ -180,8 +180,9 @@ def _render_workspace_sidebar():
             dashboard_data = st.session_state.get("dashboard_data")
             if dashboard_data and not dashboard_data.get("sales", pd.DataFrame()).empty:
                 sales_df = dashboard_data.get("sales", pd.DataFrame())
+                returns_df = st.session_state.get("returns_data", pd.DataFrame())
                 from FrontEnd.components.data_display import render_ai_pilot_chat_ui
-                render_ai_pilot_chat_ui(sales_df)
+                render_ai_pilot_chat_ui(sales_df=sales_df)
             else:
                 st.info("Navigate to a dashboard and load data to activate the pilot.")
 
