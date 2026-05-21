@@ -211,6 +211,27 @@ class RAGAgent:
 
     def query(self, prompt: str, context_dfs: dict[str, pd.DataFrame], depth: int = 0) -> str:
         """Full RAG Pipeline: Ingest -> Embed Query -> Retrieve -> Generate."""
+        
+        # Handle "Learn:" or "Remember:" commands
+        from pathlib import Path
+        knowledge_file = Path("BackEnd/data/pilot_knowledge.txt")
+        if prompt.strip().lower().startswith("learn:") or prompt.strip().lower().startswith("remember:"):
+            new_knowledge = prompt.split(":", 1)[1].strip()
+            knowledge_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(knowledge_file, "a", encoding="utf-8") as f:
+                f.write(f"- {new_knowledge}\n")
+            if "llm_response_cache" in st.session_state:
+                st.session_state.llm_response_cache.clear()
+            return f"✅ Got it! I have updated my knowledge base with: '{new_knowledge}'. I'll remember this for future queries."
+            
+        custom_instructions = ""
+        if knowledge_file.exists():
+            try:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
+                    custom_instructions = f.read().strip()
+            except Exception:
+                pass
+
         # 0. Vector store is now persistent cross-session, deduplication handled in ingest
         
         # Extract individual DFs
@@ -314,7 +335,8 @@ class RAGAgent:
             
         state_hash = hashlib.md5(json.dumps(global_stats, sort_keys=True).encode('utf-8')).hexdigest()
         prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
-        cache_key = f"rag_{self.agent_type}_{self.model_name}_{prompt_hash}_{state_hash}"
+        kb_hash = hashlib.md5(custom_instructions.encode('utf-8')).hexdigest()
+        cache_key = f"rag_{self.agent_type}_{self.model_name}_{prompt_hash}_{state_hash}_{kb_hash}"
         
         if cache_key in st.session_state.llm_response_cache:
             return st.session_state.llm_response_cache[cache_key]
@@ -332,6 +354,13 @@ class RAGAgent:
         # 6. Augmented Generation
         system_prompt = f"""
         You are DEEN-BI Data Pilot, an autonomous expert e-commerce AI agent.
+        
+        CRITICAL RULES FOR ORDER COUNTING:
+        1. "Total Orders" or "Number of Orders" ALWAYS refers to a distinct count of unique `order_id` values.
+        2. The total number of rows represents individual line items. Do NOT use row counts when asked for order counts.
+        
+        USER KNOWLEDGE BASE / CUSTOM INSTRUCTIONS:
+        {custom_instructions}
         
         GLOBAL AGGREGATES (Cross-domain System Analysis):
         {json.dumps(global_stats, indent=2)}

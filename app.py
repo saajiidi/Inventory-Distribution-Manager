@@ -309,6 +309,7 @@ def _render_workspace_sidebar():
                 st.toast("Embedding cache cleared!", icon="🧹")
             
             _render_system_logs()
+            _render_pilot_knowledge_manager()
 
 
 def _render_system_logs():
@@ -326,6 +327,33 @@ def _render_system_logs():
         if st.button("Clear logs", use_container_width=True):
             _clear_error_logs()
             st.rerun()
+            
+            
+def _render_pilot_knowledge_manager():
+    with st.sidebar.expander("🧠 AI Knowledge Base", expanded=False):
+        from pathlib import Path
+        knowledge_file = Path("BackEnd/data/pilot_knowledge.txt")
+        current_kb = ""
+        if knowledge_file.exists():
+            try:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
+                    current_kb = f.read()
+            except Exception:
+                pass
+        
+        st.caption("View and edit the custom rules learned by the Data Pilot.")
+        new_kb = st.text_area("Pilot Memory", value=current_kb, height=150, label_visibility="collapsed")
+        
+        if st.button("💾 Save Rules", use_container_width=True):
+            try:
+                knowledge_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(knowledge_file, "w", encoding="utf-8") as f:
+                    f.write(new_kb)
+                if "llm_response_cache" in st.session_state:
+                    st.session_state.llm_response_cache.clear()
+                st.toast("Knowledge base updated!", icon="✅")
+            except Exception as e:
+                st.error(f"Failed to save: {e}")
 
 
 def _render_primary_navigation():
