@@ -325,7 +325,7 @@ class LLMAgent:
                 recent_mask = temp_sales['order_date'] >= (datetime.now() - timedelta(days=7))
                 recent_sales = temp_sales[recent_mask]
                 if not recent_sales.empty:
-                    daily_grouped = recent_sales.groupby(recent_sales['order_date'].dt.date).agg(
+                    daily_grouped = recent_sales.groupby(recent_sales['order_date'].apply(lambda x: x.date() if pd.notna(x) else None)).agg(
                         revenue=('item_revenue', 'sum'),
                         orders=('order_id', 'nunique')
                     ).to_dict('index')
@@ -353,6 +353,19 @@ class LLMAgent:
                 "top_reasons": returns_df['return_reason'].value_counts().head(3).to_dict() if 'return_reason' in returns_df.columns else {}
             }
         
+        # LLM Response Cache Check
+        import hashlib
+        import streamlit as st
+        if "llm_response_cache" not in st.session_state:
+            st.session_state.llm_response_cache = {}
+            
+        state_hash = hashlib.md5(json.dumps(stats, sort_keys=True).encode('utf-8')).hexdigest()
+        prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
+        cache_key = f"nlp_{self.agent_type}_{self.model_name}_{prompt_hash}_{state_hash}"
+        
+        if cache_key in st.session_state.llm_response_cache:
+            return st.session_state.llm_response_cache[cache_key]
+
         system_prompt = f"""
         You are DEEN-BI Data Pilot, an expert e-commerce analyst. 
         You have access to the following dataset summaries:
@@ -484,6 +497,7 @@ class LLMAgent:
                 res = func()
                 if res in ["MISSING_KEY", "LOCAL_ERROR"]:
                     continue
+                st.session_state.llm_response_cache[cache_key] = res
                 return res
             except Exception as e:
                 last_error = f"❌ **{name} Error:** {str(e)}"

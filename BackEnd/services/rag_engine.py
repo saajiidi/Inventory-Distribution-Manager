@@ -13,26 +13,63 @@ logger = get_logger("rag_engine")
 class SimpleVectorStore:
     """In-memory numpy-based vector store for lightweight RAG."""
     def __init__(self):
+        self.cache_dir = Path("BackEnd/cache/vector_store")
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.vec_file = self.cache_dir / "vectors.npy"
+        self.norm_file = self.cache_dir / "vectors_norm.npy"
+        self.doc_file = self.cache_dir / "documents.json"
+        
         self.documents: List[Dict[str, Any]] = []
         self.vectors: np.ndarray = np.array([])
+        self.vectors_norm: np.ndarray = np.array([])
+        self.load()
+
+    def load(self):
+        if self.vec_file.exists() and self.norm_file.exists() and self.doc_file.exists():
+            try:
+                self.vectors = np.load(self.vec_file)
+                self.vectors_norm = np.load(self.norm_file)
+                with open(self.doc_file, 'r', encoding='utf-8') as f:
+                    self.documents = json.load(f)
+            except Exception as e:
+                logger.error(f"Failed to load vector store: {e}")
+                
+    def save(self):
+        np.save(self.vec_file, self.vectors)
+        np.save(self.norm_file, self.vectors_norm)
+        with open(self.doc_file, 'w', encoding='utf-8') as f:
+            json.dump(self.documents, f, ensure_ascii=False)
 
     def add_documents(self, documents: List[Dict[str, Any]], embeddings: np.ndarray):
+        if not documents:
+            return
         self.documents.extend(documents)
         if self.vectors.size == 0:
             self.vectors = embeddings
         else:
             self.vectors = np.vstack([self.vectors, embeddings])
+            
+        # Pre-compute normalized vectors for O(1) distance scaling during search
+        norms = np.linalg.norm(self.vectors, axis=1, keepdims=True)
+        norms[norms == 0] = 1  # Avoid division by zero
+        self.vectors_norm = self.vectors / norms
+        self.save()
 
     def search(self, query_embedding: np.ndarray, top_k: int = 5) -> List[Dict[str, Any]]:
         if self.vectors.size == 0:
             return []
         
         # Cosine similarity: dot product of normalized vectors
-        query_norm = query_embedding / np.linalg.norm(query_embedding)
-        vectors_norm = self.vectors / np.linalg.norm(self.vectors, axis=1)[:, np.newaxis]
-        similarities = np.dot(vectors_norm, query_norm)
+        q_norm = np.linalg.norm(query_embedding)
+        query_norm = query_embedding / (q_norm if q_norm != 0 else 1)
+        similarities = np.dot(self.vectors_norm, query_norm)
         
-        top_indices = np.argsort(similarities)[-top_k:][::-1]
+        # Fast top-K extraction using argpartition instead of full argsort
+        if len(similarities) > top_k:
+            top_indices = np.argpartition(similarities, -top_k)[-top_k:]
+            top_indices = top_indices[np.argsort(similarities[top_indices])][::-1]
+        else:
+            top_indices = np.argsort(similarities)[::-1]
         
         results = []
         for idx in top_indices:
@@ -157,22 +194,24 @@ class RAGAgent:
         
         docs = []
         texts = []
+        existing_contents = {doc["content"] for doc in self.vector_store.documents}
         
         for _, row in sample_df.iterrows():
             # Format the row into a readable chunk
             row_dict = row.dropna().to_dict()
             text_chunk = ", ".join([f"{k}: {v}" for k, v in row_dict.items()])
-            texts.append(text_chunk)
-            docs.append({"content": text_chunk, "metadata": {"index": _}})
+            if text_chunk not in existing_contents:
+                texts.append(text_chunk)
+                docs.append({"content": text_chunk, "metadata": {"index": int(_) if str(_).isdigit() else str(_)}})
             
-        embeddings = self._get_embeddings(texts)
-        if embeddings.size > 0:
-            self.vector_store.add_documents(docs, embeddings)
+        if texts:
+            embeddings = self._get_embeddings(texts)
+            if embeddings.size > 0:
+                self.vector_store.add_documents(docs, embeddings)
 
     def query(self, prompt: str, context_dfs: dict[str, pd.DataFrame]) -> str:
         """Full RAG Pipeline: Ingest -> Embed Query -> Retrieve -> Generate."""
-        # 0. Clear previous vector store to prevent unbounded growth per session
-        self.vector_store = SimpleVectorStore()
+        # 0. Vector store is now persistent cross-session, deduplication handled in ingest
         
         # Extract individual DFs
         sales_df = context_dfs.get("sales", pd.DataFrame())
@@ -269,6 +308,17 @@ class RAGAgent:
                 "total_inventory_value": (pd.to_numeric(stock_df['Stock Quantity'], errors='coerce').fillna(0) * pd.to_numeric(stock_df['Price'], errors='coerce').fillna(0)).sum() if 'Stock Quantity' in stock_df.columns and 'Price' in stock_df.columns else 0
             }
         
+        # LLM Response Cache Check
+        if "llm_response_cache" not in st.session_state:
+            st.session_state.llm_response_cache = {}
+            
+        state_hash = hashlib.md5(json.dumps(global_stats, sort_keys=True).encode('utf-8')).hexdigest()
+        prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
+        cache_key = f"rag_{self.agent_type}_{self.model_name}_{prompt_hash}_{state_hash}"
+        
+        if cache_key in st.session_state.llm_response_cache:
+            return st.session_state.llm_response_cache[cache_key]
+
         # 4. Embed the User Query
         query_emb = self._get_embeddings([prompt])
         if query_emb.size == 0 or not query_emb.any():
@@ -366,6 +416,7 @@ class RAGAgent:
                 res = func()
                 if res in ["MISSING_KEY", "LOCAL_ERROR"]:
                     continue
+                st.session_state.llm_response_cache[cache_key] = res
                 return res
             except Exception as e:
                 last_error = f"❌ **{name} Error:** {str(e)}"

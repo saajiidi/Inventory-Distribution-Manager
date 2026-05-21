@@ -4,6 +4,7 @@ import sqlite3
 import json
 import uuid
 from datetime import datetime
+from pathlib import Path
 from BackEnd.commerce_ops.persistence import KeyManager
 from BackEnd.services.nlp_engine import LLMAgent
 from BackEnd.core.paths import SYSTEM_LOG_FILE
@@ -12,20 +13,22 @@ from FrontEnd.components.ui import export_to_excel
 def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_df: pd.DataFrame | None = None, stock_df: pd.DataFrame | None = None):
     st.markdown("### 🚀 Advanced SQL Data Pilot")
     
-    # Initialize in-memory database
-    conn = sqlite3.connect(':memory:')
+    # Initialize persistent offline database
+    db_path = Path("BackEnd/cache/offline_data.db")
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
     schema_info = []
     
     if sales_df is not None and not sales_df.empty:
-        sales_df.to_sql('sales', conn, index=False)
+        sales_df.to_sql('sales', conn, index=False, if_exists='replace')
         schema_info.append(f"Table 'sales' columns: {', '.join(sales_df.columns)}")
         
     if returns_df is not None and not returns_df.empty:
-        returns_df.to_sql('returns', conn, index=False)
+        returns_df.to_sql('returns', conn, index=False, if_exists='replace')
         schema_info.append(f"Table 'returns' columns: {', '.join(returns_df.columns)}")
         
     if stock_df is not None and not stock_df.empty:
-        stock_df.to_sql('stock', conn, index=False)
+        stock_df.to_sql('stock', conn, index=False, if_exists='replace')
         schema_info.append(f"Table 'stock' columns: {', '.join(stock_df.columns)}")
 
     # --- Terminal UI ---
