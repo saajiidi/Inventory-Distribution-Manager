@@ -407,7 +407,7 @@ class LLMAgent:
         Be professional, concise, and use markdown.
         """
         
-        def try_gemini():
+        def try_gemini(sys_prompt=system_prompt, user_query=prompt):
             import google.generativeai as genai
             import streamlit as st
             import os
@@ -416,10 +416,10 @@ class LLMAgent:
                 return "MISSING_KEY"
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(f"{system_prompt}\n\nUser Question: {prompt}")
+            response = model.generate_content(f"{sys_prompt}\n\nUser Question: {user_query}")
             return response.text
 
-        def try_groq():
+        def try_groq(sys_prompt=system_prompt, user_query=prompt):
             from groq import Groq
             import streamlit as st
             import os
@@ -430,25 +430,25 @@ class LLMAgent:
             completion = client.chat.completions.create(
                 model="llama3-70b-8192",
                 messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": user_query}
                 ],
                 temperature=0.2,
             )
             return completion.choices[0].message.content
             
-        def try_local():
+        def try_local(sys_prompt=system_prompt, user_query=prompt):
             is_ollama = "11434" in self.base_url
             url = f"{self.base_url}/api/generate" if is_ollama else (f"{self.base_url}/v1/chat/completions" if "/v1" not in self.base_url else f"{self.base_url}/chat/completions")
             payload = {
                     "model": self.model_name,
-                    "prompt": f"{system_prompt}\n\nUser Question: {prompt}",
+                    "prompt": f"{sys_prompt}\n\nUser Question: {user_query}",
                     "stream": False
             } if is_ollama else {
                     "model": self.model_name,
                     "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt}
+                        {"role": "system", "content": sys_prompt},
+                        {"role": "user", "content": user_query}
                     ],
                     "temperature": 0.2
             }
@@ -465,7 +465,7 @@ class LLMAgent:
             except Exception:
                 return "LOCAL_ERROR"
 
-        def try_openrouter():
+        def try_openrouter(sys_prompt=system_prompt, user_query=prompt):
             import streamlit as st
             import os
             import requests
@@ -480,8 +480,8 @@ class LLMAgent:
             payload = {
                 "model": "meta-llama/llama-3-8b-instruct:free",
                 "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": user_query}
                 ]
             }
             resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
@@ -489,7 +489,7 @@ class LLMAgent:
                 return resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response.")
             return "LOCAL_ERROR"
 
-        def try_huggingface():
+        def try_huggingface(sys_prompt=system_prompt, user_query=prompt):
             import streamlit as st
             import os
             import requests
@@ -498,7 +498,7 @@ class LLMAgent:
                 return "MISSING_KEY"
             headers = {"Authorization": f"Bearer {api_key}"}
             payload = {
-                "inputs": f"<|system|>\n{system_prompt}</s>\n<|user|>\n{prompt}</s>\n<|assistant|>",
+                "inputs": f"<|system|>\n{sys_prompt}</s>\n<|user|>\n{user_query}</s>\n<|assistant|>",
                 "parameters": {"max_new_tokens": 512, "temperature": 0.2, "return_full_text": False}
             }
             resp = requests.post("https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta", headers=headers, json=payload, timeout=30)
@@ -524,25 +524,39 @@ class LLMAgent:
             
         last_error = "❌ **AI Generation Failed:** No valid models available."
         
+        eval_system_prompt = "You are an objective AI judge. Evaluate the response against the rules. Reply ONLY with 'YES' if it violates the rules, or 'NO' if it complies."
+        
         for name, func in fallback_order:
             try:
-                res = func()
-                if res in ["MISSING_KEY", "LOCAL_ERROR"]:
-                    continue
+                for attempt in range(2):
+                    res = func(system_prompt, prompt)
+                    if res in ["MISSING_KEY", "LOCAL_ERROR"]:
+                        break # Move to next provider
+                        
+                    # LLM-as-a-Judge Validation
+                    eval_user_prompt = f"RULES:\n1. 'Total Orders' ALWAYS refers to a distinct count of unique `order_id` values.\n2. Do NOT use row counts when asked for order counts.\n\nRESPONSE TO EVALUATE:\n{res}\n\nDoes the response violate these rules? (YES/NO)"
+                    eval_res = func(eval_system_prompt, eval_user_prompt)
                     
-                import re
-                from pathlib import Path
-                updates = re.findall(r'\[KNOWLEDGE_UPDATE:\s*(.*?)\]', res)
-                if updates:
-                    knowledge_file = Path("BackEnd/data/pilot_knowledge.txt")
-                    knowledge_file.parent.mkdir(parents=True, exist_ok=True)
-                    with open(knowledge_file, "a", encoding="utf-8") as f:
-                        for update in updates:
-                            f.write(f"- {update.strip()}\n")
-                    res = re.sub(r'\[KNOWLEDGE_UPDATE:\s*.*?\]', '', res).strip()
+                    if "YES" in str(eval_res).upper() and attempt == 0:
+                        import logging
+                        logging.warning(f"[{name}] NLP Validation failed on attempt {attempt+1}. Regenerating...")
+                        continue
+                        
+                    import re
+                    from pathlib import Path
+                    updates = re.findall(r'\[KNOWLEDGE_UPDATE:\s*(.*?)\]', res)
+                    if updates:
+                        knowledge_file = Path("BackEnd/data/pilot_knowledge.txt")
+                        knowledge_file.parent.mkdir(parents=True, exist_ok=True)
+                        with open(knowledge_file, "a", encoding="utf-8") as f:
+                            for update in updates:
+                                f.write(f"- {update.strip()}\n")
+                        res = re.sub(r'\[KNOWLEDGE_UPDATE:\s*.*?\]', '', res).strip()
+                        import streamlit as st
+                        st.toast("🤖 Auto-learned a new rule from your correction.", icon="🧠")
 
-                st.session_state.llm_response_cache[cache_key] = res
-                return res
+                    st.session_state.llm_response_cache[cache_key] = res
+                    return res
             except Exception as e:
                 last_error = f"❌ **{name} Error:** {str(e)}"
                 continue

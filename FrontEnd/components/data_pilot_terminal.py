@@ -30,6 +30,16 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
     if stock_df is not None and not stock_df.empty:
         stock_df.to_sql('stock', conn, index=False, if_exists='replace')
         schema_info.append(f"Table 'stock' columns: {', '.join(stock_df.columns)}")
+        
+    # Dynamically load existing views into schema context so AI can query them
+    try:
+        views_df = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='view'", conn)
+        for _, row in views_df.iterrows():
+            v_name = row['name']
+            v_schema = pd.read_sql_query(f"PRAGMA table_info({v_name})", conn)
+            schema_info.append(f"View '{v_name}' columns: {', '.join(v_schema['name'].tolist())}")
+    except Exception:
+        pass
 
     # --- Terminal UI ---
     st.markdown("""
@@ -132,10 +142,12 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
 
         query = st.text_area("SQL Query", value="SELECT * FROM sales LIMIT 5", height=150, key=KeyManager.get_key("pilot", "sql_input"))
         
-        btn_c1, btn_c2 = st.columns([3, 1])
+        btn_c1, btn_c2, btn_c3 = st.columns([2, 1, 1])
         with btn_c1:
             exec_btn = st.button("▶ Execute", type="primary", use_container_width=True)
         with btn_c2:
+            format_btn = st.button("🪄 Format", use_container_width=True)
+        with btn_c3:
             save_btn = st.button("💾 Save", use_container_width=True)
             
         if save_btn and query.strip():
@@ -150,6 +162,15 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
             else:
                 st.toast("Query is already saved.", icon="ℹ️")
         
+        if format_btn and query.strip():
+            try:
+                import sqlparse
+                formatted_query = sqlparse.format(query, reindent=True, keyword_case='upper')
+                st.session_state[KeyManager.get_key("pilot", "sql_input")] = formatted_query
+                st.rerun()
+            except ImportError:
+                st.toast("Please install 'sqlparse' (pip install sqlparse) for formatting.", icon="⚠️")
+                
         if exec_btn:
             cmd = query.strip().lower()
             if cmd == "clear":
@@ -170,6 +191,7 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
                     log_to_term(f"Executing: {query}")
                     result_df = pd.read_sql_query(query, conn)
                     log_to_term(f"Success: {len(result_df)} rows returned.")
+                    st.session_state[KeyManager.get_key("pilot", "last_executed_query")] = query
                     st.session_state[KeyManager.get_key("pilot", "sql_result")] = result_df
                 except Exception as e:
                     log_to_term(f"ERROR: {str(e)}", is_error=True)
@@ -186,7 +208,7 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
             with tab_data:
                 st.dataframe(result_df, use_container_width=True, key=KeyManager.get_key("pilot", "sql_result_df"))
                 
-                btn_c1, btn_c2, btn_c3 = st.columns(3) # Added a third column for the "Explain Result" button
+                btn_c1, btn_c2, btn_c3, btn_c4 = st.columns(4)
                 with btn_c1:
                     excel_bytes = export_to_excel(result_df, sheet_name="SQL Extract")
                     st.download_button(
@@ -206,6 +228,21 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
                     if st.button("📈 Get Plotly Code", use_container_width=True, key=KeyManager.get_key("pilot", "plotly_code_btn")):
                         st.session_state[KeyManager.get_key("pilot", "chat_plotly_request")] = True
                         st.rerun()
+                with btn_c4:
+                    with st.popover("💾 Save as View", use_container_width=True):
+                        view_name = st.text_input("View Name", "ai_custom_view", key=KeyManager.get_key("pilot", "view_name"))
+                        if st.button("Create View", key=KeyManager.get_key("pilot", "create_view_btn"), use_container_width=True):
+                            last_q = st.session_state.get(KeyManager.get_key("pilot", "last_executed_query"), "")
+                            if last_q and view_name:
+                                try:
+                                    conn.execute(f"DROP VIEW IF EXISTS {view_name}")
+                                    conn.execute(f"CREATE VIEW {view_name} AS {last_q}")
+                                    conn.commit()
+                                    log_to_term(f"Created virtual view: {view_name}")
+                                    st.toast(f"View '{view_name}' created successfully!", icon="✅")
+                                except Exception as e:
+                                    st.error(f"Failed to create view: {e}")
+                                    log_to_term(f"View Creation Error: {e}", is_error=True)
                 
             with tab_viz:
                 if not result_df.empty and len(result_df.columns) >= 2:
@@ -246,8 +283,34 @@ def render_advanced_sql_terminal(sales_df: pd.DataFrame | None = None, returns_d
                     except Exception:
                         pass
                     agent = LLMAgent(agent_type=agent_type)
-                    sql_suggestion = agent.query(prompt, {}) 
-                    sql_suggestion = sql_suggestion.replace('```sql', '').replace('```', '').strip()
+                    
+                    sql_suggestion = ""
+                    last_error = ""
+                    current_prompt = prompt
+                    
+                    for attempt in range(3):
+                        sql_suggestion = agent.query(current_prompt, {}) 
+                        sql_suggestion = sql_suggestion.replace('```sql', '').replace('```', '').strip()
+                        
+                        try:
+                            import sqlparse
+                            sql_suggestion = sqlparse.format(sql_suggestion, reindent=True, keyword_case='upper')
+                        except ImportError:
+                            pass
+                        
+                        try:
+                            # Evaluate SQL syntax and schema validity without executing it
+                            conn.execute(f"EXPLAIN {sql_suggestion}")
+                            last_error = ""
+                            break # Valid query, break the loop
+                        except sqlite3.Error as e:
+                            last_error = str(e)
+                            log_to_term(f"SQL Validation Failed (Attempt {attempt+1}): {last_error}", is_error=True)
+                            # Feed the exact schema error back to the LLM to auto-correct
+                            current_prompt = f"{prompt}\n\nYour previous query:\n{sql_suggestion}\n\nFailed with SQLite error:\n{last_error}\n\nPlease correct the SQL query. Return ONLY the valid SQL code."
+                            
+                    if last_error:
+                        st.warning(f"AI struggled to form a perfect query. Last error: {last_error}")
                     
                     log_to_term(f"AI Suggested SQL for: '{nl_query}'")
                     st.session_state[KeyManager.get_key("pilot", "sql_input")] = sql_suggestion
